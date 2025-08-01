@@ -7,6 +7,7 @@ local enabled_lsp_clients = {
 	"clangd",
 	"css_variables",
 	"cssls",
+	"docker_language_server",
 	"eslint",
 	"gopls",
 	"jsonls",
