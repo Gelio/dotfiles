@@ -1,7 +1,10 @@
 return {
 	{
 		"ibhagwan/fzf-lua",
-		dependencies = { "nvim-tree/nvim-web-devicons" },
+		dependencies = {
+			"nvim-tree/nvim-web-devicons",
+			{ "elanmed/fzf-lua-frecency.nvim", config = true },
+		},
 		opts = function()
 			local actions = require("fzf-lua").actions
 			return {
@@ -32,6 +35,7 @@ return {
 		cmd = { "FzfLua" },
 		keys = {
 			{ "<Leader>ff", "<cmd>FzfLua files<CR>", desc = "Files (FzfLua)" },
+			{ "<Leader>fF", "<cmd>FzfLua frecency cwd_only=true<CR>", desc = "Files (frecency) (FzfLua)" },
 			{ "<Leader>fb", "<cmd>FzfLua buffers<CR>", desc = "Buffers (FzfLua)" },
 			{ "<Leader>fo", "<cmd>FzfLua oldfiles<CR>", desc = "Old files (FzfLua)" },
 			{ "<Leader>fh", "<cmd>FzfLua helptags<CR>", desc = "Help tags (FzfLua)" },
