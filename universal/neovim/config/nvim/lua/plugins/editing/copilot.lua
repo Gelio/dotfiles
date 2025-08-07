@@ -21,7 +21,6 @@ return {
 			"CopilotChatOpen",
 			"CopilotChatToggle",
 			"CopilotChatPrompts",
-			"CopilotChatAgents",
 			"CopilotChatModels",
 		},
 	},
