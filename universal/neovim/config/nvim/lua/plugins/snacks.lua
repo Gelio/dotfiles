@@ -5,7 +5,6 @@ return {
 		opts = {
 			bigfile = {},
 			image = {},
-			picker = {},
 		},
 	},
 }

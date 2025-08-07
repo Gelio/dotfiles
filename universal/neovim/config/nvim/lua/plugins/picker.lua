@@ -55,6 +55,12 @@ return {
 			require("which-key").add({
 				{ "<Leader>f", group = "Find (FzfLua)" },
 			})
+
+			-- NOTE: hand-written ui.select function instead of require("fzf-lua").register_ui_select()
+			-- This one keeps fzf-lua lazy-loadable.
+			vim.ui.select = function(...)
+				return require("fzf-lua.providers.ui_select").ui_select(...)
+			end
 		end,
 	},
 }
