@@ -7,7 +7,15 @@ return {
 			{ "nvim-lua/plenary.nvim", branch = "master" },
 		},
 		build = "make tiktoken",
-		opts = {},
+		opts = {
+			mappings = {
+				complete = {
+					-- NOTE: use <C-Space> since blink-cmp is disabled anyway,
+					-- and the default <Tab> collides with copilot.vim
+					insert = "<C-Space>",
+				},
+			},
+		},
 		cmd = {
 			"CopilotChat",
 			"CopilotChatOpen",
