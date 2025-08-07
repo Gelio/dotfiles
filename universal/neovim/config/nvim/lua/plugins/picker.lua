@@ -8,6 +8,9 @@ return {
 		opts = function()
 			local actions = require("fzf-lua").actions
 			return {
+				fzf_opts = {
+					["--keep-right"] = true,
+				},
 				keymap = {
 					fzf = {
 						-- NOTE: inherit the default keymaps
