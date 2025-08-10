@@ -504,7 +504,15 @@
 		}
 	],
 	"showBreaksAsRegularWindows": false,
-	"appExclusions": [],
+	"appExclusions": [
+    {
+      "rule": "pause",
+      "active": true,
+      "commands": [
+        "Liftoff"
+      ]
+    }
+  ],
 	"appExclusionsCheckInterval": 1000,
 	"pauseForSuspendOrLock": true,
 	"pauseBreaksToggleShortcut": "",
