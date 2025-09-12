@@ -31,6 +31,10 @@ return {
 					files = {
 						true,
 						["ctrl-x"] = actions.file_split,
+
+						-- NOTE: I use the built-in alt-h for switching between windows in yabai.
+						-- Thus, I need a new keymap for toggling hidden files.
+						["ctrl-alt-H"] = actions.toggle_hidden,
 					},
 				},
 			}
