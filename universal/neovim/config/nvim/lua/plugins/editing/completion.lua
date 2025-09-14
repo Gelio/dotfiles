@@ -48,6 +48,10 @@ return {
 			},
 			sources = {
 				default = { "lsp", "path", "snippets", "buffer", "natdat", "emoji", "nvim_lua", "calc", "npm" },
+				per_filetype = {
+					sql = { "dadbod", "snippets", "buffer" },
+					plsql = { "dadbod", "snippets", "buffer" },
+				},
 				providers = {
 					natdat = {
 						name = "natdat",
@@ -72,6 +76,10 @@ return {
 					npm = {
 						name = "npm",
 						module = "blink.compat.source",
+					},
+					dadbod = {
+						name = "Dadbod",
+						module = "vim_dadbod_completion.blink",
 					},
 				},
 			},
