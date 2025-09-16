@@ -5,6 +5,19 @@ return {
 		dependencies = {
 			{ "github/copilot.vim" },
 			{ "nvim-lua/plenary.nvim", branch = "master" },
+
+			-- NOTE: make MCPHub a dependency of CopilotChat.nvim
+			-- so they load together
+			{
+				"ravitemer/mcphub.nvim",
+				dependencies = {
+					"nvim-lua/plenary.nvim",
+				},
+				build = "npm install -g mcp-hub@latest",
+				config = function()
+					require("mcphub").setup()
+				end,
+			},
 		},
 		build = "make tiktoken",
 		opts = {
@@ -22,6 +35,7 @@ return {
 			"CopilotChatToggle",
 			"CopilotChatPrompts",
 			"CopilotChatModels",
+			"MCPHub",
 		},
 	},
 }
