@@ -505,14 +505,14 @@
 	],
 	"showBreaksAsRegularWindows": false,
 	"appExclusions": [
-    {
-      "rule": "pause",
-      "active": true,
-      "commands": [
-        "Liftoff"
-      ]
-    }
-  ],
+		{
+			"rule": "pause",
+			"active": true,
+			"commands": [
+				"Liftoff"
+			]
+		}
+	],
 	"appExclusionsCheckInterval": 1000,
 	"pauseForSuspendOrLock": true,
 	"pauseBreaksToggleShortcut": "",
@@ -530,9 +530,13 @@
 	"skipToNextLongBreakShortcut": "",
 	"resetBreaksShortcut": "",
 	"showTrayMenuInStrictMode": false,
+	"customPreferencesMessage": "",
+	"disableAppUpdateFeatures": false,
+	"hidePreferencesFileLocation": false,
+	"hideStrictModePreferences": false,
 	"__internal__": {
 		"migrations": {
-			"version": "1.17.2"
+			"version": "1.18.0"
 		}
 	}
 }
