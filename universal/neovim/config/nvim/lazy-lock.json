@@ -22,7 +22,7 @@
   "firenvim": { "branch": "master", "commit": "0c3b81444944ed51e9eb50b158b71ee26b611575" },
   "friendly-snippets": { "branch": "main", "commit": "572f5660cf05f8cd8834e096d7b4c921ba18e175" },
   "fugitive-gitlab.vim": { "branch": "master", "commit": "3584cf7e607ba7822f991d407a8d780e05aae287" },
-  "fzf-lua": { "branch": "main", "commit": "fd244f2a6e1e3b1c6fcf0361bc738f362f269ce8" },
+  "fzf-lua": { "branch": "main", "commit": "52b8199b9bf185720389d5ca99350ae26a724a2d" },
   "fzf-lua-frecency.nvim": { "branch": "master", "commit": "d776493e5586c6c203117f2433773538b388a44a" },
   "git-conflict.nvim": { "branch": "main", "commit": "4bbfdd92d547d2862a75b4e80afaf30e73f7bbb4" },
   "gitsigns.nvim": { "branch": "main", "commit": "f780609807eca1f783a36a8a31c30a48fbe150c5" },
