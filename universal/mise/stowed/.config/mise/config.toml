@@ -3,6 +3,8 @@ node = 'lts'
 java = "zulu-17.42.19"
 usage = "latest"
 maven = "3"
+bun = "latest"
+pnpm = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]
