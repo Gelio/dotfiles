@@ -18,6 +18,7 @@ local enabled_lsp_clients = {
 	"rust_analyzer",
 	"stylelint_lsp",
 	"svelte",
+	"tailwindcss",
 	"taplo",
 	"terraformls",
 	"tflint",
