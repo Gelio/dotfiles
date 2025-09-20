@@ -1,5 +1,18 @@
+local mcphub = {
+	"ravitemer/mcphub.nvim",
+	dependencies = {
+		"nvim-lua/plenary.nvim",
+	},
+	build = "npm install -g mcp-hub@latest",
+	config = function()
+		require("mcphub").setup()
+	end,
+}
+
 return {
 	{ "github/copilot.vim" },
+	mcphub,
+
 	{
 		"CopilotC-Nvim/CopilotChat.nvim",
 		dependencies = {
@@ -8,16 +21,7 @@ return {
 
 			-- NOTE: make MCPHub a dependency of CopilotChat.nvim
 			-- so they load together
-			{
-				"ravitemer/mcphub.nvim",
-				dependencies = {
-					"nvim-lua/plenary.nvim",
-				},
-				build = "npm install -g mcp-hub@latest",
-				config = function()
-					require("mcphub").setup()
-				end,
-			},
+			mcphub[1],
 		},
 		build = "make tiktoken",
 		opts = {
@@ -35,7 +39,30 @@ return {
 			"CopilotChatToggle",
 			"CopilotChatPrompts",
 			"CopilotChatModels",
-			"MCPHub",
 		},
+	},
+
+	{
+		"olimorris/codecompanion.nvim",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			mcphub[1],
+		},
+		opts = {
+			extensions = {
+				mcphub = {
+					callback = "mcphub.extensions.codecompanion",
+					opts = {
+						make_tools = true,
+						show_server_tools_in_chat = true,
+						add_mcp_prefix_to_tool_names = true,
+						show_result_in_chat = true,
+						make_vars = true,
+						make_slash_commands = true,
+					},
+				},
+			},
+		},
+		cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionActions", "CodeCompanionCmd" },
 	},
 }
