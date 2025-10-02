@@ -28,9 +28,7 @@ formulae=(
   tmux
   findutils
   wget
-  pipx
   gnupg
-  jq
   highlight
   jordanbaird-ice
   pkg-config
@@ -49,7 +47,6 @@ brew install --cask --no-quarantine ${casks_no_quarantine[@]}
 mkdir -p ~/.zfunc/
 
 go install github.com/Gelio/go-global-update@latest
-pipx ensurepath
 skhd --start-service
 
 # https://github.com/Jean-Tinland/simple-bar#installation
