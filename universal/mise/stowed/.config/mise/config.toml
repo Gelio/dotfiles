@@ -5,6 +5,7 @@ usage = "latest"
 maven = "3"
 bun = "latest"
 pnpm = "latest"
+gh = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]
