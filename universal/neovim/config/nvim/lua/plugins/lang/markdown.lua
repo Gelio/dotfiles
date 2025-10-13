@@ -48,4 +48,12 @@ return {
 		ft = "markdown",
 		cmd = { "RelativeDateAttach", "RelativeDateToggle" },
 	},
+
+	{
+
+		"davidmh/mdx.nvim",
+		config = true,
+		dependencies = { "nvim-treesitter/nvim-treesitter" },
+		event = "BufEnter *.mdx",
+	},
 }
