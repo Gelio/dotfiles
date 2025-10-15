@@ -10,6 +10,7 @@ awscli = "latest"
 pipx = "latest"
 jq = "latest"
 yq = "latest"
+python = "3.13"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]
