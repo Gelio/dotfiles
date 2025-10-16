@@ -49,6 +49,13 @@ return {
 			mcphub[1],
 		},
 		opts = {
+			strategies = {
+				chat = {
+					adapter = "copilot",
+					-- NOTE: according to Reddit, gpt-5-mini performs better than gpt-4.1
+					model = "gpt-5-mini",
+				},
+			},
 			extensions = {
 				mcphub = {
 					callback = "mcphub.extensions.codecompanion",
