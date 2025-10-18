@@ -3,6 +3,7 @@ local mcphub = {
 	dependencies = {
 		"nvim-lua/plenary.nvim",
 	},
+	lazy = true,
 	build = "npm install -g mcp-hub@latest",
 	config = function()
 		require("mcphub").setup()
