@@ -6,6 +6,7 @@ return {
 		dependencies = {
 			"tpope/vim-rhubarb",
 			"shumphrey/fugitive-gitlab.vim",
+			"farhanmustar/fugitive-delta.nvim",
 		},
 	},
 	{ "junegunn/gv.vim", cmd = "GV", dependencies = { "tpope/vim-fugitive" } },
