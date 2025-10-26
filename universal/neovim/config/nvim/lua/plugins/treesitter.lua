@@ -137,24 +137,6 @@ return {
 		end,
 	},
 	{
-		"ziontee113/syntax-tree-surfer",
-		-- NOTE: https://github.com/ziontee113/syntax-tree-surfer is archived
-		-- and it relies on `nvim-treesitter` for its functionality.
-		enabled = false,
-		dependencies = { "nvim-treesitter" },
-		keys = {
-			{ "J", "<cmd>STSSelectNextSiblingNode<CR>", mode = "x", desc = "Surf to next node" },
-			{ "K", "<cmd>STSSelectPrevSiblingNode<CR>", mode = "x", desc = "Surf to previous node" },
-			{ "H", "<cmd>STSSelectParentNode<CR>", mode = "x", desc = "Surf to parent node" },
-			{ "L", "<cmd>STSSelectChildNode<CR>", mode = "x", desc = "Surf to child node" },
-			{ "<C-N>", "<cmd>STSSwapNextVisual<CR>", mode = "x", desc = "Replace with next node" },
-			{ "<C-P>", "<cmd>STSSwapPrevVisual<CR>", mode = "x", desc = "Replace with previous node" },
-			{ "<C-N>", "<cmd>STSSwapCurrentNodeNextNormal<CR>", mode = "n", desc = "Replace with next node" },
-			{ "<C-P>", "<cmd>STSSwapCurrentNodePrevNormal<CR>", mode = "n", desc = "Replace with previous node" },
-		},
-		config = true,
-	},
-	{
 		"mfussenegger/nvim-treehopper",
 		keys = {
 			{

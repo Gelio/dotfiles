@@ -82,7 +82,6 @@
   "ssr.nvim": { "branch": "main", "commit": "7c95cfa5836508f08ae833a4b31d2ed265560f64" },
   "startuptime.vim": { "branch": "master", "commit": "dfa57f522d6f61793fe5fea65bca7484751b8ca2" },
   "symbols.nvim": { "branch": "main", "commit": "7fe968b13fe6c1f45f19d13d6b2caeb5c475e591" },
-  "syntax-tree-surfer": { "branch": "master", "commit": "732ea6d0f868bcccd2f526be73afa46997d5a2fb" },
   "targets.vim": { "branch": "master", "commit": "6325416da8f89992b005db3e4517aaef0242602e" },
   "text-case.nvim": { "branch": "main", "commit": "e898cfd46fa6cde0e83abb624a16e67d2ffc6457" },
   "todo-comments.nvim": { "branch": "main", "commit": "19d461ddd543e938eb22505fb03fa878800270b6" },
