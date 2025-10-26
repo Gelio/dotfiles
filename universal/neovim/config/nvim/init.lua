@@ -45,7 +45,7 @@ vim.opt.listchars = {
 
 vim.o.termguicolors = true
 vim.opt.diffopt:append({
-	"algorithm:histogram",
+	"algorithm:patience",
 	"iwhite",
 	"indent-heuristic",
 	"vertical",
