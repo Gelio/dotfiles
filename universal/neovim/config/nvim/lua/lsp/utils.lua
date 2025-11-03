@@ -112,6 +112,8 @@ local ok, cmp_capabilities = pcall(function()
 end)
 if ok then
 	M.capabilities = cmp_capabilities
+else
+	vim.print("Warning: Failed to load blink.cmp capabilities for LSP")
 end
 
 -- https://github.com/kevinhwang91/nvim-ufo#minimal-configuration
