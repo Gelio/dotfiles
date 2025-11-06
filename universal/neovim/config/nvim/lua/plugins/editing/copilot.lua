@@ -48,6 +48,7 @@ return {
 		dependencies = {
 			"nvim-lua/plenary.nvim",
 			mcphub[1],
+			"ravitemer/codecompanion-history.nvim",
 		},
 		opts = function()
 			local adapter = {
@@ -79,6 +80,9 @@ return {
 							make_vars = true,
 							make_slash_commands = true,
 						},
+					},
+					history = {
+						enabled = true,
 					},
 				},
 			}
