@@ -34,7 +34,8 @@ return {
 
 						-- NOTE: I use the built-in alt-h for switching between windows in yabai.
 						-- Thus, I need a new keymap for toggling hidden files.
-						["ctrl-alt-H"] = actions.toggle_hidden,
+						-- ctrl-alt-h does not work for me for some reason.
+						["ctrl-alt-j"] = actions.toggle_hidden,
 					},
 				},
 			}
