@@ -25,7 +25,7 @@
 	"transparentMode": false,
 	"blurredBackground": false,
 	"opacity": 0.9,
-	"audio": "crystal-glass",
+	"longBreakAudio": "crystal-glass",
 	"miniBreakAudio": "crystal-glass",
 	"volume": 1,
 	"fullscreen": false,
@@ -43,8 +43,8 @@
 	"useMonochromeInvertedTrayIcon": false,
 	"silentNotifications": false,
 	"monitorDnd": true,
-	"microbreakStartSoundPlaying": false,
-	"breakStartSoundPlaying": false,
+	"miniBreakStartSound": "silence",
+	"longBreakStartSound": "silence",
 	"themeSource": "system",
 	"endBreakShortcut": "CmdOrCtrl+X",
 	"breakWindowWidth": 0.85,
@@ -534,9 +534,11 @@
 	"disableAppUpdateFeatures": false,
 	"hidePreferencesFileLocation": false,
 	"hideStrictModePreferences": false,
+	"miniBreakManualFinish": false,
+	"longBreakManualFinish": false,
 	"__internal__": {
 		"migrations": {
-			"version": "1.18.1"
+			"version": "1.19.0"
 		}
 	}
 }
