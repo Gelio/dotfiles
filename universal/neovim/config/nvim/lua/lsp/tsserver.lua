@@ -2,9 +2,9 @@ local M = {}
 
 local utils = require("lsp.utils")
 
+---@type string[]
 local filetypes = vim.lsp.config.ts_ls.filetypes
 assert(#filetypes > 0, "ts_ls filetypes must be defined")
--- NOTE: include vue
 table.insert(filetypes, "vue")
 
 M.config = vim.tbl_extend("force", utils.base_config, {
