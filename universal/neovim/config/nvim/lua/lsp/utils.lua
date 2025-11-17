@@ -38,12 +38,6 @@ local function setup_lsp_keymaps(_client, bufnr)
 end
 
 function M.setup_document_highlight()
-	vim.cmd([[
-    hi LspReferenceText  cterm=bold ctermbg=red guibg=#404040
-    hi LspReferenceRead  cterm=bold ctermbg=red guibg=#404040
-    hi LspReferenceWrite cterm=bold ctermbg=red guibg=#404040
-	]])
-
 	local lsp_attach_autocmd = vim.api.nvim_create_augroup("LSPDocumentHighlightAttachDetach", { clear = true })
 	local document_highlight_autocmd = vim.api.nvim_create_augroup("LSPDocumentHighlight", { clear = true })
 	local supported_clients_count_variable_name = "lsp_document_highlight_supported_clients_count"
