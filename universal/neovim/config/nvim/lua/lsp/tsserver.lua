@@ -22,15 +22,7 @@ M.setup = function(config)
 		config = M.config
 	end
 
-	-- WORKAROUND: the `setup` expects LSP config to be passed in `opts.config`,
-	-- not directly.
-	-- See https://github.com/pmizio/typescript-tools.nvim/issues/376
-	local opts = {
-		settings = config.settigns,
-		config = config,
-	}
-
-	require("typescript-tools").setup(opts)
+	require("typescript-tools").setup(config)
 end
 
 return M

@@ -87,7 +87,7 @@
   "text-case.nvim": { "branch": "main", "commit": "e898cfd46fa6cde0e83abb624a16e67d2ffc6457" },
   "todo-comments.nvim": { "branch": "main", "commit": "31e3c38ce9b29781e4422fc0322eb0a21f4e8668" },
   "trouble.nvim": { "branch": "main", "commit": "bd67efe408d4816e25e8491cc5ad4088e708a69a" },
-  "typescript-tools.nvim": { "branch": "master", "commit": "675fe41a3d0d0b4482a4a783a7a92fbae2acbd61" },
+  "typescript-tools.nvim": { "branch": "master", "commit": "c2f5910074103705661e9651aa841e0d7eea9932" },
   "typr": { "branch": "main", "commit": "584e4ef34dea25a4035627794322f315b22d1253" },
   "undotree": { "branch": "master", "commit": "0f1c9816975b5d7f87d5003a19c53c6fd2ff6f7f" },
   "vim-abolish": { "branch": "master", "commit": "dcbfe065297d31823561ba787f51056c147aa682" },
