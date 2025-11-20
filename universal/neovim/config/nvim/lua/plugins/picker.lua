@@ -58,6 +58,9 @@ return {
 			{ "<Leader>fr", "<cmd>FzfLua lsp_references<CR>", desc = "LSP references (FzfLua)" },
 			{ "<Leader>fsd", "<cmd>FzfLua lsp_document_symbols<CR>", desc = "LSP document symbols (FzfLua)" },
 			{ "<Leader>fsw", "<cmd>FzfLua lsp_workspace_symbols<CR>", desc = "LSP workspace symbols (FzfLua)" },
+
+			{ "<Leader>fd", "<cmd>FzfLua diagnostics_document<CR>", desc = "Document diagnostics (FzfLua)" },
+			{ "<Leader>fD", "<cmd>FzfLua diagnostics_workspace<CR>", desc = "Workspace diagnostics (FzfLua)" },
 		},
 		init = function()
 			require("which-key").add({

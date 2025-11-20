@@ -30,7 +30,8 @@ local function setup_lsp_keymaps(_client, bufnr)
 
 		{ "grn", "<cmd>lua vim.lsp.buf.rename()<CR>", desc = "Rename" },
 		{ "gra", "<cmd>lua vim.lsp.buf.code_action()<CR>", desc = "Code actions", mode = { "v", "n" } },
-		{ "<Leader>q", "<cmd>lua vim.diagnostic.setloclist()<CR>", desc = "Show diagnostics in location list" },
+		{ "<Leader>l", "<cmd>lua vim.diagnostic.setloclist()<CR>", desc = "Show buffer diagnostics in location list" },
+		{ "<Leader>q", "<cmd>lua vim.diagnostic.setqflist()<CR>", desc = "Show all diagnostics in quickfix list" },
 
 		{ "<C-k>", signature_help, desc = "Show signature help" },
 		{ "<C-j>", signature_help, desc = "Show signature help", mode = "i" },
