@@ -26,7 +26,7 @@
   "fugitive-delta.nvim": { "branch": "master", "commit": "406cec4173c18ce1d5dc617a0cea2d8c5507e354" },
   "fugitive-gitlab.vim": { "branch": "master", "commit": "3584cf7e607ba7822f991d407a8d780e05aae287" },
   "fzf-lua": { "branch": "main", "commit": "3170d98240266a68c2611fc63260c3ab431575aa" },
-  "fzf-lua-frecency.nvim": { "branch": "master", "commit": "392bcd1f5053e5a6bb0d77e8f81d56712f362343" },
+  "fzf-lua-frecency.nvim": { "branch": "master", "commit": "4c37d8d967a51f718af5d9556b72f16c5185c05b" },
   "git-conflict.nvim": { "branch": "main", "commit": "4bbfdd92d547d2862a75b4e80afaf30e73f7bbb4" },
   "gitsigns.nvim": { "branch": "main", "commit": "cdafc320f03f2572c40ab93a4eecb733d4016d07" },
   "gruvbox-material": { "branch": "master", "commit": "66cfeb7050e081a746a62dd0400446433e802368" },

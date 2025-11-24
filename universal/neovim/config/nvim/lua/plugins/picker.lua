@@ -3,7 +3,7 @@ return {
 		"ibhagwan/fzf-lua",
 		dependencies = {
 			"nvim-tree/nvim-web-devicons",
-			{ "elanmed/fzf-lua-frecency.nvim", config = true },
+			{ "elanmed/fzf-lua-frecency.nvim", config = true, submodules = false },
 		},
 		opts = function()
 			local actions = require("fzf-lua").actions
