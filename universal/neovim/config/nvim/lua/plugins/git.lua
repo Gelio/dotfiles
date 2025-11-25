@@ -96,4 +96,9 @@ return {
 		cmd = { "DiffviewOpen", "DiffviewFileHistory" },
 		config = true,
 	},
+	{
+		"esmuellert/vscode-diff.nvim",
+		dependencies = { "MunifTanjim/nui.nvim" },
+		cmd = "CodeDiff",
+	},
 }
