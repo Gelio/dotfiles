@@ -1,7 +1,16 @@
 return {
 	{ "tpope/vim-repeat" },
 	{ "tpope/vim-abolish" },
-	{ "wellle/targets.vim" },
+	{
+		"wellle/targets.vim",
+		init = function()
+			-- NOTE: delete Neovim's built-in LSP keymaps for an and in.
+			-- https://github.com/neovim/neovim/blob/75b30b091fed5885bff2e0fcdbb6f021927cfb03/runtime/lua/vim/_defaults.lua#L222-L228
+			-- I prefer keeping them for targets.vim "around" and "inside" "next"
+			vim.keymap.del({ "x", "o" }, "an")
+			vim.keymap.del({ "x", "o" }, "in")
+		end,
+	},
 	{
 		"tpope/vim-unimpaired",
 		init = function()

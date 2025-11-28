@@ -35,6 +35,23 @@ local function setup_lsp_keymaps(_client, bufnr)
 
 		{ "<C-k>", signature_help, desc = "Show signature help" },
 		{ "<C-j>", signature_help, desc = "Show signature help", mode = "i" },
+
+		{
+			"as",
+			function()
+				vim.lsp.buf.selection_range(vim.v.count1)
+			end,
+			desc = "vim.lsp.buf.selection_range(vim.v.count1)",
+			mode = { "x", "o" },
+		},
+		{
+			"is",
+			function()
+				vim.lsp.buf.selection_range(-vim.v.count1)
+			end,
+			desc = "vim.lsp.buf.selection_range(-vim.v.count1)",
+			mode = { "x", "o" },
+		},
 	}))
 end
 
