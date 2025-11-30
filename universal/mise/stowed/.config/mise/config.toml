@@ -12,6 +12,7 @@ jq = "latest"
 yq = "latest"
 python = "3.13"
 claude = "latest"
+"npm:@zed-industries/claude-code-acp" = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]
