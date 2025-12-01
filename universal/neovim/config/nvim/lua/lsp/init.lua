@@ -110,4 +110,11 @@ end, {
 
 utils.setup_document_highlight()
 
+vim.api.nvim_create_autocmd("LspAttach", {
+	group = vim.api.nvim_create_augroup("LspAttach_SetupKeymaps", { clear = true }),
+	callback = function(event)
+		utils.setup_lsp_keymaps(event.buf)
+	end,
+})
+
 require("auto-nvimrc").execute_nvimrcs()

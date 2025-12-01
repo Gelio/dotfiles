@@ -1,8 +1,7 @@
 local M = {}
 
----@param _client vim.lsp.Client
 ---@param bufnr number
-local function setup_lsp_keymaps(_client, bufnr)
+function M.setup_lsp_keymaps(bufnr)
 	local function signature_help()
 		vim.lsp.buf.signature_help()
 	end
@@ -112,12 +111,6 @@ function M.setup_document_highlight()
 	})
 end
 
----@param client vim.lsp.Client
----@param bufnr number
-function M.on_attach(client, bufnr)
-	setup_lsp_keymaps(client, bufnr)
-end
-
 -- https://cmp.saghen.dev/installation.html
 local ok, cmp_capabilities = pcall(function()
 	return require("blink.cmp").get_lsp_capabilities()
@@ -140,7 +133,6 @@ M.capabilities = vim.tbl_deep_extend("force", M.capabilities or {}, {
 
 -- Base config for LSP's setup method
 M.base_config = {
-	on_attach = M.on_attach,
 	capabilities = M.capabilities,
 }
 
