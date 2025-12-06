@@ -95,10 +95,6 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	end,
 })
 
-require("vim._extui").enable({
-	enable = true,
-})
-
 -- Bootstrap lazy.nvim
 -- https://github.com/folke/lazy.nvim#-installation
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
