@@ -36,7 +36,7 @@ function M.setup_lsp_keymaps(bufnr)
 		{ "<C-j>", signature_help, desc = "Show signature help", mode = "i" },
 
 		{
-			"as",
+			"ar",
 			function()
 				vim.lsp.buf.selection_range(vim.v.count1)
 			end,
@@ -44,7 +44,7 @@ function M.setup_lsp_keymaps(bufnr)
 			mode = { "x", "o" },
 		},
 		{
-			"is",
+			"ir",
 			function()
 				vim.lsp.buf.selection_range(-vim.v.count1)
 			end,
