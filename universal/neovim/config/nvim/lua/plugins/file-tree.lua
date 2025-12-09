@@ -110,4 +110,11 @@ return {
 		ft = "oil",
 		config = true,
 	},
+	{
+		"ywpkwon/yank-path.nvim",
+		cmd = "YankPath",
+		opts = {
+			default_mapping = false,
+		},
+	},
 }
