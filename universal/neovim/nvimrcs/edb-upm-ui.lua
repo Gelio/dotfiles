@@ -13,22 +13,28 @@ vim.api.nvim_create_user_command("Tsc", "Dispatch -compiler=tsc NO_COLOR=1 npm r
   desc = "Run TypeScript compiler and put the results in the quickfix list",
 })
 
-local tsserver_lsp = require("lsp.tsserver")
+local use_tsgo = vim.fn.getenv("USE_TSGO") == "1"
+if use_tsgo then
+  vim.lsp.enable("typescript-tools", false)
+  vim.lsp.enable("tsgo")
+else
+  local tsserver_lsp = require("lsp.tsserver")
 
--- Root of the repository
-local nvimrc_path = vim.fn.expand("<script>:h")
-tsserver_lsp.setup(vim.tbl_extend("force", tsserver_lsp.config, {
-  settings = {
-    tsserver_file_preferences = {
-      quotePreference = "single",
-      -- NOTE: use actual file extensions in auto-import paths
-      importModuleSpecifierEnding = "js",
+  -- Root of the repository
+  local nvimrc_path = vim.fn.expand("<script>:h")
+  tsserver_lsp.setup(vim.tbl_extend("force", tsserver_lsp.config, {
+    settings = {
+      tsserver_file_preferences = {
+        quotePreference = "single",
+        -- NOTE: use actual file extensions in auto-import paths
+        importModuleSpecifierEnding = "js",
+      },
     },
-  },
-  root_dir = function()
-    return nvimrc_path
-  end,
-}))
+    root_dir = function()
+      return nvimrc_path
+    end,
+  }))
+end
 
 ---@return string|nil
 local function find_closest_package_path()
