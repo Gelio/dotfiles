@@ -113,6 +113,11 @@ utils.setup_document_highlight()
 vim.api.nvim_create_autocmd("LspAttach", {
 	group = vim.api.nvim_create_augroup("LspAttach_SetupKeymaps", { clear = true }),
 	callback = function(event)
+		local client = vim.lsp.get_client_by_id(event.data.client_id)
+		if client.name == "GitHub Copilot" then
+			return
+		end
+
 		utils.setup_lsp_keymaps(event.buf)
 	end,
 })
