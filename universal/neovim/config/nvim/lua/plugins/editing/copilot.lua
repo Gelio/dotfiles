@@ -69,6 +69,15 @@ return {
 						adapter = adapter,
 					},
 				},
+				display = {
+					diff = {
+						provider_opts = {
+							inline = {
+								layout = "buffer",
+							},
+						},
+					},
+				},
 				extensions = {
 					mcphub = {
 						callback = "mcphub.extensions.codecompanion",
