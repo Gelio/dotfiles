@@ -32,6 +32,7 @@ formulae=(
   highlight
   jordanbaird-ice
   pkg-config
+  FelixKratz/formulae/sketchybar
 )
 
 echo "# Installing formulae"
