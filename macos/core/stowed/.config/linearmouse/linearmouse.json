@@ -2,42 +2,56 @@
   "$schema" : "https:\/\/schema.linearmouse.app\/0.10.0",
   "schemes" : [
     {
+      "pointer" : {
+        "speed" : 0.0689655172413792768,
+        "disableAcceleration" : true,
+        "acceleration" : 1.5
+      },
       "if" : {
         "device" : {
-          "productID" : "0xb023",
-          "category" : "mouse",
           "serialNumber" : "C5FA6085CFC84644",
           "vendorID" : "0x46d",
+          "productID" : "0xb023",
+          "category" : "mouse",
           "productName" : "MX Master 3"
         }
       },
-      "pointer" : {
-        "disableAcceleration" : true,
-        "acceleration" : 1.5,
-        "speed" : 0.0689655172413792768
-      },
       "scrolling" : {
-        "speed" : 0,
         "acceleration" : 1,
-        "distance" : "auto",
+        "speed" : 0,
         "reverse" : {
           "vertical" : false
-        }
+        },
+        "distance" : "auto"
       }
     },
     {
       "if" : {
         "device" : {
-          "vendorID" : "0x0",
-          "productID" : "0x0",
+          "productName" : "Apple Internal Keyboard \/ Trackpad",
           "category" : "trackpad",
-          "productName" : "Apple Internal Keyboard \/ Trackpad"
+          "productID" : "0x0",
+          "vendorID" : "0x0"
         }
       },
       "pointer" : {
-        "disableAcceleration" : false,
+        "acceleration" : 0.6875,
         "speed" : 0.0689655172413792768,
-        "acceleration" : 0.6875
+        "disableAcceleration" : false
+      }
+    },
+    {
+      "if" : {
+        "device" : {
+          "productID" : "0x2521",
+          "vendorID" : "0x93a",
+          "productName" : "USB OPTICAL MOUSE",
+          "category" : "mouse"
+        }
+      },
+      "pointer" : {
+        "disableAcceleration" : true,
+        "acceleration" : 1.5
       }
     }
   ]
