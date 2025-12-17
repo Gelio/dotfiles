@@ -10,7 +10,7 @@ if [ ! -f "$config_path" ]; then
   exit 1
 fi
 
-stowed_config_path=./stowed/$config_location
+stowed_config_path=$(realpath ./stowed/$config_location)
 
 # NOTE: `&& true` is used to prevent the script from exiting due to "set -e"
 diff "$config_path" "$stowed_config_path" >/dev/null && true
@@ -23,3 +23,5 @@ fi
 
 cp "$config_path" "$stowed_config_path"
 echo "$app_name config copied to $stowed_config_path"
+rm "$config_path"
+ln -s "$stowed_config_path" "$config_path"
