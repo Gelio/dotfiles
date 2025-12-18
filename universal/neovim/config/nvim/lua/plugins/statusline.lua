@@ -39,6 +39,10 @@ return {
 					return str
 				end
 			end
+			local filename_section = {
+				"filename",
+				path = 1, -- NOTE: show relative file path
+			}
 
 			return {
 				options = {
@@ -75,10 +79,7 @@ return {
 								return success
 							end,
 						},
-						{
-							"filename",
-							path = 1, -- NOTE: show relative file path
-						},
+						filename_section,
 					},
 					lualine_x = {
 						{
@@ -91,6 +92,14 @@ return {
 					},
 					lualine_y = { { "progress", fmt = trunc(nil, nil, 120) } },
 					lualine_z = { "location" },
+				},
+				inactive_sections = {
+					lualine_a = {},
+					lualine_b = {},
+					lualine_c = { filename_section },
+					lualine_x = { "location" },
+					lualine_y = {},
+					lualine_z = {},
 				},
 				extensions = {
 					"fugitive",
