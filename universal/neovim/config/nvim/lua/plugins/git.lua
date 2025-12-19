@@ -57,20 +57,24 @@ return {
 						vim.keymap.set(mode, l, r, { buffer = bufnr, desc = desc })
 					end
 
-					map("n", "[c", function()
-						if vim.wo.diff then
-							vim.cmd.normal({ "[c", bang = true })
-						else
-							gitsigns.nav_hunk("prev")
-						end
-					end, "Previous hunk")
-					map("n", "]c", function()
-						if vim.wo.diff then
-							vim.cmd.normal({ "]c", bang = true })
-						else
-							gitsigns.nav_hunk("next")
-						end
-					end, "Next hunk")
+					if vim.fn.maparg("[c", "n") == "" then
+						map("n", "[c", function()
+							if vim.wo.diff then
+								vim.cmd.normal({ "[c", bang = true })
+							else
+								gitsigns.nav_hunk("prev")
+							end
+						end, "Previous hunk")
+						map("n", "]c", function()
+							if vim.wo.diff then
+								vim.cmd.normal({ "]c", bang = true })
+							else
+								gitsigns.nav_hunk("next")
+							end
+						end, "Next hunk")
+					else
+						vim.notify("Skipping gitsigns hunk navigation mapping: already mapped", vim.log.levels.DEBUG)
+					end
 
 					map({ "n", "v" }, "<Leader>hs", "<cmd>Gitsigns stage_hunk<CR>", "Stage hunk")
 					map({ "n", "v" }, "<Leader>hr", "<cmd>Gitsigns reset_hunk<CR>", "Reset hunk")
