@@ -29,8 +29,8 @@ sketchybar --bar "${bar[@]}"
 default=(
   padding_left=5
   padding_right=5
-  icon.font="Hack Nerd Font:Bold:17.0"
-  label.font="Hack Nerd Font:Bold:14.0"
+  icon.font="JetBrainsMono Nerd Font:Bold:17.0"
+  label.font="JetBrains Nerd Font:Bold:15.0"
   icon.color=0xffffffff
   label.color=0xffffffff
   icon.padding_left=4
