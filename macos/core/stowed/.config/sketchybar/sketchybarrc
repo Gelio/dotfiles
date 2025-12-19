@@ -69,9 +69,18 @@ done
 
 sketchybar --add item chevron left \
   --set chevron icon= label.drawing=off \
+  --add item space_layout left \
+  --set space_layout label="N/A" display=active script="$PLUGIN_DIR/space_layout.sh" \
+  --subscribe space_layout space_change display_change \
   --add item front_app left \
   --set front_app icon.drawing=off script="$PLUGIN_DIR/front_app.sh" \
   --subscribe front_app front_app_switched
+
+# Update space layout when windows are moved or resized.
+# Yabai does not offer a space layout changed event, so we listen to window events instead.
+# They are good enough for spaces that have multiple windows.
+yabai -m signal --add event=window_resized action="$PLUGIN_DIR/space_layout.sh" label="sketchybar:space_layout:window_resized"
+yabai -m signal --add event=window_moved action="$PLUGIN_DIR/space_layout.sh" label="sketchybar:space_layout:window_moved"
 
 ##### Force all scripts to run the first time (never do this in a script) #####
 sketchybar --update
