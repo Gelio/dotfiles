@@ -59,6 +59,10 @@ return {
 
 			{ "<Leader>fd", "<cmd>FzfLua diagnostics_document<CR>", desc = "Document diagnostics (FzfLua)" },
 			{ "<Leader>fD", "<cmd>FzfLua diagnostics_workspace<CR>", desc = "Workspace diagnostics (FzfLua)" },
+
+			{ "<Leader>fpp", "<cmd>FzfLua complete_path<CR>", desc = "File and directory paths (FzfLua)" },
+			{ "<Leader>fpf", "<cmd>FzfLua complete_file<CR>", desc = "File paths (FzfLua)" },
+			{ "<C-F>", "<cmd>FzfLua complete_file<CR>", desc = "File paths (FzfLua)", mode = "i" },
 		},
 		init = function()
 			require("which-key").add({
