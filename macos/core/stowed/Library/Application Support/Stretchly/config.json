@@ -522,7 +522,7 @@
 	"pauseBreaksFor5HoursShortcut": "",
 	"pauseBreaksUntilMorningShortcut": "",
 	"screen": "primary",
-	"timeToBreakInTray": false,
+	"trayIconStyle": "default",
 	"currentTimeInBreaks": false,
 	"showTrayIcon": true,
 	"skipToNextScheduledBreakShortcut": "",
@@ -536,9 +536,11 @@
 	"hideStrictModePreferences": false,
 	"miniBreakManualFinish": false,
 	"longBreakManualFinish": false,
+	"openAtLogin": true,
+	"_migratedOpenAtLogin": true,
 	"__internal__": {
 		"migrations": {
-			"version": "1.19.0"
+			"version": "1.20.0"
 		}
 	}
 }
