@@ -51,22 +51,6 @@ return {
 		},
 	},
 	{
-		"saghen/blink.pairs",
-		version = "*",
-		dependencies = "saghen/blink.download",
-		opts = {
-			highlights = {
-				-- Keep the plugin only for editing.
-				-- Use rainbow-delimiters.nvim for highlighting, since it also handles
-				-- HTML and JSX.
-				enabled = false,
-				-- Disable cmdline highlights until panic is fixed
-				-- https://github.com/saghen/blink.pairs/issues/73
-				cmdline = false,
-			},
-		},
-	},
-	{
 		"ggandor/lightspeed.nvim",
 		keys = {
 			{ "s", mode = { "n", "x" } },
