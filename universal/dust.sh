@@ -2,4 +2,4 @@
 set -euo pipefail
 
 # https://github.com/bootandy/dust
-cargo install du-dust
+cargo binstall du-dust

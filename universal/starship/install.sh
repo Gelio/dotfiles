@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cargo install starship --locked
+cargo binstall --locked starship
 ./stow.sh

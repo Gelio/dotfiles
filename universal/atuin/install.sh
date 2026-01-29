@@ -7,6 +7,6 @@ if command -v brew >/dev/null && ! command -v protoc >/dev/null; then
   brew install protobuf
 fi
 
-cargo install atuin
+cargo binstall atuin
 
 ./stow.sh

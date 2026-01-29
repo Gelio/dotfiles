@@ -1,4 +1,4 @@
 #!/bin/bash
 set -euxo pipefail
 
-cargo install ripgrep
+cargo binstall ripgrep

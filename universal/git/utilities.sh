@@ -2,16 +2,16 @@
 set -euo pipefail
 
 # UI for git
-cargo install gitui
+cargo binstall gitui
 
 # https://github.com/arxanas/git-branchless
-cargo install --locked git-branchless
+cargo binstall --locked git-branchless
 
 # https://github.com/epage/git-stack
-cargo install git-stack
+cargo binstall git-stack
 
 # https://github.com/Wilfred/difftastic
-cargo install difftastic
+cargo binstall difftastic
 
 # https://github.com/jesseduffield/lazygit
 go install github.com/jesseduffield/lazygit@latest

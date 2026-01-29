@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cargo install --locked bat
+cargo binstall --locked bat
