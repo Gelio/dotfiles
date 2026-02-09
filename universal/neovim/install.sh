@@ -101,8 +101,11 @@ function build_neovim {
   if [[ "$clean_before_build" == true ]]; then
     make distclean
   fi
+  echo "* Running build"
   make CMAKE_BUILD_TYPE=RelWithDebInfo
-  sudo make install
+  echo "* Installing"
+  # Pass the PATH to sudo so it can find cmake/ninja if needed during install
+  sudo env "PATH=$PATH" make install
 }
 
 main
