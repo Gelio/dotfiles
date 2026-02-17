@@ -13,6 +13,7 @@ local enabled_lsp_clients = {
 	"jsonls",
 	"lua_ls",
 	"marksman",
+	"oxfmt",
 	"prismals",
 	"protols",
 	"rust_analyzer",

@@ -110,3 +110,16 @@ get_npm_workspaces()
 vim.lsp.config("stylelint_lsp", {
   filetypes = { "typescript", "typescriptreact" },
 })
+
+if vim.fn.findfile(".oxfmtrc.json", ".;") ~= "" then
+  local formatters_by_ft = require("lsp.conform-nvim").formatters_by_ft
+  for ft, _ in pairs(formatters_by_ft) do
+    for index, formatter in ipairs(formatters_by_ft[ft]) do
+      if formatter == "prettier" or formatter == "prettierd" then
+        -- Remove prettier, so oxfmt LSP can do the formatting
+        table.remove(formatters_by_ft[ft], index)
+        break
+      end
+    end
+  end
+end
