@@ -28,8 +28,18 @@ local enabled_lsp_clients = {
 	"yamlls",
 }
 
+---@param servers string[]
+---@return string[]
+local function filter_only_available_servers(servers)
+	local available_servers = require("mason-lspconfig").get_available_servers()
+
+	return vim.tbl_filter(function(server)
+		return vim.tbl_contains(available_servers, server)
+	end, servers)
+end
+
 require("mason-lspconfig").setup({
-	ensure_installed = enabled_lsp_clients,
+	ensure_installed = filter_only_available_servers(enabled_lsp_clients),
 	-- NOTE: prevents mason-lspconfig from automatically enabling some LSP clients
 	-- that are installed by mason-tool-installer (like buf)
 	automatic_enable = false,
