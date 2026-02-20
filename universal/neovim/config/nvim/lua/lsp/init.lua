@@ -26,6 +26,7 @@ local enabled_lsp_clients = {
 	"vimls",
 	"vue_ls",
 	"yamlls",
+	"ts_query_ls",
 }
 
 ---@param servers string[]
