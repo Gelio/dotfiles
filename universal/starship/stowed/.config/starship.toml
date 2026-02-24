@@ -14,3 +14,9 @@ truncation_length = 8
 
 [aws]
 disabled = true
+
+[azure]
+disabled = true
+
+[gcloud]
+disabled = true
