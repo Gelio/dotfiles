@@ -12,12 +12,12 @@ jq = "latest"
 yq = "latest"
 python = "3.13"
 claude = "latest"
-"npm:@zed-industries/claude-code-acp" = "latest"
 "npm:@google/gemini-cli" = "latest"
 "npm:tree-sitter-cli" = "latest"
 "npm:mcp-hub" = "latest"
 "npm:@github/copilot" = "latest"
 "npm:typescript" = "latest"
+"npm:@zed-industries/claude-agent-acp" = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]
