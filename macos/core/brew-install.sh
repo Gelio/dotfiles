@@ -29,7 +29,7 @@ formulae=(
   wget
   gnupg
   highlight
-  jordanbaird-ice
+  thaw
   pkg-config
   FelixKratz/formulae/sketchybar
 )
