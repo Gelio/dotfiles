@@ -32,33 +32,6 @@ return {
 		},
 
 		opts = function()
-			-- Workaround for line-wrapping when moving between completion items
-			-- https://github.com/saghen/blink.cmp/issues/1445
-			local function apply_auto_wrap_workaround()
-				vim.api.nvim_create_autocmd("User", {
-					pattern = "BlinkCmpMenuOpen",
-					callback = function()
-						local formatoptions = vim.opt.formatoptions:get()
-						if formatoptions.t then
-							vim.b.restore_formatoptions_t = true
-							vim.opt.formatoptions:remove("t")
-						end
-					end,
-				})
-
-				vim.api.nvim_create_autocmd("User", {
-					pattern = "BlinkCmpMenuClose",
-					callback = function()
-						if vim.b.restore_formatoptions_t then
-							vim.opt.formatoptions:append("t")
-							vim.b.restore_formatoptions_t = nil
-						end
-					end,
-				})
-			end
-
-			apply_auto_wrap_workaround()
-
 			return {
 				enabled = function()
 					-- NOTE: copilot-chat has its own completion
