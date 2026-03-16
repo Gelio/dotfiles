@@ -32,6 +32,11 @@ return {
 					vim.api.nvim_create_autocmd({ "BufWinEnter", "BufWritePost" }, {
 						group = vim.api.nvim_create_augroup("NvimLint", { clear = true }),
 						callback = function()
+							if vim.b.nvim_lint_disable then
+								-- NOTE: do not lint buffers with `b:nvim_lint_disable` set to true
+								return
+							end
+
 							if is_lsp_popup_window() then
 								-- NOTE: do not lint LSP popup windows (e.g. hover, signature help)
 								return

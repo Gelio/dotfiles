@@ -9,6 +9,14 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+vim.api.nvim_create_autocmd("BufRead", {
+  pattern = { "*/agent-plans/**/*.md" },
+  group = augroup,
+  callback = function()
+    vim.b.nvim_lint_disable = true
+  end,
+})
+
 vim.api.nvim_create_user_command("Tsc", "Dispatch -compiler=tsc NO_COLOR=1 npm run tsc", {
   desc = "Run TypeScript compiler and put the results in the quickfix list",
 })
