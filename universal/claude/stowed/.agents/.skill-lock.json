@@ -1,0 +1,139 @@
+{
+  "version": 3,
+  "skills": {
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel-labs/skills.git",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "skillFolderHash": "3013fdeb8a11b10b1eb795ec3ae8bfca38f7c26d",
+      "installedAt": "2026-03-05T10:24:53.913Z",
+      "updatedAt": "2026-03-14T16:48:13.626Z"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel-labs/agent-skills.git",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "skillFolderHash": "18a9a6d17d5958d4ab10405883b80960644dbd5b",
+      "installedAt": "2026-03-05T10:25:43.649Z",
+      "updatedAt": "2026-03-14T16:48:17.560Z"
+    },
+    "documentation": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mcollina/skills.git",
+      "skillPath": "skills/documentation/SKILL.md",
+      "skillFolderHash": "574f1f96ac6ba36d569e553d64c11039a1958912",
+      "installedAt": "2026-03-14T16:47:18.222Z",
+      "updatedAt": "2026-03-14T16:47:18.222Z"
+    },
+    "init": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mcollina/skills.git",
+      "skillPath": "skills/init/SKILL.md",
+      "skillFolderHash": "54dd8f563ac76bad9965bfe19113988099f9fe94",
+      "installedAt": "2026-03-14T16:47:18.577Z",
+      "updatedAt": "2026-03-14T16:47:18.577Z"
+    },
+    "node": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mcollina/skills.git",
+      "skillPath": "skills/node/SKILL.md",
+      "skillFolderHash": "359e8c0e1843122275c113174cd6459967d3cb4f",
+      "installedAt": "2026-03-14T16:47:18.960Z",
+      "updatedAt": "2026-03-14T16:47:18.960Z"
+    },
+    "octocat": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mcollina/skills.git",
+      "skillPath": "skills/octocat/SKILL.md",
+      "skillFolderHash": "fe88d82fb60185ec4da3f7d857273e1ebc814af8",
+      "installedAt": "2026-03-14T16:47:19.452Z",
+      "updatedAt": "2026-03-14T16:47:19.452Z"
+    },
+    "skill-optimizer": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mcollina/skills.git",
+      "skillPath": "skills/skill-optimizer/SKILL.md",
+      "skillFolderHash": "f364a6308b43f83c8979542ab527220239761c66",
+      "installedAt": "2026-03-14T16:47:19.851Z",
+      "updatedAt": "2026-03-14T16:47:19.851Z"
+    },
+    "typescript-magician": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mcollina/skills.git",
+      "skillPath": "skills/typescript-magician/SKILL.md",
+      "skillFolderHash": "5f12eb5bb17ab9d8645a0f5ac6572d8d444e7c0a",
+      "installedAt": "2026-03-14T16:47:20.162Z",
+      "updatedAt": "2026-03-14T16:47:20.162Z"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/anthropics/skills.git",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "skillFolderHash": "928950704df8a8b885c03de5da626331e6f29cf8",
+      "pluginName": "example-skills",
+      "installedAt": "2026-03-14T16:54:23.577Z",
+      "updatedAt": "2026-03-14T16:54:23.577Z"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel-labs/agent-skills.git",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "skillFolderHash": "3116f3e62dbd02b44a598b1aa690d2a8938e8f89",
+      "installedAt": "2026-03-14T16:54:58.928Z",
+      "updatedAt": "2026-03-14T16:54:58.928Z"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel-labs/agent-skills.git",
+      "skillPath": "skills/composition-patterns/SKILL.md",
+      "skillFolderHash": "bf90d0a4b83ea054653350f9c67f6de235d3a368",
+      "installedAt": "2026-03-14T16:55:29.239Z",
+      "updatedAt": "2026-03-14T16:55:29.239Z"
+    },
+    "skill-creator": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/anthropics/skills.git",
+      "skillPath": "skills/skill-creator/SKILL.md",
+      "skillFolderHash": "98a510d1cfef9f82c3b1eec200229ca68725e613",
+      "pluginName": "example-skills",
+      "installedAt": "2026-03-14T16:56:22.583Z",
+      "updatedAt": "2026-03-14T16:56:22.583Z"
+    },
+    "grill-me": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "grill-me/SKILL.md",
+      "skillFolderHash": "58fccb407d628b1e89832b681410870826a947b9",
+      "installedAt": "2026-03-19T11:08:32.352Z",
+      "updatedAt": "2026-03-19T11:08:32.352Z"
+    }
+  },
+  "dismissed": {
+    "findSkillsPrompt": true
+  },
+  "lastSelectedAgents": [
+    "amp",
+    "cline",
+    "codex",
+    "cursor",
+    "gemini-cli",
+    "github-copilot",
+    "kimi-cli",
+    "opencode",
+    "warp",
+    "claude-code"
+  ]
+}
