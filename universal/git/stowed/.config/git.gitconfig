@@ -65,7 +65,7 @@
 [merge]
   # Improves merge diff rendering in git-delta
   # https://github.com/dandavison/delta/#merge-conflicts
-  conflictstyle = diff3
+  conflictstyle = zdiff3
 
 [init]
 	defaultBranch = main
