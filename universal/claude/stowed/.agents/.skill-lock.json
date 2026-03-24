@@ -15,9 +15,9 @@
       "sourceType": "github",
       "sourceUrl": "https://github.com/vercel-labs/agent-skills.git",
       "skillPath": "skills/react-best-practices/SKILL.md",
-      "skillFolderHash": "18a9a6d17d5958d4ab10405883b80960644dbd5b",
+      "skillFolderHash": "69bf4a7eeeaa772290c1c5efd19da0865f903af8",
       "installedAt": "2026-03-05T10:25:43.649Z",
-      "updatedAt": "2026-03-14T16:48:17.560Z"
+      "updatedAt": "2026-03-24T11:30:34.471Z"
     },
     "documentation": {
       "source": "mcollina/skills",
