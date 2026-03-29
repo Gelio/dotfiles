@@ -1,5 +1,20 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/validate-commit.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/block-risky-commands.py"
+          }
+        ]
+      }
+    ],
     "PermissionRequest": [
       {
         "matcher": "",
