@@ -104,10 +104,31 @@ return {
 		"esmuellert/codediff.nvim",
 		dependencies = { "MunifTanjim/nui.nvim" },
 		cmd = "CodeDiff",
-		opts = {
-			diff = {
-				compute_moves = true,
-			},
-		},
+		config = function()
+			require("codediff").setup({
+				diff = {
+					compute_moves = true,
+				},
+			})
+
+			vim.api.nvim_create_user_command("CodeDiffToggleWhitespace", function()
+				local config = require("codediff.config")
+				local auto_refresh = require("codediff.ui.auto_refresh")
+				local lifecycle = require("codediff.ui.lifecycle")
+
+				config.options.diff.ignore_trim_whitespace = not config.options.diff.ignore_trim_whitespace
+
+				local tabpage = vim.api.nvim_get_current_tabpage()
+				local session = lifecycle.get_session(tabpage)
+				if session then
+					auto_refresh.trigger(session.modified_bufnr)
+				end
+
+				vim.notify(
+					"Ignore trim whitespace: " .. tostring(config.options.diff.ignore_trim_whitespace),
+					vim.log.levels.INFO
+				)
+			end, { desc = "Toggle codediff ignore_trim_whitespace" })
+		end,
 	},
 }
