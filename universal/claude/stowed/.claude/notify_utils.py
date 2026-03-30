@@ -4,6 +4,24 @@ import os
 import subprocess
 import time
 
+HOME = os.path.expanduser("~")
+
+
+def shorten_path(path: str) -> str:
+    """Shorten a path for display in notifications.
+
+    Replaces HOME prefix with ~ and collapses middle segments for long paths.
+    """
+    if not path:
+        return path
+    if path.startswith(HOME):
+        path = "~" + path[len(HOME):]
+    # If still long, keep first and last 2 segments with … in the middle
+    parts = path.split("/")
+    if len(parts) > 5:
+        path = "/".join(parts[:2]) + "/…/" + "/".join(parts[-2:])
+    return path
+
 
 def auto_dismiss(group: str, delay_seconds: int = 5):
     """Remove a terminal-notifier group after a delay, unless a newer notification replaced it."""

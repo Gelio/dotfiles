@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from notify_utils import auto_dismiss, is_session_visible
+from notify_utils import auto_dismiss, is_session_visible, shorten_path
 
 
 def main():
@@ -27,7 +27,7 @@ def main():
     project = cwd.split("/")[-1] if cwd else "unknown"
 
     title = f"Claude Code — {project}"
-    subtitle = cwd
+    subtitle = shorten_path(cwd)
     message = "Ready for input"
 
     group = f"claude-stop-{cwd}"

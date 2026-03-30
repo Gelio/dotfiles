@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from notify_utils import auto_dismiss, is_session_visible
+from notify_utils import auto_dismiss, is_session_visible, shorten_path
 
 
 def main():
@@ -25,18 +25,18 @@ def main():
     if tool == "Bash":
         cmd = tool_input.get("command", "")
         if cmd:
-            detail = cmd[:100]
-    elif tool in ("Edit", "Write"):
+            detail = shorten_path(cmd[:100])
+    elif tool in ("Edit", "Write", "Read"):
         path = tool_input.get("file_path", "")
         if path:
-            detail = path.replace(cwd + "/", "") if cwd else path
-    elif tool == "Read":
-        path = tool_input.get("file_path", "")
-        if path:
-            detail = path.replace(cwd + "/", "") if cwd else path
+            # Show relative to cwd, fall back to shortened absolute
+            if cwd and path.startswith(cwd + "/"):
+                detail = path[len(cwd) + 1:]
+            else:
+                detail = shorten_path(path)
 
     title = f"Claude Code — {project}"
-    subtitle = cwd
+    subtitle = shorten_path(cwd)
     message = f"Permission needed: {tool}"
     if detail:
         message += f" — {detail}"
