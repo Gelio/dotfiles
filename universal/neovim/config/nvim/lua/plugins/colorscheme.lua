@@ -32,7 +32,6 @@ return {
 					end,
 				},
 				integrations = {
-					diffview = true,
 					fidget = true,
 					fzf = true,
 					headlines = true,
