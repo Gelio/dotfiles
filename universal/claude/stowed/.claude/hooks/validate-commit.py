@@ -179,7 +179,7 @@ def validate_commit_message(filepath: str) -> list[str]:
 
     # --- Co-Authored-By ---
     co_author_re = re.compile(
-        r"^Co-Authored-By: Claude [\w.]+ [\d.]+ <noreply@anthropic\.com>$"
+        r"^Co-Authored-By: Claude [\w.]+ [\d.]+(?:\s+\([^)]+\))? <noreply@anthropic\.com>$"
     )
     has_co_author = any(co_author_re.match(line.strip()) for line in lines)
     if not has_co_author:
