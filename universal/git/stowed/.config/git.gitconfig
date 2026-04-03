@@ -34,6 +34,7 @@
   l = log
   b = branch
   co = checkout
+  br = branchless
   sw = branchless switch
   subup = submodule update --init --recursive
   push-current-stack = !git push origin $(git stack --format list --stack current)
