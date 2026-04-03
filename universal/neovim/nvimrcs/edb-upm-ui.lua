@@ -115,6 +115,7 @@ end
 
 get_npm_workspaces()
 
+vim.lsp.enable({ "tailwindcss" }, false)
 vim.lsp.config("stylelint_lsp", {
   filetypes = { "typescript", "typescriptreact" },
 })
