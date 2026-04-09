@@ -112,7 +112,16 @@ return {
 	},
 	{
 		"ywpkwon/yank-path.nvim",
-		cmd = "YankPath",
+		cmd = {
+			"YankPath",
+			"YankPathCwd",
+			"YankPathBase",
+			"YankPathExtension",
+			"YankPathFilename",
+			"YankPathFull",
+			"YankPathHome",
+			"YankPathUri",
+		},
 		opts = {
 			default_mapping = false,
 		},
