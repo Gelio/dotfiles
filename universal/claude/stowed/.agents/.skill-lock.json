@@ -15,9 +15,9 @@
       "sourceType": "github",
       "sourceUrl": "https://github.com/vercel-labs/agent-skills.git",
       "skillPath": "skills/react-best-practices/SKILL.md",
-      "skillFolderHash": "69bf4a7eeeaa772290c1c5efd19da0865f903af8",
+      "skillFolderHash": "a203aee7243640ceb56ce2c6c4ab286573df5e69",
       "installedAt": "2026-03-05T10:25:43.649Z",
-      "updatedAt": "2026-03-24T11:30:34.471Z"
+      "updatedAt": "2026-04-08T14:14:54.023Z"
     },
     "documentation": {
       "source": "mcollina/skills",
@@ -51,18 +51,18 @@
       "sourceType": "github",
       "sourceUrl": "https://github.com/mcollina/skills.git",
       "skillPath": "skills/octocat/SKILL.md",
-      "skillFolderHash": "fe88d82fb60185ec4da3f7d857273e1ebc814af8",
+      "skillFolderHash": "fcf11c6b85b3e457c9b1ee088c73161cd28b98e0",
       "installedAt": "2026-03-14T16:47:19.452Z",
-      "updatedAt": "2026-03-14T16:47:19.452Z"
+      "updatedAt": "2026-04-08T14:14:57.830Z"
     },
     "skill-optimizer": {
       "source": "mcollina/skills",
       "sourceType": "github",
       "sourceUrl": "https://github.com/mcollina/skills.git",
       "skillPath": "skills/skill-optimizer/SKILL.md",
-      "skillFolderHash": "f364a6308b43f83c8979542ab527220239761c66",
+      "skillFolderHash": "b7784676d0d68fb043ebca6c33f43b9373af3bfa",
       "installedAt": "2026-03-14T16:47:19.851Z",
-      "updatedAt": "2026-03-14T16:47:19.851Z"
+      "updatedAt": "2026-04-08T14:15:01.348Z"
     },
     "typescript-magician": {
       "source": "mcollina/skills",
@@ -116,9 +116,9 @@
       "sourceType": "github",
       "sourceUrl": "https://github.com/mattpocock/skills.git",
       "skillPath": "grill-me/SKILL.md",
-      "skillFolderHash": "58fccb407d628b1e89832b681410870826a947b9",
+      "skillFolderHash": "2a1ad17028306ebe45f0e49703fa28b9b2e7f499",
       "installedAt": "2026-03-19T11:08:32.352Z",
-      "updatedAt": "2026-03-19T11:08:32.352Z"
+      "updatedAt": "2026-04-08T14:15:04.193Z"
     }
   },
   "dismissed": {
