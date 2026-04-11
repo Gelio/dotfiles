@@ -20,7 +20,6 @@ return {
 			relativenumber = true,
 		},
 	} },
-	{ "tpope/vim-obsession" },
 
 	{
 		"nvim-lua/plenary.nvim",

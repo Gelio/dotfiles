@@ -22,13 +22,6 @@ return {
 				},
 			},
 			"moyiz/blink-emoji.nvim",
-			{
-				"David-Kunz/cmp-npm",
-				lazy = true,
-				dependencies = { "nvim-lua/plenary.nvim" },
-				config = true,
-				event = "BufRead package.json",
-			},
 		},
 
 		opts = function()

@@ -223,30 +223,6 @@ return {
 	},
 
 	{
-		"cshuaimin/ssr.nvim",
-		keys = {
-			{
-				"<Leader>sr",
-				"<cmd>SSR<CR>",
-				mode = { "n", "x" },
-				desc = "Structural search and replace",
-			},
-		},
-		cmd = { "SSR" },
-		config = function()
-			local ssr = require("ssr")
-			ssr.setup()
-
-			vim.api.nvim_create_user_command("SSR", function()
-				ssr.open()
-			end, {
-				desc = "Structural search and replace",
-				range = true,
-			})
-		end,
-	},
-
-	{
 		"chrisgrieser/nvim-various-textobjs",
 		opts = {
 			keymaps = { useDefaults = false },

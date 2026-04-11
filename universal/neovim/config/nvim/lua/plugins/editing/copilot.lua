@@ -16,35 +16,6 @@ return {
 	mcphub,
 
 	{
-		"CopilotC-Nvim/CopilotChat.nvim",
-		dependencies = {
-			{ "github/copilot.vim" },
-			{ "nvim-lua/plenary.nvim", branch = "master" },
-
-			-- NOTE: make MCPHub a dependency of CopilotChat.nvim
-			-- so they load together
-			mcphub[1],
-		},
-		build = "make tiktoken",
-		opts = {
-			mappings = {
-				complete = {
-					-- NOTE: use <C-Space> since blink-cmp is disabled anyway,
-					-- and the default <Tab> collides with copilot.vim
-					insert = "<C-Space>",
-				},
-			},
-		},
-		cmd = {
-			"CopilotChat",
-			"CopilotChatOpen",
-			"CopilotChatToggle",
-			"CopilotChatPrompts",
-			"CopilotChatModels",
-		},
-	},
-
-	{
 		"olimorris/codecompanion.nvim",
 		dependencies = {
 			"nvim-lua/plenary.nvim",

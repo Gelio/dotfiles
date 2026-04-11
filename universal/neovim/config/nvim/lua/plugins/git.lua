@@ -33,17 +33,6 @@ return {
 		},
 	},
 	{
-		"voldikss/vim-floaterm",
-		cmd = "FloatermNew",
-		keys = {
-			{
-				"<Leader>G",
-				"<cmd>FloatermNew --width=0.95 --height=0.95 lazygit<CR>",
-				desc = "lazygit in floating terminal",
-			},
-		},
-	},
-	{
 		"lewis6991/gitsigns.nvim",
 		dependencies = {
 			"nvim-lua/plenary.nvim",
