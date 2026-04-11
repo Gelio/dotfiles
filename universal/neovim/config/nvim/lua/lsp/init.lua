@@ -23,10 +23,10 @@ local enabled_lsp_clients = {
 	"taplo",
 	"terraformls",
 	"tflint",
+	"ts_query_ls",
 	"vimls",
 	"vue_ls",
 	"yamlls",
-	"ts_query_ls",
 }
 
 ---@param servers string[]
