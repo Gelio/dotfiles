@@ -35,6 +35,11 @@ return {
 						["ctrl-alt-j"] = actions.toggle_hidden,
 					},
 				},
+				files = {
+					-- NOTE: skip cwd in the prompt. It adds little value and makes the
+					-- prompt too long for long directory names.
+					cwd_prompt = false,
+				},
 			}
 		end,
 		cmd = { "FzfLua" },
