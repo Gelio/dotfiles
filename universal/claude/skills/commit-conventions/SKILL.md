@@ -73,9 +73,11 @@ Shell escaping is fragile for multi-line commit messages, especially
 with backticks and special characters like `!` in `fixup!`. Use the
 Write tool + `git commit -F` pattern instead:
 
-1. Write the commit message to `/private/tmp/claude/commit-msg.txt`
-   using the Write tool
-2. Run: `git -c commit.gpgsign=false commit -F /private/tmp/claude/commit-msg.txt`
+1. Write the commit message to a unique file matching
+   `/private/tmp/claude/commit-<id>.txt` using the Write tool
+   (e.g. `commit-msg.txt`, `commit-fixup-upload.txt`). Use a
+   descriptive `<id>` so parallel agents don't overwrite each other.
+2. Run: `git -c commit.gpgsign=false commit -F /private/tmp/claude/commit-<id>.txt`
 
 The `-c commit.gpgsign=false` flag prevents GPG/SSH signing hangs in
 sandboxed environments where `ssh-agent` is not available.
