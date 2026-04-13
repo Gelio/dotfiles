@@ -54,6 +54,28 @@ Use `/commit-conventions` for the mechanics. These rules govern **when** and **w
 
 Never amend commits — always create new ones (standalone or fixup). The user reviews the full commit list before any squashing.
 
+### Fixup scope verification
+
+A single TODO item may produce changes that touch code introduced by multiple
+original commits. The subagent doesn't know your commit history — **you** must
+verify which commit owns each changed file before staging.
+
+Before creating a fixup commit:
+
+1. Run `git diff` (unstaged) to see all changed files
+2. For each modified file, check which branch commit introduced it:
+   `git log --oneline $(git merge-base HEAD main)..HEAD -- <file>`
+3. If all files were introduced/changed by the same commit → single fixup
+4. If files come from different commits → create separate fixups per target,
+   staging only the files that belong to each target
+
+A PostToolUse hook (`~/.claude/hooks/verify-fixup-scope.py`) provides an
+advisory warning when a fixup includes files not present in the target commit.
+If you see this warning, check the scope and split the commit if needed.
+The warning is advisory — ignore it only if the extra files are genuinely
+required by the fix (e.g., the fix needs a new export in an index file the
+original commit didn't touch).
+
 ### Commit ordering
 
 Think about the final commit order while you work. Each commit should only depend on code introduced by commits **before** it, not after. If a new standalone commit introduces something that an earlier commit will rely on, that new commit needs to be reordered earlier during the rebase. Plan for this — note the intended final order in the completion summary so the rebase gets it right.

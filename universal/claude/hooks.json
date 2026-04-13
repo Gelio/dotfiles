@@ -35,6 +35,16 @@
             "command": "python3 ~/.claude/notify-dismiss-permission.py"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/verify-fixup-scope.py",
+            "if": "Bash(git:*)"
+          }
+        ]
       }
     ],
     "Stop": [

@@ -10,6 +10,8 @@ Hooks, notification scripts, and skills for Claude Code.
   `-F`, validates format, Co-Authored-By trailer)
 - **block-risky-commands.py** — blocks destructive commands (`git push`,
   `reset --hard`, `rm -rf`, `gh pr merge`, etc.)
+- **verify-fixup-scope.py** — advisory warning when a fixup commit touches
+  files not changed by its target commit
 
 ### Notification scripts (`stowed/.claude/`)
 
