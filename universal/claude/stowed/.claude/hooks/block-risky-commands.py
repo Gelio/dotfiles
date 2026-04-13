@@ -158,6 +158,23 @@ def check_rm_rf(command: str) -> str | None:
     return None
 
 
+def check_playwright_sandbox(command: str, tool_input: dict) -> str | None:
+    """Playwright e2e tests need sandbox disabled to launch Chromium."""
+    parts = get_parts(command)
+    is_playwright = any(
+        kw in parts
+        for kw in ("playwright", "test:e2e", "test:e2e:chrome", "test:e2e:firefox")
+    )
+    if not is_playwright:
+        return None
+    if tool_input.get("dangerouslyDisableSandbox"):
+        return None
+    return (
+        "Playwright e2e tests must run with dangerouslyDisableSandbox: true. "
+        "Chromium needs Mach port access that the sandbox blocks."
+    )
+
+
 def main():
     tool_name, tool_input = parse_input()
 
@@ -185,6 +202,10 @@ def main():
             block(reason)
 
         reason = check_rm_rf(segment)
+        if reason:
+            block(reason)
+
+        reason = check_playwright_sandbox(segment, tool_input)
         if reason:
             block(reason)
 
