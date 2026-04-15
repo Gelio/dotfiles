@@ -119,6 +119,15 @@
       "skillFolderHash": "2a1ad17028306ebe45f0e49703fa28b9b2e7f499",
       "installedAt": "2026-03-19T11:08:32.352Z",
       "updatedAt": "2026-04-08T14:15:04.193Z"
+    },
+    "session-handoff": {
+      "source": "softaworks/agent-toolkit",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/softaworks/agent-toolkit.git",
+      "skillPath": "skills/session-handoff/SKILL.md",
+      "skillFolderHash": "9038976da9e22fa34168feb813ef18082fe005b1",
+      "installedAt": "2026-04-14T09:22:58.239Z",
+      "updatedAt": "2026-04-14T09:22:58.239Z"
     }
   },
   "dismissed": {
