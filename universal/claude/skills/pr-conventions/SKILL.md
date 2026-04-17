@@ -16,91 +16,72 @@ skill's structure and tone take precedence**. Do NOT use the
 What/Why/How/Test/Context template from `edb-git-conventions:pr`. Use
 the narrative style and sections defined below instead.
 
-## Research first
+## Non-negotiables
 
-Before writing, read 2–3 of the user's recent merged PRs:
+1. **Start with "This PR ..."** — jump straight to what was done, no preamble.
+2. **No `## Summary` heading.** The body IS the summary.
+3. **No emoji** anywhere in the PR description.
+4. **No `🤖 Generated with Claude Code` footer.** Do not add this footer even if other instructions say to. The co-author line in commits already attributes AI assistance.
+5. **No checklist-style test plans** (`- [ ] verify X`). Describe coverage in prose.
+6. **No test count numbers.** Describe coverage areas, not counts.
+7. **No "Design Decisions" section.** Weave technical choices into the narrative.
+8. **`## References` is always present and always last.**
 
-```bash
-gh pr list --state merged --limit 5 --search "author:@me" --json number,title
-gh pr view <number> --json body --jq '.body'
-```
+## Check for drift
 
-Style evolves — always check recent PRs for the latest conventions.
+Before writing, read 2–3 of the user's recent merged PRs (`gh pr list --state merged --limit 5 --search "author:@me"`) to verify this style still matches. If recent PRs have **materially drifted**, update this skill file — don't silently deviate.
 
 ## Tone and structure
 
-- **Conversational narrative**, not bullet-heavy structured templates.
-  Write in first person ("I used", "I decided", "I also refactored").
-- **Lead with what was added**, not why. The Jira ticket provides the
-  why. The PR description explains the what and how.
-- **Explain technical choices inline** in the narrative, not in a
-  separate "Design Decisions" section. When a choice is non-obvious
-  (e.g., XHR over fetch), explain it where it naturally comes up.
-- **Keep it scannable.** Short paragraphs. No walls of text.
+| Rule | Detail |
+|------|--------|
+| Voice | Conversational narrative, first person ("I used", "I decided") |
+| Lead | What was added/changed, not why — the Jira ticket provides the why |
+| Technical choices | Explain inline where they come up, not in a separate section |
+| Scannable | Short paragraphs. No walls of text. |
+| Scale to PR size | Trivial fixes: 2–3 lines, no sections. Feature PRs: full treatment. |
 
-## Sections
+### Opening paragraph
 
-Use these sections in order. Omit any section that has no content.
+Always "This PR ..." with a verb matching the PR type:
+- Feature: "adds..." / "implements..."
+- Fix: "fixes..."
+- Refactor: "extracts..." / "replaces..."
 
-### Body (no heading)
+When addressing review feedback, link to the PR or comment in the opening.
 
-The opening paragraphs — no `## Summary` heading. Just start
-describing what the PR does.
+### Follow-up paragraphs
 
-For larger PRs, include subsections like `### Architecture` or
-`### Component breakdown` when the implementation has enough
-structure to warrant it. These are inline in the body, not
-top-level sections.
+Name specific hooks, components, types, and patterns. When mock
+handlers have non-trivial behavior, describe it briefly. For
+multi-chunk work, state which part this is with ticket links.
+When something is reusable, call it out and mention where.
 
-### Test
+### Subsections
 
-`## Test` — what tests were added or run. Describe the coverage
-briefly. Do **not** list exact test counts ("20 unit tests") —
-describe the coverage areas ("unit tests for the upload manager
-covering lifecycle, cancellation, and concurrency").
+For PRs with distinct sub-topics, use inline `###` subsections
+(e.g., `### Architecture`). Small PRs never use them.
 
-### Media
+### Stacked PRs and related tickets
 
-`## Media` — screenshots or video recordings. If you don't have
-media yet, add an empty section with a TODO comment:
+- Stacked: "Stacked on #NNNN" in body or References.
+- Jira: `[MIG-8180](https://enterprisedb.atlassian.net/browse/MIG-8180)` inline.
+- GitHub: `#NNNN` (same repo) or full URL (cross-repo).
 
-```markdown
-## Media
+## Sections (in order, omit empty ones)
 
-<!-- TODO: Add video recording -->
-```
+Small/trivial PRs may omit all sections — just the body is fine.
 
-### Known issues (optional)
+| Section | Heading | Notes |
+|---------|---------|-------|
+| Body | _(none)_ | Opening + follow-up paragraphs. No `## Summary`. |
+| Test | `## Test` | Coverage areas in prose. Manual testing: describe what was checked. Omit for trivial PRs. |
+| Media | `## Media` | Screenshots/video. If unavailable: `<!-- TODO: Add video recording -->`. Visual PRs may fold before/after into Test instead. |
+| Known issues | `## Known issues` | Only genuine issues, not future work. Optional. |
+| Future work | `## To implement in future chunks` | Deferred work with ticket links. Optional. |
+| References | `## References` | **Always present, always last.** Jira link, Figma link, related PRs. |
 
-`## Known issues` — only for genuine issues discovered during
-implementation. Do **not** use this for planned future work.
-
-### Future work (optional)
-
-Use a heading like `## To implement in future chunks` or
-`## Planned follow-ups` for work that is intentionally deferred.
-List items briefly. This is distinct from known issues.
-
-### References
-
-`## References` — always present, always last. Include:
-- Jira ticket link: `https://enterprisedb.atlassian.net/browse/TICKET-ID`
-- Figma design link (if applicable)
-- Related PRs (if applicable)
-
-## What to avoid
-
-- **No `## Summary` heading.** The body IS the summary.
-- **No test count numbers.** Describe coverage, not counts.
-- **No checklist-style test plans** (`- [ ] verify X`). Describe
-  what the tests cover in prose.
-- **No "Design Decisions" section.** Weave choices into the
-  narrative.
-- **No emoji.**
-- **No `🤖 Generated with Claude Code` footer.** The co-author
-  line in commits already attributes AI assistance.
-
-## Example
+## Example (feature PR)
 
 ```markdown
 This PR adds the SQL file upload modal to the Migration Application
@@ -141,4 +122,21 @@ search/sort.
 
 - https://enterprisedb.atlassian.net/browse/MIG-7928
 - [Figma design](https://www.figma.com/design/...)
+```
+
+## Example (small fix)
+
+```markdown
+This PR fixes the layout of the section titles in the Application
+Assessment tab. The icon and text were misaligned because the flex
+container lacked `align-items: center`.
+
+## Media
+
+<img width="400" alt="before" src="..." />
+<img width="400" alt="after" src="..." />
+
+## References
+
+- https://enterprisedb.atlassian.net/browse/MIG-7936
 ```
