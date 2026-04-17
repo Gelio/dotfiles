@@ -11,6 +11,20 @@
           {
             "type": "command",
             "command": "python3 ~/.claude/hooks/block-risky-commands.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/enforce-git-root-for-handoffs.py",
+            "if": "Bash(*create_handoff*)"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/auto-allow-handoffs.sh"
           }
         ]
       }
