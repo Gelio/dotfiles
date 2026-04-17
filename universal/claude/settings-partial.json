@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "model": "opus[1m]",
+  "alwaysThinkingEnabled": true,
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "network": {
+      "allowLocalBinding": true
+    },
+    "excludedCommands": [
+      "gh"
+    ]
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Read(~/.agents/**)",
+      "Read(~/.claude/**)",
+      "Read(~/ubuntu-dotfiles/universal/claude/**)",
+      "Read(//private/tmp/claude/**)",
+      "Edit(//private/tmp/claude/**)",
+      "Write(//private/tmp/claude/**)",
+      "Read(.claude/handoffs/**)",
+      "Edit(.claude/handoffs/**)",
+      "Write(.claude/handoffs/**)",
+      "Bash(command -v *)",
+      "Bash(echo *)",
+      "Bash(gh auth status*)",
+      "Bash(gh issue view *)",
+      "Bash(gh issue list *)",
+      "Bash(az account set*)",
+      "Bash(az aks get-credentials*)",
+      "Bash(aws configure sso*)",
+      "Bash(aws sso login*)",
+      "Bash(aws sts get-caller-identity*)",
+      "Bash(aws eks update-kubeconfig*)",
+      "Bash(gcloud auth login*)",
+      "Bash(gcloud container clusters get-credentials*)",
+      "Bash(oc login*)",
+      "Bash(kubectl hcp *)",
+      "Bash(kubectl config *)",
+      "Bash(kubectl cluster-info*)",
+      "Bash(kubelogin *)",
+      "Bash(curl*http://localhost*)",
+      "Bash(curl*https://localhost*)",
+      "mcp__claude_ai_Slack__slack_read_thread",
+      "mcp__atlassian__getJiraIssue",
+      "mcp__atlassian__getAccessibleAtlassianResources",
+      "mcp__atlassian__getJiraProjectIssueTypesMetadata",
+      "mcp__atlassian__searchJiraIssuesUsingJql",
+      "mcp__atlassian__getJiraIssueTypeMetaWithFields",
+      "mcp__atlassian__getIssueLinkTypes",
+      "mcp__figma__get_design_context",
+      "mcp__figma__get_screenshot",
+      "mcp__figma__get_metadata",
+      "mcp__figma__search_design_system",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_file_upload",
+      "mcp__playwright__browser_run_code",
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_close",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_fill_form"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/validate-commit.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/block-risky-commands.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/enforce-git-root-for-handoffs.py",
+            "if": "Bash(*create_handoff*)"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/auto-allow-handoffs.sh"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/notify-permission.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/notify-dismiss-permission.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/verify-fixup-scope.py",
+            "if": "Bash(git:*)"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/notify-stop.py"
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "0"
+  }
+}

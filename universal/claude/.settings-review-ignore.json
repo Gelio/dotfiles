@@ -1,0 +1,5 @@
+[
+  "awsAuthRefresh",
+  "env.AWS_PROFILE",
+  "env.CLAUDE_CODE_USE_BEDROCK"
+]

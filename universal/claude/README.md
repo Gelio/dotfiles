@@ -4,6 +4,15 @@ Hooks, notification scripts, and skills for Claude Code.
 
 ## What's included
 
+### Settings (`settings-partial.json`)
+
+Portable subset of `~/.claude/settings.json` — hooks, sandbox,
+`statusLine`, enabled plugins, permission allowlist, and preferences
+(`model`, `alwaysThinkingEnabled`). Merged into the live settings file
+by `setup-settings.ts`. Machine-specific entries (AWS/Bedrock env,
+`awsAuthRefresh`, personal paths, work-only plugins) stay out of
+dotfiles.
+
 ### Hooks (`stowed/.claude/hooks/`)
 
 - **validate-commit.py** — enforces commit message conventions (requires
@@ -41,8 +50,11 @@ Hooks, notification scripts, and skills for Claude Code.
 ./stow.sh
 ```
 
-This symlinks scripts into `~/.claude/` and merges hook configuration
-into `~/.claude/settings.json`.
+This symlinks scripts into `~/.claude/` and merges
+`settings-partial.json` into `~/.claude/settings.json`. The merge is
+additive: existing keys, hooks, and permission entries are preserved;
+only values also present in the partial are touched. Re-running is
+safe.
 
 ### Skills
 
@@ -60,3 +72,24 @@ npx skills add ./skills --global --skill pr-conventions
 npx skills add ./skills --global --skill verify-branch-commits
 npx skills add ./skills --global --skill todos
 ```
+
+## Promoting new settings into the partial
+
+When you change something in `~/.claude/settings.json` on a machine and
+want it in dotfiles, run:
+
+```bash
+node --experimental-strip-types review-settings.ts
+```
+
+The script walks the live settings, finds anything not already covered
+by `settings-partial.json`, prints each candidate, and prompts:
+
+- **`a`** — adopt into `settings-partial.json`
+- **`s`** — skip this run (ask again next time)
+- **`i`** — add to `.settings-review-ignore.json` (never ask again)
+- **`q`** — quit and save what's been chosen so far
+
+Use `i` for machine-specific entries (AWS env, personal paths, etc.) —
+the ignore list is checked in so the same decisions apply on every
+machine.
