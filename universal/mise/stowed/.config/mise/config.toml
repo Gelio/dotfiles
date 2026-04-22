@@ -11,8 +11,7 @@ pipx = "latest"
 jq = "latest"
 yq = "latest"
 python = "3.14"
-#  Fix rg permissiosn. See https://github.com/anthropics/claude-code/issues/41463
-claude = { version = "latest", postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/*/rg" }
+claude = "latest"
 "npm:@google/gemini-cli" = "latest"
 "npm:tree-sitter-cli" = "latest"
 "npm:mcp-hub" = "latest"
