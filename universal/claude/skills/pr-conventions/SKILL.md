@@ -2,8 +2,9 @@
 name: pr-conventions
 description: >
   Write PR descriptions matching the user's preferred style. Use when
-  creating a pull request, drafting a PR description, or when the user
-  says "write a PR description", "create PR", "/pr-conventions".
+  creating a pull request, drafting a PR description, drafting a PR body,
+  opening a PR, or when the user says "write a PR description", "draft PR",
+  "open PR", "create PR", "/pr-conventions".
   Layers on top of any project-level PR skills (e.g., edb-git-conventions:pr).
 ---
 
@@ -27,9 +28,11 @@ the narrative style and sections defined below instead.
 7. **No "Design Decisions" section.** Weave technical choices into the narrative.
 8. **`## References` is always present and always last.**
 
-## Check for drift
+## Workflow
 
-Before writing, read 2–3 of the user's recent merged PRs (`gh pr list --state merged --limit 5 --search "author:@me"`) to verify this style still matches. If recent PRs have **materially drifted**, update this skill file — don't silently deviate.
+1. **Check for drift.** Read 2–3 of the user's recent merged PRs (`gh pr list --state merged --limit 5 --search "author:@me"`) to verify this style still matches. If recent PRs have **materially drifted**, update this skill file — don't silently deviate.
+2. **Draft the body** starting with "This PR ...", following the structure below.
+3. **Verify all non-negotiables** before handing back.
 
 ## Tone and structure
 
@@ -43,7 +46,7 @@ Before writing, read 2–3 of the user's recent merged PRs (`gh pr list --state 
 
 ### Opening paragraph
 
-Always "This PR ..." with a verb matching the PR type:
+Pick the verb to match the PR type (non-negotiable #1 already mandates "This PR ..."):
 - Feature: "adds..." / "implements..."
 - Fix: "fixes..."
 - Refactor: "extracts..." / "replaces..."
@@ -52,15 +55,29 @@ When addressing review feedback, link to the PR or comment in the opening.
 
 ### Follow-up paragraphs
 
-Name specific hooks, components, types, and patterns. When mock
-handlers have non-trivial behavior, describe it briefly. For
-multi-chunk work, state which part this is with ticket links.
-When something is reusable, call it out and mention where.
+Describe *what* and *why* at the behavioral level. Don't narrate
+implementation mechanics the reviewer can read in the diff (e.g.,
+trim logic, type narrowing strategies, specific test inputs). If the
+diff makes it obvious, leave it out.
+
+Name specific hooks, components, types, and patterns only when they
+carry non-obvious design intent. For multi-chunk work, state which
+part this is with ticket links. When something is reusable, call it
+out and mention where.
+
+Mock handler changes only need a mention when the design is
+surprising. Routine triggers/backdoors matching existing patterns in
+the same file don't need a subsection — the diff speaks for itself.
 
 ### Subsections
 
 For PRs with distinct sub-topics, use inline `###` subsections
 (e.g., `### Architecture`). Small PRs never use them.
+
+Also use `###` subsections for process decisions that would surprise
+a reviewer (e.g., intentional commit-type downgrade to avoid a
+version-set update, unusual merge strategy). Link to the authorizing
+conversation (Slack thread, Jira comment, etc.).
 
 ### Stacked PRs and related tickets
 
@@ -70,16 +87,39 @@ For PRs with distinct sub-topics, use inline `###` subsections
 
 ## Sections (in order, omit empty ones)
 
-Small/trivial PRs may omit all sections — just the body is fine.
+Small/trivial PRs may omit `## Test`, `## Known issues`, and `## To implement in future chunks`. `## References` is always present (see non-negotiable #8); `## Media` is kept when there's a visual or a TODO for one.
 
 | Section | Heading | Notes |
 |---------|---------|-------|
 | Body | _(none)_ | Opening + follow-up paragraphs. No `## Summary`. |
-| Test | `## Test` | Coverage areas in prose. Manual testing: describe what was checked. Omit for trivial PRs. |
+| Test | `## Test` | Coverage areas in prose — one sentence per category is enough. Don't name specific test inputs, assertion targets, or describe which test was "extended" vs "renamed" — the reviewer reads the diff for that. Manual testing: describe what was checked. Omit for trivial PRs. |
 | Media | `## Media` | Screenshots/video. If unavailable: `<!-- TODO: Add video recording -->`. Visual PRs may fold before/after into Test instead. |
 | Known issues | `## Known issues` | Only genuine issues, not future work. Optional. |
 | Future work | `## To implement in future chunks` | Deferred work with ticket links. Optional. |
 | References | `## References` | **Always present, always last.** Jira link, Figma link, related PRs. |
+
+## Anti-example (what NOT to write)
+
+```markdown
+## Summary
+
+This PR aims to introduce a new SQL file upload modal 🚀 with
+various improvements to the Migration Application details page.
+
+## Test Plan
+- [ ] Verify file upload works
+- [ ] Verify error handling
+
+Added 47 unit tests and 12 E2E tests.
+
+## Design Decisions
+
+I decided to use XHR instead of fetch because...
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+```
+
+Violations, in order: `## Summary` heading (NN#2), vague "aims to introduce" preamble instead of "This PR adds..." (NN#1), emoji (NN#3), checklist-style test plan (NN#5), test count numbers (NN#6), `## Design Decisions` section (NN#7), Claude Code footer (NN#4), missing `## References` (NN#8).
 
 ## Example (feature PR)
 
