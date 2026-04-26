@@ -2,13 +2,15 @@ return {
 	{ "tpope/vim-repeat" },
 	{ "tpope/vim-abolish" },
 	{
+		-- NOTE: targets.vim does not register the `v_an` and `v_in` mappings because
+		-- Neovim already has built-in keymaps that expand/shrink the visual selection.
+		-- See `:h v_an`
 		"wellle/targets.vim",
 		init = function()
-			-- NOTE: delete Neovim's built-in LSP keymaps for an and in.
-			-- https://github.com/neovim/neovim/blob/75b30b091fed5885bff2e0fcdbb6f021927cfb03/runtime/lua/vim/_defaults.lua#L222-L228
-			-- I prefer keeping them for targets.vim "around" and "inside" "next"
-			vim.keymap.del({ "x", "o" }, "an")
-			vim.keymap.del({ "x", "o" }, "in")
+			-- NOTE: I prefer keeping targets.vim "around" and "inside" "next" for
+			-- operator-pending mode.
+			vim.keymap.del({ "o" }, "an")
+			vim.keymap.del({ "o" }, "in")
 		end,
 	},
 	{
