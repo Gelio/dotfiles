@@ -536,11 +536,12 @@
 	"hideStrictModePreferences": false,
 	"miniBreakManualFinish": false,
 	"longBreakManualFinish": false,
+	"breakHealthMode": false,
 	"openAtLogin": true,
 	"_migratedOpenAtLogin": true,
 	"__internal__": {
 		"migrations": {
-			"version": "1.20.0"
+			"version": "1.21.0"
 		}
 	}
 }
