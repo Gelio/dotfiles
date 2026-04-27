@@ -13,10 +13,7 @@ casks=(
   kap
   obs
   linearmouse
-)
-casks_no_quarantine=(
   stretchly
-  flameshot
 )
 
 formulae=(
@@ -41,7 +38,9 @@ brew install ${formulae[@]}
 echo "# Installing casks"
 echo "${casks[@]}"
 brew install --cask ${casks[@]}
-brew install --cask --no-quarantine ${casks_no_quarantine[@]}
+
+# https://hovancik.net/stretchly/downloads/
+sudo xattr -r -d com.apple.quarantine /Applications/Stretchly.app
 
 # NOTE: used for completions files
 mkdir -p ~/.zfunc/
