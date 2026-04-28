@@ -14,6 +14,8 @@ vim.api.nvim_create_autocmd("BufRead", {
   group = augroup,
   callback = function()
     vim.b.nvim_lint_disable = true
+    -- NOTE: allow finding files from the current working directory
+    vim.cmd("setlocal path+=,")
   end,
 })
 
