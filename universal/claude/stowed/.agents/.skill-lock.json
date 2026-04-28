@@ -1,15 +1,6 @@
 {
   "version": 3,
   "skills": {
-    "find-skills": {
-      "source": "vercel-labs/skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/vercel-labs/skills.git",
-      "skillPath": "skills/find-skills/SKILL.md",
-      "skillFolderHash": "3013fdeb8a11b10b1eb795ec3ae8bfca38f7c26d",
-      "installedAt": "2026-03-05T10:24:53.913Z",
-      "updatedAt": "2026-03-14T16:48:13.626Z"
-    },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
@@ -27,24 +18,6 @@
       "skillFolderHash": "574f1f96ac6ba36d569e553d64c11039a1958912",
       "installedAt": "2026-03-14T16:47:18.222Z",
       "updatedAt": "2026-03-14T16:47:18.222Z"
-    },
-    "init": {
-      "source": "mcollina/skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/mcollina/skills.git",
-      "skillPath": "skills/init/SKILL.md",
-      "skillFolderHash": "54dd8f563ac76bad9965bfe19113988099f9fe94",
-      "installedAt": "2026-03-14T16:47:18.577Z",
-      "updatedAt": "2026-03-14T16:47:18.577Z"
-    },
-    "node": {
-      "source": "mcollina/skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/mcollina/skills.git",
-      "skillPath": "skills/node/SKILL.md",
-      "skillFolderHash": "359e8c0e1843122275c113174cd6459967d3cb4f",
-      "installedAt": "2026-03-14T16:47:18.960Z",
-      "updatedAt": "2026-03-14T16:47:18.960Z"
     },
     "octocat": {
       "source": "mcollina/skills",
@@ -146,3 +119,4 @@
     "claude-code"
   ]
 }
+
