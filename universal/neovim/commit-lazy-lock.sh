@@ -21,8 +21,7 @@ if [[ -z "$modified_packages" ]]; then
   exit 0
 fi
 
-formatted_packages=$(sed "i\\
-* " <<<"$modified_packages")
+formatted_packages=$(awk '{print "* " $0}' <<<"$modified_packages")
 
 commit_message="chore(nvim): update lazy-lock.json
 
