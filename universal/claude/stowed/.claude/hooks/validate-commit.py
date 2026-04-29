@@ -231,9 +231,9 @@ def main():
     if has_flag(commit_cmd, "-m", "--message"):
         block(
             "Use `git commit -F <file>` instead of `-m`. "
-            "Write the commit message to a unique temp file under `/private/tmp/claude/` "
+            "Write the commit message to a unique temp file under `/tmp/claude/` "
             "(e.g., `commit-msg-<short-id>.txt`) using the Write tool first, then commit with "
-            "`git -c commit.gpgsign=false commit -F /private/tmp/claude/commit-msg-<short-id>.txt`."
+            "`git -c commit.gpgsign=false commit -F /tmp/claude/commit-msg-<short-id>.txt`."
         )
 
     # Require -F
@@ -241,7 +241,7 @@ def main():
     if not filepath:
         block(
             "git commit must use `-F <file>` to provide the commit message. "
-            "Write the message to a unique temp file under `/private/tmp/claude/` first "
+            "Write the message to a unique temp file under `/tmp/claude/` first "
             "(e.g., `commit-msg-<short-id>.txt` to avoid collisions with parallel agents)."
         )
 
