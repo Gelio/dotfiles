@@ -29,6 +29,7 @@ formulae=(
   thaw
   pkg-config
   FelixKratz/formulae/sketchybar
+  git
 )
 
 echo "# Installing formulae"
