@@ -161,9 +161,13 @@ def check_rm_rf(command: str) -> str | None:
 def check_playwright_sandbox(command: str, tool_input: dict) -> str | None:
     """Playwright e2e tests need sandbox disabled to launch Chromium."""
     parts = get_parts(command)
-    is_playwright = any(
+    has_npx_playwright = any(
+        parts[i] == "npx" and parts[i + 1] == "playwright"
+        for i in range(len(parts) - 1)
+    )
+    is_playwright = has_npx_playwright or any(
         kw in parts
-        for kw in ("playwright", "test:e2e", "test:e2e:chrome", "test:e2e:firefox")
+        for kw in ("test:e2e", "test:e2e:chrome", "test:e2e:firefox")
     )
     if not is_playwright:
         return None
