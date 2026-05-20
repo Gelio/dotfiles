@@ -87,9 +87,9 @@ else
 	vim.fn.echoerr("rg (ripgrep) is not installed. Thus, it will not be used for :grep")
 end
 
-vim.api.nvim_create_autocmd("TextYankPost", {
+vim.api.nvim_create_autocmd({ "TextYankPost", "TextPutPost" }, {
 	group = vim.api.nvim_create_augroup("HighlightYank", { clear = true }),
-	desc = "Highlight yanked text",
+	desc = "Highlight yanked or put text",
 	callback = function()
 		vim.hl.on_yank({ higroup = "IncSearch", timeout = 300 })
 	end,
