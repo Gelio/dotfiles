@@ -15,3 +15,6 @@ cargo binstall difftastic
 
 # https://github.com/jesseduffield/lazygit
 go install github.com/jesseduffield/lazygit@latest
+
+# https://github.com/tummychow/git-absorb
+cargo binstall git-absorb
