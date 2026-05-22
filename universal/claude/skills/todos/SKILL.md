@@ -49,32 +49,22 @@ Use `/commit-conventions` for the mechanics. These rules govern **when** and **w
 | Condition | Action |
 |-----------|--------|
 | Task mentions a new/separate/standalone commit (e.g., **new commit**, "separate commit", "own commit") | New standalone commit |
-| Change fixes code from a recent branch commit | `fixup!` commit targeting that commit's subject |
-| Uncertain | Normal standalone commit |
+| Change fixes code introduced by a commit in `<merge-base>..HEAD` (i.e., still on this branch, not yet merged) | Follow the fixup workflow in `/commit-conventions` (uses `git absorb`) |
+| Uncertain | Ask the user. List candidate commits with `git log --oneline <merge-base>..HEAD` rather than defaulting to a standalone commit. |
 
 Never amend commits — always create new ones (standalone or fixup). The user reviews the full commit list before any squashing.
 
-### Fixup scope verification
+### Fixup attribution
 
-A single TODO item may produce changes that touch code introduced by multiple
-original commits. The subagent doesn't know your commit history — **you** must
-verify which commit owns each changed file before staging.
+For fixup commits, follow the workflow in `/commit-conventions`. It covers
+target attribution via `git absorb`, the semantic-fallback path for hunks
+absorb can't attribute, and how to handle the "ask the user" branch.
 
-Before creating a fixup commit:
-
-1. Run `git diff` (unstaged) to see all changed files
-2. For each modified file, check which branch commit introduced it:
-   `git log --oneline $(git merge-base HEAD main)..HEAD -- <file>`
-3. If all files were introduced/changed by the same commit → single fixup
-4. If files come from different commits → create separate fixups per target,
-   staging only the files that belong to each target
-
-A PostToolUse hook (`~/.claude/hooks/verify-fixup-scope.py`) provides an
-advisory warning when a fixup includes files not present in the target commit.
-If you see this warning, check the scope and split the commit if needed.
-The warning is advisory — ignore it only if the extra files are genuinely
-required by the fix (e.g., the fix needs a new export in an index file the
-original commit didn't touch).
+A PostToolUse hook (`~/.claude/hooks/verify-fixup-scope.py`) runs as an
+advisory file-scope safety net. Absorb-created fixups are file-scope-correct
+by construction and won't trip it; warnings come from the hand-authored
+fallback path. Heed those warnings unless the extra files are genuinely
+required by the fix.
 
 ### Commit ordering
 
@@ -87,14 +77,11 @@ Given a todos.md task: `- [ ] Fix null check in FileAssessmentsTable`
 1. You check `git log --oneline main..HEAD` and see `abc1234 feat(MIG-7922): add File Assessments table`
 2. You spawn a subagent: "Fix the null check in `FileAssessmentsTable` when the API returns an empty response. File: `onprem/ui/src/pages/.../FileAssessmentsTable.tsx`"
 3. Subagent completes the fix
-4. You create a fixup commit via `/commit-conventions`:
-   ```
-   fixup! feat(MIG-7922): add File Assessments table
-
-   Fix missing null check in `FileAssessmentsTable` when the API
-   returns an empty `items` array.
-   ```
-5. You mark `- [x]` in the todos.md and report: "Fixed null check — created fixup commit for abc1234"
+4. You stage the file and run `git absorb -v`. Absorb attributes the hunk
+   to `abc1234` and creates `fixup! feat(MIG-7922): add File Assessments table`.
+5. You check `git log --oneline -5` and `git status` to confirm: one fixup
+   commit created, nothing left unstaged.
+6. You mark `- [x]` in the todos.md and report: "Fixed null check — `git absorb` created a fixup for `abc1234`."
 
 ## Completion Summary
 
@@ -127,5 +114,9 @@ Only after the user explicitly approves — do not proceed on your own.
 1. Run `git rebase --autosquash -i <base-commit>` using `GIT_SEQUENCE_EDITOR` to apply the planned order non-interactively. The sequence editor script must reorder picks to match the planned final order and let `--autosquash` handle fixup placement.
 2. If there are no reordering needs (only fixups to squash), a plain `git rebase --autosquash <base-commit>` suffices.
 3. After the rebase, show the final `git log --oneline` so the user can verify.
-4. Signing reminder with the actual base commit SHA:
+4. Run the **post-autosquash message review** from `/commit-conventions` —
+   for each commit that absorbed a fixup, verify the subject and body still
+   describe what the commit now does. Report findings; reword only on user
+   approval (via `git branchless reword`, per the same skill).
+5. Signing reminder with the actual base commit SHA:
    > Remember to sign the commits before pushing: `git rebase --gpg-sign <base-commit>`
