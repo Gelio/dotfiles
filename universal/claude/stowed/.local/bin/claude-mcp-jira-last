@@ -1,0 +1,240 @@
+#!/usr/bin/env python3
+"""Render the last N Jira/Confluence MCP tool calls as Markdown.
+
+Finds Atlassian MCP calls in ~/.cache/claude-mcp-calls/, locates any ADF
+document anywhere in tool_input (description, body, comment.body, ...), and
+prints a Markdown rendering. The non-ADF fields are printed as a compact JSON
+summary with the ADF subtrees replaced by a placeholder.
+
+Usage: claude-mcp-jira-last [N]   (N defaults to 1)
+"""
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+from typing import Any, Iterator
+
+CACHE_DIR = Path.home() / ".cache" / "claude-mcp-calls"
+
+
+def is_adf(value: Any) -> bool:
+    return (
+        isinstance(value, dict)
+        and value.get("type") == "doc"
+        and isinstance(value.get("content"), list)
+    )
+
+
+def find_adf_fields(obj: Any, path: str = "") -> Iterator[tuple[str, dict]]:
+    if is_adf(obj):
+        yield path or "<root>", obj
+        return
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            yield from find_adf_fields(v, f"{path}.{k}" if path else k)
+    elif isinstance(obj, list):
+        for i, v in enumerate(obj):
+            yield from find_adf_fields(v, f"{path}[{i}]")
+
+
+def with_adf_placeholders(obj: Any, path: str = "") -> Any:
+    if is_adf(obj):
+        return f"<ADF: rendered under '{path or '<root>'}' below>"
+    if isinstance(obj, dict):
+        return {k: with_adf_placeholders(v, f"{path}.{k}" if path else k) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [with_adf_placeholders(v, f"{path}[{i}]") for i, v in enumerate(obj)]
+    return obj
+
+
+def render_marks(text: str, marks: list[dict] | None) -> str:
+    if not marks:
+        return text
+    for mark in marks:
+        t = mark.get("type")
+        attrs = mark.get("attrs") or {}
+        if t == "code":
+            text = f"`{text}`"
+        elif t == "strong":
+            text = f"**{text}**"
+        elif t == "em":
+            text = f"*{text}*"
+        elif t == "strike":
+            text = f"~~{text}~~"
+        elif t == "underline":
+            text = f"<u>{text}</u>"
+        elif t == "link":
+            href = attrs.get("href", "")
+            text = f"[{text}]({href})"
+    return text
+
+
+def render_inline(node: dict) -> str:
+    t = node.get("type")
+    if t == "text":
+        return render_marks(node.get("text", ""), node.get("marks"))
+    if t == "hardBreak":
+        return "  \n"
+    if t == "inlineCard":
+        return (node.get("attrs") or {}).get("url", "")
+    if t == "mention":
+        attrs = node.get("attrs") or {}
+        return f"@{attrs.get('text', attrs.get('id', 'user'))}"
+    if t == "emoji":
+        attrs = node.get("attrs") or {}
+        return attrs.get("shortName", attrs.get("text", ""))
+    children = node.get("content") or []
+    return "".join(render_inline(c) for c in children)
+
+
+def render_block(node: dict, indent: int = 0, list_prefix: str | None = None) -> list[str]:
+    t = node.get("type")
+    pad = "  " * indent
+    content = node.get("content") or []
+
+    if t == "paragraph":
+        text = "".join(render_inline(c) for c in content).rstrip()
+        prefix = list_prefix if list_prefix is not None else pad
+        if not text:
+            return [""]
+        lines = text.split("\n")
+        cont_pad = " " * len(prefix)
+        return [f"{prefix}{lines[0]}"] + [f"{cont_pad}{ln}" for ln in lines[1:]] + [""]
+
+    if t == "heading":
+        level = (node.get("attrs") or {}).get("level", 1)
+        text = "".join(render_inline(c) for c in content).rstrip()
+        return [f"{'#' * level} {text}", ""]
+
+    if t == "bulletList":
+        out: list[str] = []
+        for item in content:
+            out.extend(render_block(item, indent=indent, list_prefix=f"{pad}- "))
+        return out
+
+    if t == "orderedList":
+        out = []
+        for i, item in enumerate(content, start=1):
+            out.extend(render_block(item, indent=indent, list_prefix=f"{pad}{i}. "))
+        return out
+
+    if t == "listItem":
+        out = []
+        first = True
+        for c in content:
+            if first:
+                out.extend(render_block(c, indent=indent, list_prefix=list_prefix))
+                first = False
+            else:
+                out.extend(render_block(c, indent=indent + 1))
+        return out
+
+    if t == "codeBlock":
+        lang = (node.get("attrs") or {}).get("language", "")
+        text = "".join(render_inline(c) for c in content)
+        return [f"```{lang}", *text.split("\n"), "```", ""]
+
+    if t == "blockquote":
+        inner: list[str] = []
+        for c in content:
+            inner.extend(render_block(c, indent=0))
+        return [f"> {ln}" if ln else ">" for ln in inner] + [""]
+
+    if t == "rule":
+        return ["---", ""]
+
+    if t == "table":
+        rows = []
+        for row in content:
+            cells = []
+            for cell in (row.get("content") or []):
+                inner_lines: list[str] = []
+                for c in (cell.get("content") or []):
+                    inner_lines.extend(render_block(c))
+                cell_text = " ".join(ln for ln in inner_lines if ln).replace("|", "\\|")
+                cells.append(cell_text or " ")
+            rows.append(cells)
+        if not rows:
+            return [""]
+        header = rows[0]
+        out = ["| " + " | ".join(header) + " |",
+               "| " + " | ".join("---" for _ in header) + " |"]
+        for row in rows[1:]:
+            out.append("| " + " | ".join(row) + " |")
+        out.append("")
+        return out
+
+    if t in ("mediaSingle", "media", "mediaGroup"):
+        attrs = node.get("attrs") or {}
+        return [f"[media: {attrs.get('id', attrs.get('url', 'attachment'))}]", ""]
+
+    inline = "".join(render_inline(c) for c in content)
+    if inline:
+        return [inline, ""]
+    return [f"[unhandled: {t}]", ""]
+
+
+def render_adf(doc: dict) -> str:
+    lines: list[str] = []
+    for node in doc.get("content", []):
+        lines.extend(render_block(node))
+    collapsed: list[str] = []
+    blank = False
+    for ln in lines:
+        if ln == "":
+            if blank:
+                continue
+            blank = True
+        else:
+            blank = False
+        collapsed.append(ln)
+    return "\n".join(collapsed).rstrip() + "\n"
+
+
+def is_jira_call(name: str) -> bool:
+    if not name.startswith("mcp__atlassian__"):
+        return False
+    return "Jira" in name or "Confluence" in name
+
+
+def main() -> None:
+    n = 1
+    if len(sys.argv) > 1:
+        try:
+            n = int(sys.argv[1])
+        except ValueError:
+            print(f"Usage: {sys.argv[0]} [N]", file=sys.stderr)
+            sys.exit(2)
+
+    if not CACHE_DIR.is_dir():
+        print(f"No tool calls logged yet ({CACHE_DIR} does not exist).", file=sys.stderr)
+        return
+
+    candidates: list[tuple[Path, dict]] = []
+    for f in sorted(CACHE_DIR.glob("*.json")):
+        try:
+            data = json.loads(f.read_text())
+        except Exception:
+            continue
+        if is_jira_call(str(data.get("tool_name", ""))):
+            candidates.append((f, data))
+
+    if not candidates:
+        print("No Jira/Confluence MCP calls logged yet.", file=sys.stderr)
+        return
+
+    for f, data in candidates[-n:]:
+        print(f"\n=== {f.stem} ===")
+        tool_input = data.get("tool_input") or {}
+        adf_docs = list(find_adf_fields(tool_input))
+        summary = with_adf_placeholders(tool_input)
+        if summary:
+            print(json.dumps(summary, indent=2))
+        for path, doc in adf_docs:
+            print(f"\n--- {path} (rendered Markdown) ---")
+            print(render_adf(doc))
+
+
+if __name__ == "__main__":
+    main()
