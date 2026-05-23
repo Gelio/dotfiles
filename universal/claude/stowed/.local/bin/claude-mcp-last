@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Print the last N MCP tool calls logged by ~/.claude/hooks/log-mcp-tool-call.py.
+# Usage: claude-mcp-last [N]   (N defaults to 1)
+set -euo pipefail
+
+N="${1:-1}"
+DIR="$HOME/.cache/claude-mcp-calls"
+
+if [[ ! -d "$DIR" ]]; then
+  echo "No tool calls logged yet ($DIR does not exist)." >&2
+  exit 0
+fi
+
+mapfile -t files < <(find "$DIR" -maxdepth 1 -type f -name '*.json' | sort | tail -n "$N")
+
+if [[ ${#files[@]} -eq 0 ]]; then
+  echo "No tool calls logged yet." >&2
+  exit 0
+fi
+
+JQ_FLAGS=(.)
+if [[ -t 1 ]]; then
+  JQ_FLAGS=(-C .)
+fi
+
+for f in "${files[@]}"; do
+  base=$(basename "$f" .json)
+  printf '\n=== %s ===\n' "$base"
+  jq "${JQ_FLAGS[@]}" "$f"
+done

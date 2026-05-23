@@ -1,5 +1,7 @@
 [
   "awsAuthRefresh",
   "env.AWS_PROFILE",
-  "env.CLAUDE_CODE_USE_BEDROCK"
+  "env.CLAUDE_CODE_USE_BEDROCK",
+  "permissions.allow[]:\"Bash(gh api repos/EnterpriseDB/edbpgai-bootstrap*)\"",
+  "permissions.allow[]:\"Read(~/projects/personal/dotfiles-private/upm-ui/.claude/**)\""
 ]

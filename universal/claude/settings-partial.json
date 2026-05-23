@@ -13,7 +13,8 @@
       "allowLocalBinding": true
     },
     "excludedCommands": [
-      "gh"
+      "gh",
+      "gh *"
     ]
   },
   "enabledPlugins": {
@@ -84,7 +85,10 @@
       "mcp__playwright__browser_evaluate",
       "mcp__playwright__browser_close",
       "mcp__playwright__browser_wait_for",
-      "mcp__playwright__browser_fill_form"
+      "mcp__playwright__browser_fill_form",
+      "Read(//tmp/claude/**)",
+      "Edit(//tmp/claude/**)",
+      "Write(//tmp/claude/**)"
     ]
   },
   "hooks": {
@@ -113,6 +117,15 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/auto-allow-handoffs.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/log-mcp-tool-call.py 2>/dev/null || true"
           }
         ]
       }
