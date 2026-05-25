@@ -27,6 +27,7 @@ the narrative style and sections defined below instead.
 6. **No test count numbers.** Describe coverage areas, not counts.
 7. **No "Design Decisions" section.** Weave technical choices into the narrative.
 8. **`## References` is always present and always last.**
+9. **No hard line wrapping for anything posted to GitHub.** GitHub Markdown wraps paragraphs automatically; hard-wrapped lines render with broken mid-sentence breaks on wider viewports. This applies to PR descriptions and every GitHub comment (PR review comments, issue comments, discussion replies). Each paragraph is one long line. The 72-col wrap rule from `commit-conventions` applies to commit messages only — not to anything that ends up rendered by GitHub.
 
 ## Workflow
 
@@ -103,8 +104,7 @@ Small/trivial PRs may omit `## Test`, `## Known issues`, and `## To implement in
 ```markdown
 ## Summary
 
-This PR aims to introduce a new SQL file upload modal 🚀 with
-various improvements to the Migration Application details page.
+This PR aims to introduce a new SQL file upload modal 🚀 with various improvements to the Migration Application details page.
 
 ## Test Plan
 - [ ] Verify file upload works
@@ -124,29 +124,19 @@ Violations, in order: `## Summary` heading (NN#2), vague "aims to introduce" pre
 ## Example (feature PR)
 
 ```markdown
-This PR adds the SQL file upload modal to the Migration Application
-details page.
+This PR adds the SQL file upload modal to the Migration Application details page.
 
-The modal has two steps: _Files_ (drag-and-drop file selection with
-validation) and _Databases_ (target database version assignment per
-file). On confirm, files are uploaded via XHR with concurrency control.
+The modal has two steps: _Files_ (drag-and-drop file selection with validation) and _Databases_ (target database version assignment per file). On confirm, files are uploaded via XHR with concurrency control.
 
-I used XHR instead of `fetch` because the Fetch API doesn't support
-upload progress events — XHR's `upload.onprogress` is the only way
-to get byte-level progress in the browser.
+I used XHR instead of `fetch` because the Fetch API doesn't support upload progress events — XHR's `upload.onprogress` is the only way to get byte-level progress in the browser.
 
 ### Architecture
 
-The upload infrastructure is built around an `UploadManager` class
-that encapsulates a Zustand store, concurrency semaphore, and XHR
-reference map for cancellation.
+The upload infrastructure is built around an `UploadManager` class that encapsulates a Zustand store, concurrency semaphore, and XHR reference map for cancellation.
 
 ## Test
 
-Unit tests for the upload manager covering lifecycle, cancellation,
-auto-clear, and concurrency. Mocked Playwright E2E tests covering
-the happy path, step navigation, file removal, error handling, and
-search/sort.
+Unit tests for the upload manager covering lifecycle, cancellation, auto-clear, and concurrency. Mocked Playwright E2E tests covering the happy path, step navigation, file removal, error handling, and search/sort.
 
 ## Media
 
@@ -167,9 +157,7 @@ search/sort.
 ## Example (small fix)
 
 ```markdown
-This PR fixes the layout of the section titles in the Application
-Assessment tab. The icon and text were misaligned because the flex
-container lacked `align-items: center`.
+This PR fixes the layout of the section titles in the Application Assessment tab. The icon and text were misaligned because the flex container lacked `align-items: center`.
 
 ## Media
 
