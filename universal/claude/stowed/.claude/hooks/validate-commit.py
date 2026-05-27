@@ -100,7 +100,8 @@ def has_flag(command: str, *flags: str) -> bool:
         parts = shlex.split(command)
     except ValueError:
         parts = command.split()
-    return any(p in flags for p in parts)
+    prefixes = tuple(f"{flag}=" for flag in flags)
+    return any(p in flags or p.startswith(prefixes) for p in parts)
 
 
 VALID_TYPES = {
