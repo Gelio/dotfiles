@@ -47,8 +47,54 @@ restating what changed. A commit message without a body forces reviewers
 to read the diff to understand intent, which slows down code review and
 makes git history less useful.
 
+#### What belongs in the body
+
+The body's job is to give a reviewer what the diff can't: the constraint
+that motivated the change, the alternatives that were rejected, and the
+non-obvious decisions baked into the chosen approach.
+
+**Do** include:
+
+- The external constraint or fact that forced this change ("GHA only
+  propagates secrets through `uses:` + `secrets: inherit`, not through
+  `workflow_dispatch`")
+- Why this approach was chosen over alternatives ("`strings.Contains`
+  rather than an enum because future Oracle scenarios should be covered
+  automatically")
+- What the change deliberately does NOT do, and why ("no
+  `BEACON_AGENT_VERSION` input — auto-alignment tracked by MIG-7276")
+- Cross-references to related sites the reader should know about ("the
+  `oracleImage()` TODO cross-references this CI guard")
+
+**Don't** restate things the diff already shows:
+
+- Identifiers, strings, or values quoted from the diff. If the change
+  adds `slog.String("reason", "X")`, don't add a paragraph that quotes
+  `"X"` back — the reader sees it.
+- File-structure inventories ("the README has three sections: 1... 2...
+  3..."). The reader can open the file.
+- Mechanical plumbing inside a step (`set -euo pipefail`, exit-status
+  branching, the exact `kubectl` invocations) when only the *existence
+  and purpose* of the step is the load-bearing fact.
+- Justifications for stylistic choices the reader wouldn't otherwise
+  question ("multi-line `|` description so the GitHub UI has room") —
+  defending a routine formatting choice draws attention rather than
+  deflecting it.
+
+Rule of thumb: if a sentence would still be true word-for-word *without
+this commit*, or if it just narrates the diff, cut it.
+
+#### Formatting
+
 - Wrap at 72 characters per line
 - Use multiple paragraphs for longer explanations — group related ideas
+- For enumerations of 3+ items, prefer a bulleted list over a
+  parenthetical or semicolon-separated inline list — easier to scan,
+  easier to extend in a later commit
+- Name the specific owner of a resource rather than a generic category
+  (write "`edbpgai-bootstrap` repository secrets", not "org secrets" —
+  if the reader needs to grant or rotate the secret, the generic noun
+  doesn't tell them where to go)
 - **Use Markdown formatting**: wrap code identifiers in backticks
   (function names, component names, prop names, file names, types)
 
