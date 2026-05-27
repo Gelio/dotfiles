@@ -77,7 +77,7 @@ Given a todos.md task: `- [ ] Fix null check in FileAssessmentsTable`
 1. You check `git log --oneline main..HEAD` and see `abc1234 feat(MIG-7922): add File Assessments table`
 2. You spawn a subagent: "Fix the null check in `FileAssessmentsTable` when the API returns an empty response. File: `onprem/ui/src/pages/.../FileAssessmentsTable.tsx`"
 3. Subagent completes the fix
-4. You stage the file and run `git absorb -v`. Absorb attributes the hunk
+4. You stage the file and run `git absorb`. Absorb attributes the hunk
    to `abc1234` and creates `fixup! feat(MIG-7922): add File Assessments table`.
 5. You check `git log --oneline -5` and `git status` to confirm: one fixup
    commit created, nothing left unstaged.

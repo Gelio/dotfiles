@@ -171,12 +171,12 @@ to a hand-rolled blame loop.
    **`git absorb` only inspects staged hunks** — anything you forget to
    stage is silently skipped. Run `git status` after staging to confirm
    nothing relevant is left out.
-2. **Run `git absorb -v`.** Let absorb create `fixup!` commits with its
+2. **Run `git absorb`.** Let absorb create `fixup!` commits with its
    own auto-generated bodies — don't pass `-m`.
 
-   Skip `--dry-run`: `-v` already prints per-hunk attribution to stderr,
-   and the resulting commits are trivially reversible with
-   `git reset --soft HEAD~N`.
+   Skip `--dry-run`: the resulting commits are trivially reversible with
+   `git reset --soft HEAD~N`, and step 3 inspects the outcome via
+   `git log` / `git status` anyway.
 3. **Inspect the outcome.** Run `git log --oneline -10` to see what
    absorb created, and `git status` to see if any hunks were left
    unstaged because absorb couldn't attribute them.
