@@ -12,6 +12,7 @@ description: User preferences for working with Jira via the Atlassian MCP. Use w
 3. **Preserve existing content when editing.** Descriptions must be rewritten in full (API requirement), but keep every heading, link, formatting, and piece of content that is not being changed.
 4. **No scope prefixes in summaries.** Do not prefix with `UI:`, `FE:`, `BE:`, `[Frontend]`, or similar. Keep summaries clean and descriptive.
 5. **Use `inlineCard` nodes for ticket references inside descriptions.** See smartlink format below.
+6. **Always link to code with SHA-pinned GitHub permalinks.** Any reference to a file, function, line range, constant, SQL migration, or workflow in a ticket description or comment must be a permalink, never a bare path. See "Permalinks for code references" below.
 
 ## Critical trap: `getJiraIssue` cannot return ADF
 
@@ -55,6 +56,31 @@ Minimal ADF skeleton for the appended section in step 2:
     ]}
   ]
 }
+```
+
+## Permalinks for code references
+
+Whenever a ticket description or comment names a concrete file path, function, line range, constant, SQL migration, or workflow, attach a SHA-pinned GitHub permalink. Plain paths like `pkg/foo/bar.go:42` rot silently as files move and lines shift; a permalink captures the state the ticket was authored against.
+
+Permalink shape:
+
+```
+https://github.com/<org>/<repo>/blob/<sha>/<path>#L<n>-L<m>
+```
+
+Pick the SHA deliberately:
+
+- **Discussing present state** → current `main` HEAD of the relevant repo. Get with `git -C <repo> rev-parse origin/main`.
+- **Discussing history** → the introducing commit. Find with `git -C <repo> log --oneline -- <path>` or `git -C <repo> log --diff-filter=A -- <path>`.
+- **Discussing work-in-progress** → the feature branch's tip SHA. Avoid pre-push SHAs that aren't on origin yet — those 404 in GitHub's UI.
+
+Always pick a SHA, never a branch name. `blob/main/...` URLs are NOT permalinks — they shift as `main` advances and break the future reader's view of what the ticket meant.
+
+Embed permalinks as Markdown links with descriptive anchor text in the preview, then encode as `link` marks in the ADF body. Don't combine the `link` mark with a `code` mark on the same text node — that ADF combination is rejected. Pattern: `<inline code identifier> followed by ([path:line](permalink))`. Example:
+
+```
+The runner hard-codes `EstateIngesterProjectRoleName` at
+[project.go#L12-L15](https://github.com/EnterpriseDB/nexus-tests/blob/<sha>/test-runner/pkg/testruninit/project.go#L12-L15).
 ```
 
 ## Failure modes of Markdown mode (all confirmed, not theoretical)
