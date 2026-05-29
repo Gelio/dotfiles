@@ -193,7 +193,7 @@ def render_adf(doc: dict) -> str:
 
 
 def is_jira_call(name: str) -> bool:
-    if not name.startswith("mcp__atlassian__"):
+    if not (name.startswith("mcp__atlassian__") or name.startswith("mcp__claude_ai_Atlassian__")):
         return False
     return "Jira" in name or "Confluence" in name
 
