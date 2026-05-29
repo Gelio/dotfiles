@@ -81,6 +81,32 @@ non-obvious decisions baked into the chosen approach.
   defending a routine formatting choice draws attention rather than
   deflecting it.
 
+**Don't** reference things the reader can't see:
+
+The commit body's audience is "a future engineer reading `git log`,"
+not "the agent / human at the moment of authoring." References that
+only resolve in the authoring session are noise to that audience.
+
+- **Gitignored or out-of-repo artifacts** (`agent-plans/...`, scratch
+  notes, decisions ledgers, working-tree-only files, `pr-description-notes.md`).
+  Anyone reading the commit can't `cat` them. If the *fact* they capture
+  is load-bearing for the commit, inline the fact instead. If it isn't,
+  drop the reference.
+- **Plan-internal labels** like `PR-BS1`, `Q13`, `Task 17`, `Phase 3
+  milestone`, `the cleanup commit per the lifecycle`. Those names exist
+  in the agent's own progress tracking; in a commit body they read as
+  jargon to the reader, who has no way to resolve them. Refer to things
+  that ARE in the repo or git history: file paths, commit SHAs, ticket
+  keys, ref/branch names, PR numbers (once known).
+- **Cross-PR coordination narrative** ("merge minutes before X",
+  "do this last per the race window"). The reasoning is real, but it
+  belongs in the PR description / merge-queue comment, not in a commit
+  body that outlives both.
+
+If the change has external proof that helps a reviewer trust it (CI
+run URLs, a passing dispatch, a reproduced bug log), link to it
+directly in the body — those *are* reachable to a future reader.
+
 Rule of thumb: if a sentence would still be true word-for-word *without
 this commit*, or if it just narrates the diff, cut it.
 
