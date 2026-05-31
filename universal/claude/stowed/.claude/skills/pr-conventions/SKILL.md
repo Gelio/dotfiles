@@ -28,6 +28,7 @@ the narrative style and sections defined below instead.
 7. **No "Design Decisions" section.** Weave technical choices into the narrative.
 8. **`## References` is always present and always last.**
 9. **No hard line wrapping for anything posted to GitHub.** GitHub Markdown wraps paragraphs automatically; hard-wrapped lines render with broken mid-sentence breaks on wider viewports. This applies to PR descriptions and every GitHub comment (PR review comments, issue comments, discussion replies). Each paragraph is one long line. The 72-col wrap rule from `commit-conventions` applies to commit messages only — not to anything that ends up rendered by GitHub.
+10. **Jira-style references must link to the actual Jira ticket.** Don't use a Jira-key label (e.g., `[UPM-61578]`) as the visible text for a link that points to source code, an SQL file, a GitHub commit, or any other non-Jira artifact. Either split into two links (one for the ticket, one for the artifact) or rephrase so the label sits on the actual Jira URL. The reader assumes a Jira-keyed link goes to the ticket; betraying that assumption forces them to hover-check every link.
 
 ## Workflow
 
