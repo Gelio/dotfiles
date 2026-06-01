@@ -20,6 +20,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _handoff_paths import git_toplevel
+
 # Secret detection patterns
 SECRET_PATTERNS = [
     (r'["\']?[a-zA-Z_]*api[_-]?key["\']?\s*[:=]\s*["\'][^"\']{10,}["\']', "API key"),
@@ -108,24 +111,56 @@ def scan_for_secrets(content: str) -> list[tuple[str, str]]:
     return findings
 
 
-def extract_project_root(content: str, handoff_path: Path) -> str:
+def _coerce_root(raw_value: str) -> str | None:
+    """Pull a usable, existing directory path out of a `Project:` value.
+
+    Tolerates the value being backtick-wrapped and/or trailed by prose, e.g.
+    `` `/path/to/repo` (chain lives here; ...)``. Backtick-wrapped tokens are
+    tried first (the path is almost always fenced), then the whole stripped
+    value, then its first whitespace token. Returns None if nothing resolves.
+    """
+    candidates: list[str] = re.findall(r'`([^`]+)`', raw_value)
+    plain = raw_value.replace('`', ' ').strip()
+    if plain:
+        candidates.append(plain)
+        candidates.append(plain.split()[0])
+    for candidate in candidates:
+        candidate = candidate.strip()
+        if not candidate:
+            continue
+        expanded = Path(candidate).expanduser()
+        if expanded.exists():
+            return str(expanded)
+    return None
+
+
+def extract_project_root(content: str, handoff_path: Path) -> str | None:
     """Determine the repo root that referenced paths are relative to.
 
     Uses the handoff's `Project:` metadata (the origin repo root). Handoffs are
     stored centrally (`~/.local/claude-handoffs/<repo-key>/...`), so the old
     parent.parent.parent heuristic no longer points at the repo.
+
+    The label is matched tolerantly: a leading list marker, an optional
+    parenthetical qualifier (e.g. `Project (handoff chain home):`), backtick
+    fences, and trailing prose are all accepted. Returns None — never a silent
+    `os.getcwd()` fallback — when no usable root can be determined, so the
+    caller can emit a distinct diagnostic instead of false "not found" warnings.
     """
-    match = re.search(r'^\s*[-*]?\s*Project:\s*(.+?)\s*$', content, re.MULTILINE)
+    # `Project` optionally followed by a parenthetical, then the value to EOL.
+    match = re.search(
+        r'^\s*[-*]?\s*Project\b[^:\n]*:\s*(.+?)\s*$', content, re.MULTILINE
+    )
     if match:
-        candidate = match.group(1).strip().strip('`').strip()
-        expanded = Path(candidate).expanduser()
-        if candidate and expanded.exists():
-            return str(expanded)
-    # Fallbacks: legacy in-repo layout, then the current directory.
+        root = _coerce_root(match.group(1))
+        if root:
+            return root
+    # Fallback: legacy in-repo layout (handoff stored under `<repo>/.claude/...`).
     legacy = handoff_path.parent.parent.parent
     if (legacy / ".git").exists():
         return str(legacy)
-    return os.getcwd()
+    # Could not determine a root -- signal that, rather than guessing cwd.
+    return None
 
 
 def repo_file_index(project_root: str) -> set[str]:
@@ -145,14 +180,91 @@ def repo_file_index(project_root: str) -> set[str]:
     return set()
 
 
-def check_file_references(content: str, project_root: str) -> tuple[list[str], list[str]]:
-    """Check whether referenced files exist.
+def _is_within(path: Path, root: str) -> bool:
+    """True if `path` lives inside the directory tree `root`."""
+    try:
+        return path.resolve().is_relative_to(Path(root).resolve())
+    except (OSError, ValueError):
+        return False
 
-    Absolute paths (e.g. `/tmp/backup.tar.gz`) are checked as-is on disk rather
-    than resolved against the repo root. A relative reference counts as found if
-    it resolves under the repo root OR matches a file anywhere in the repo by
-    path suffix (so paths written relative to a working subdirectory still
-    resolve). Genuinely absent / deleted files are still reported.
+
+def discover_candidate_roots(
+    project_root: str, found_files: set[str], content: str
+) -> list[str]:
+    """Build the set of repo roots that references may be rooted in.
+
+    Handoffs legitimately span repositories: the chain lives under one repo
+    (`project_root`) while the actual work — and its file references — live in
+    a sibling repo / additional working directory. Candidate roots are sourced
+    from:
+      1. `project_root` itself.
+      2. Sibling repos named by a reference's first path segment, e.g.
+         `edbpgai-bootstrap/...` -> `<project_root>/../edbpgai-bootstrap` when
+         that is a git repo. Covers references that include the repo-name prefix.
+      3. The git toplevels of absolute paths mentioned anywhere in the handoff
+         (the additional-working-directory list, usually called out in prose).
+         Covers references written relative to that repo's own root.
+    """
+    roots: list[str] = []
+    seen: set[str] = set()
+
+    def add(path: str) -> None:
+        abspath = os.path.abspath(os.path.expanduser(path))
+        if abspath not in seen and Path(abspath).is_dir():
+            seen.add(abspath)
+            roots.append(abspath)
+
+    add(project_root)
+    parent = Path(project_root).parent
+
+    # (2) Sibling repos named by a relative reference's first path segment.
+    for ref in found_files:
+        expanded = Path(ref).expanduser()
+        if expanded.is_absolute():
+            continue
+        segment = ref.lstrip('./').split('/')[0]
+        if not segment:
+            continue
+        sibling = parent / segment
+        if sibling.is_dir() and (sibling / ".git").exists():
+            add(str(sibling))
+
+    # (3) Additional working dirs surfaced as absolute paths in the content.
+    # Bounded so a handoff full of URLs/paths can't trigger unbounded git calls.
+    checked = 0
+    for raw in re.findall(r'/[^\s`\'"|)\]<>]+', content):
+        if checked >= 40:
+            break
+        candidate = Path(raw.rstrip('.,;:'))
+        try:
+            if candidate.is_file():
+                candidate = candidate.parent
+            elif not candidate.is_dir():
+                continue
+        except OSError:
+            continue
+        checked += 1
+        toplevel = git_toplevel(str(candidate))
+        if toplevel:
+            add(toplevel)
+
+    return roots
+
+
+def check_file_references(
+    content: str, project_root: str
+) -> tuple[list[str], list[str], list[str]]:
+    """Check whether referenced files exist, across all known repos.
+
+    Returns ``(existing, missing, external)``:
+      - ``existing``: resolved in `project_root` or a known sibling/working-dir
+        repo (on disk, by path-suffix in that repo's git index, or rooted at the
+        parent of `project_root` for repo-name-prefixed references).
+      - ``missing``: genuinely-absent files that *belong* to a known repo — a
+        relative reference that resolved nowhere, or an absolute path that lives
+        inside a known repo but is gone. These are the real "deleted" warnings.
+      - ``external``: references outside every known repo (e.g. `/private/tmp`
+        scratch paths). Expected, non-alarming; reported separately, not as WARN.
     """
     # Pattern 1: | path/to/file | in tables
     # Pattern 2: `path/to/file` in code
@@ -173,23 +285,42 @@ def check_file_references(content: str, project_root: str) -> tuple[list[str], l
             if filepath and not filepath.startswith('http') and '/' in filepath:
                 found_files.add(filepath)
 
-    repo_files = repo_file_index(project_root)
-    existing = []
-    missing = []
+    candidate_roots = discover_candidate_roots(project_root, found_files, content)
+    indexes = {root: repo_file_index(root) for root in candidate_roots}
+    parent = Path(project_root).parent
+
+    existing: list[str] = []
+    missing: list[str] = []
+    external: list[str] = []
 
     for filepath in found_files:
         expanded = Path(filepath).expanduser()
         if expanded.is_absolute():
-            # Absolute path: check it directly, not relative to the repo.
-            resolves = expanded.exists()
-        else:
-            rel = filepath.lstrip('./')
-            resolves = (Path(project_root) / rel).exists() or any(
-                f == rel or f.endswith('/' + rel) for f in repo_files
-            )
+            if expanded.exists():
+                existing.append(filepath)
+            elif any(_is_within(expanded, root) for root in candidate_roots):
+                # Inside a known repo but gone -> a real deletion.
+                missing.append(filepath)
+            else:
+                # Scratch path outside every known repo -> expected, not a warning.
+                external.append(filepath)
+            continue
+
+        rel = filepath.lstrip('./')
+        resolves = False
+        for root in candidate_roots:
+            if (Path(root) / rel).exists() or any(
+                f == rel or f.endswith('/' + rel) for f in indexes[root]
+            ):
+                resolves = True
+                break
+        # Repo-name-prefixed references (e.g. `edbpgai-bootstrap/.github/...`)
+        # are rooted at the parent of the primary repo.
+        if not resolves and (parent / rel).exists():
+            resolves = True
         (existing if resolves else missing).append(filepath)
 
-    return existing, missing
+    return existing, missing, external
 
 
 def calculate_quality_score(
@@ -263,7 +394,17 @@ def validate_handoff(filepath: str) -> dict:
     required_complete, missing_required = check_required_sections(content)
     missing_recommended = check_recommended_sections(content)
     secrets_found = scan_for_secrets(content)
-    existing_files, missing_files = check_file_references(content, project_root)
+
+    # File references can only be checked relative to a known repo root. When
+    # none could be determined, skip the check entirely rather than resolve
+    # against cwd and emit false "not found" warnings.
+    root_undetermined = project_root is None
+    if root_undetermined:
+        existing_files, missing_files, external_files = [], [], []
+    else:
+        existing_files, missing_files, external_files = check_file_references(
+            content, project_root
+        )
 
     # Calculate score
     score, rating = calculate_quality_score(
@@ -273,7 +414,8 @@ def validate_handoff(filepath: str) -> dict:
 
     return {
         "filepath": str(path),
-        "project_root": project_root,
+        "project_root": project_root or "",
+        "root_undetermined": root_undetermined,
         "score": score,
         "rating": rating,
         "todos_clear": todos_clear,
@@ -285,6 +427,9 @@ def validate_handoff(filepath: str) -> dict:
         "secrets_found": secrets_found,
         "files_verified": len(existing_files),
         "files_missing": missing_files[:5],  # Limit output
+        "files_missing_count": len(missing_files),
+        "external_files": external_files[:5],  # Limit output
+        "external_count": len(external_files),
     }
 
 
@@ -326,13 +471,24 @@ def print_report(result: dict):
             print(f"       - {secret_type}: {detail}")
 
     # File references
-    if result['files_missing']:
-        print(f"\n[WARN] {len(result['files_missing'])} referenced file(s) not found:")
+    if result.get('root_undetermined'):
+        print("\n[INFO] Could not determine repo root from handoff metadata "
+              "— skipping file-reference check")
+    elif result['files_missing']:
+        print(f"\n[WARN] {result['files_missing_count']} referenced in-repo "
+              f"file(s) not found:")
         print(f"       (resolved relative to repo root: {result['project_root']})")
         for f in result['files_missing']:
             print(f"       - {f}")
     else:
         print(f"\n[INFO] {result['files_verified']} file reference(s) verified")
+
+    # References outside every known repo: expected, reported without alarm.
+    if result.get('external_count'):
+        print(f"\n[INFO] {result['external_count']} reference(s) outside known "
+              f"repos (not checked):")
+        for f in result['external_files']:
+            print(f"       - {f}")
 
     # Recommended sections
     if result['missing_recommended']:

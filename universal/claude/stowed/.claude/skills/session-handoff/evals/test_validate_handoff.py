@@ -156,19 +156,19 @@ class FileReferenceResolutionTests(unittest.TestCase):
     def test_subdir_relative_reference_resolves_via_suffix(self):
         # Path written relative to universal/claude (a subdir), not the repo root.
         content = self._handoff("| scripts/thing.py | changed | because |")
-        existing, missing = validate_handoff.check_file_references(content, self.repo)
+        existing, missing, _external = validate_handoff.check_file_references(content, self.repo)
         self.assertIn("scripts/thing.py", existing)
         self.assertEqual(missing, [])
 
     def test_root_relative_reference_resolves(self):
         content = self._handoff("`universal/claude/scripts/thing.py`")
-        existing, missing = validate_handoff.check_file_references(content, self.repo)
+        existing, missing, _external = validate_handoff.check_file_references(content, self.repo)
         self.assertIn("universal/claude/scripts/thing.py", existing)
         self.assertEqual(missing, [])
 
     def test_genuinely_missing_reference_is_reported(self):
         content = self._handoff("| scripts/nope.py | x | y |")
-        existing, missing = validate_handoff.check_file_references(content, self.repo)
+        existing, missing, _external = validate_handoff.check_file_references(content, self.repo)
         self.assertIn("scripts/nope.py", missing)
 
     def test_existing_absolute_path_resolves(self):
@@ -177,15 +177,141 @@ class FileReferenceResolutionTests(unittest.TestCase):
         abs_file = Path(self.repo) / "backup.tar.gz"
         abs_file.write_text("data\n")
         content = self._handoff(f"Backup: `{abs_file}`")
-        existing, missing = validate_handoff.check_file_references(content, self.repo)
+        existing, missing, _external = validate_handoff.check_file_references(content, self.repo)
         self.assertIn(str(abs_file), existing)
         self.assertEqual(missing, [])
 
-    def test_genuinely_missing_absolute_path_is_reported(self):
+    def test_genuinely_missing_absolute_path_within_repo_is_reported(self):
+        # An absolute path that lives *inside* a known repo but is gone is a
+        # genuine deletion -> WARN bucket, not the non-alarming external bucket.
         abs_file = Path(self.repo) / "does-not-exist.tar.gz"
         content = self._handoff(f"Backup: `{abs_file}`")
-        existing, missing = validate_handoff.check_file_references(content, self.repo)
+        existing, missing, external = validate_handoff.check_file_references(content, self.repo)
         self.assertIn(str(abs_file), missing)
+        self.assertNotIn(str(abs_file), external)
+
+    def test_out_of_repo_absolute_scratch_path_is_external_not_missing(self):
+        # A scratch path outside every known repo (e.g. /private/tmp) must not
+        # masquerade as a deleted in-repo file.
+        scratch = "/private/tmp/claude/pr-body-does-not-exist.md"
+        content = self._handoff(f"Body from `{scratch}`")
+        existing, missing, external = validate_handoff.check_file_references(content, self.repo)
+        self.assertIn(scratch, external)
+        self.assertNotIn(scratch, missing)
+
+
+class ProjectRootExtractionTests(unittest.TestCase):
+    """`extract_project_root` must tolerate label/formatting variants and refuse
+    to silently fall back to cwd when no usable root can be determined."""
+
+    def setUp(self):
+        self.repo = tempfile.mkdtemp(prefix="handoff-test-root.")
+        subprocess.run(["git", "-C", self.repo, "init", "-q"], check=True)
+        # A non-git tree for handoffs whose root cannot be determined, so the
+        # legacy `parent.parent.parent/.git` fallback does not accidentally fire.
+        self.nongit = tempfile.mkdtemp(prefix="handoff-test-nongit.")
+
+    def tearDown(self):
+        shutil.rmtree(self.repo, ignore_errors=True)
+        shutil.rmtree(self.nongit, ignore_errors=True)
+
+    def _handoff(self, project_line: str) -> str:
+        return f"# Handoff: T\n\n## Session Metadata\n{project_line}\n\nbody\n"
+
+    def test_parenthetical_and_backtick_label_variant(self):
+        # The repro: `- Project (handoff chain home): ` + backtick-wrapped path
+        # + trailing prose. The plain `Project:` regex missed all of this.
+        content = self._handoff(
+            f"- Project (handoff chain home): `{self.repo}` (chain lives here; ignore this)"
+        )
+        handoff_path = Path(self.repo) / "h.md"
+        root = validate_handoff.extract_project_root(content, handoff_path)
+        self.assertEqual(Path(root), Path(self.repo))
+
+    def test_returns_none_when_root_undeterminable(self):
+        # Project points at a nonexistent path and the handoff does not sit in a
+        # legacy in-repo layout -> distinct "undetermined", never cwd.
+        content = self._handoff("- Project: /no/such/path/anywhere-12345")
+        handoff_path = Path(self.nongit) / "a" / "b" / "c" / "h.md"
+        root = validate_handoff.extract_project_root(content, handoff_path)
+        self.assertIsNone(root)
+
+    def test_undetermined_root_skips_reference_check(self):
+        content = self._handoff("- Project: /no/such/path/anywhere-12345")
+        deep = Path(self.nongit) / "a" / "b" / "c"
+        deep.mkdir(parents=True)
+        path = deep / "h.md"
+        path.write_text(content + "\n`some/deleted/file.py`\n")
+        result = validate_handoff.validate_handoff(str(path))
+        self.assertTrue(result.get("root_undetermined"))
+        self.assertEqual(result["files_missing"], [])
+
+
+class CrossRepoReferenceTests(unittest.TestCase):
+    """Cross-repo handoffs: the chain lives in one repo while the work (and its
+    file references) live in a sibling repo. References rooted in a known sibling
+    repo must resolve as *found*, not as missing."""
+
+    def setUp(self):
+        self.parent = tempfile.mkdtemp(prefix="handoff-test-multi.")
+        self.primary = Path(self.parent) / "nexus-tests"
+        self.sibling = Path(self.parent) / "edbpgai-bootstrap"
+        for repo in (self.primary, self.sibling):
+            repo.mkdir()
+            subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True)
+        # Two real files in the sibling repo, referenced two different ways.
+        wf = self.sibling / ".github" / "workflows"
+        wf.mkdir(parents=True)
+        (wf / "prevent_update.yml").write_text("on: push\n")
+        tmpl = self.sibling / "deploy" / "charts" / "edbpgai-bootstrap"
+        tmpl.mkdir(parents=True)
+        (tmpl / "values.yaml.template").write_text("x: 1\n")
+
+    def tearDown(self):
+        shutil.rmtree(self.parent, ignore_errors=True)
+
+    def _handoff(self, body: str) -> str:
+        return (
+            f"# Handoff: T\n\n## Session Metadata\n"
+            f"- Project (handoff chain home): `{self.primary}`\n\n{body}\n"
+        )
+
+    def test_sibling_prefixed_reference_resolves(self):
+        # First path segment names the sibling repo dir -> rooted at the parent.
+        content = self._handoff("`edbpgai-bootstrap/.github/workflows/prevent_update.yml`")
+        existing, missing, _external = validate_handoff.check_file_references(
+            content, str(self.primary)
+        )
+        self.assertIn("edbpgai-bootstrap/.github/workflows/prevent_update.yml", existing)
+        self.assertEqual(missing, [])
+
+    def test_sibling_repo_root_relative_reference_resolves(self):
+        # Reference written relative to the sibling repo *root* (no repo-name
+        # prefix). The sibling repo is discovered via the other reference's
+        # first segment, then this one resolves through its file index.
+        content = self._handoff(
+            "`edbpgai-bootstrap/.github/workflows/prevent_update.yml` and "
+            "`deploy/charts/edbpgai-bootstrap/values.yaml.template`"
+        )
+        existing, missing, _external = validate_handoff.check_file_references(
+            content, str(self.primary)
+        )
+        self.assertIn("deploy/charts/edbpgai-bootstrap/values.yaml.template", existing)
+        self.assertEqual(missing, [])
+
+    def test_additional_working_dir_from_absolute_prose_path(self):
+        # The sibling repo is named only as an absolute path in prose (no
+        # sibling-prefixed reference). It must still be discovered as a
+        # candidate root so its repo-root-relative references resolve.
+        content = self._handoff(
+            f"Work happened in `{self.sibling}`.\n\n"
+            "`deploy/charts/edbpgai-bootstrap/values.yaml.template`"
+        )
+        existing, missing, _external = validate_handoff.check_file_references(
+            content, str(self.primary)
+        )
+        self.assertIn("deploy/charts/edbpgai-bootstrap/values.yaml.template", existing)
+        self.assertEqual(missing, [])
 
 
 if __name__ == "__main__":
