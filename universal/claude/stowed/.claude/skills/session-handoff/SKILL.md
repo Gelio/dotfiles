@@ -62,6 +62,24 @@ subdirectory you happen to be working in. The resuming agent only has the
 against it. (The validator also matches by path-suffix as a safety net, but
 root-relative paths are unambiguous and the right thing for the next agent.)
 
+**Never write secret values into the handoff — record names, not values.** When
+you capture environment state, config, or setup steps, write the variable *name*
+and what it's for (`DATABASE_URL` — prod Postgres connection string), never the
+literal value. If a secret appears in the session context (an API key, password,
+token, connection string with embedded credentials), redact it to a placeholder
+(`sk_live_…`, `postgres://USER:PASSWORD@host/db`) as you write — the next agent
+re-supplies it from their own environment, so the value is never needed and a
+leaked handoff shouldn't expose it. Do this inline while writing; don't rely on
+`validate_handoff.py` to catch it after the fact (it's a safety net, not the
+mechanism). A redacted handoff is still complete — redact and continue rather
+than refusing to produce the document.
+
+Crucially, **don't echo the secret value back even to explain what you
+redacted.** Say "I redacted the DB password and Stripe key" — never repeat the
+literal value in your summary, your confirmation message, or a "here's what I
+left out" note. Naming the value anywhere (document *or* surrounding reply) puts
+it in the transcript and defeats the redaction.
+
 ### Step 3: Validate the Handoff
 
 Run the validation script to check completeness and security:
@@ -77,7 +95,7 @@ The validator checks:
 - [ ] Referenced files exist
 - [ ] Quality score (0-100)
 
-**Do not finalize a handoff with secrets detected or score below 70.**
+**If the validator flags a secret, redact that value to a placeholder and re-run — don't finalize with secrets present, and don't abandon the handoff over it.** Likewise raise a score below 70 by filling the gaps it names.
 
 ### Step 4: Confirm Handoff
 
