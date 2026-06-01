@@ -171,6 +171,22 @@ class FileReferenceResolutionTests(unittest.TestCase):
         existing, missing = validate_handoff.check_file_references(content, self.repo)
         self.assertIn("scripts/nope.py", missing)
 
+    def test_existing_absolute_path_resolves(self):
+        # Absolute paths (e.g. a backup tarball outside the repo) must be checked
+        # on disk directly, not resolved relative to the repo root.
+        abs_file = Path(self.repo) / "backup.tar.gz"
+        abs_file.write_text("data\n")
+        content = self._handoff(f"Backup: `{abs_file}`")
+        existing, missing = validate_handoff.check_file_references(content, self.repo)
+        self.assertIn(str(abs_file), existing)
+        self.assertEqual(missing, [])
+
+    def test_genuinely_missing_absolute_path_is_reported(self):
+        abs_file = Path(self.repo) / "does-not-exist.tar.gz"
+        content = self._handoff(f"Backup: `{abs_file}`")
+        existing, missing = validate_handoff.check_file_references(content, self.repo)
+        self.assertIn(str(abs_file), missing)
+
 
 if __name__ == "__main__":
     unittest.main()

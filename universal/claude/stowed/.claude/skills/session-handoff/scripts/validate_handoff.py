@@ -148,10 +148,11 @@ def repo_file_index(project_root: str) -> set[str]:
 def check_file_references(content: str, project_root: str) -> tuple[list[str], list[str]]:
     """Check whether referenced files exist.
 
-    A reference counts as found if it resolves under the repo root OR matches a
-    file anywhere in the repo by path suffix (so paths written relative to a
-    working subdirectory still resolve). Genuinely absent / deleted files are
-    still reported.
+    Absolute paths (e.g. `/tmp/backup.tar.gz`) are checked as-is on disk rather
+    than resolved against the repo root. A relative reference counts as found if
+    it resolves under the repo root OR matches a file anywhere in the repo by
+    path suffix (so paths written relative to a working subdirectory still
+    resolve). Genuinely absent / deleted files are still reported.
     """
     # Pattern 1: | path/to/file | in tables
     # Pattern 2: `path/to/file` in code
@@ -177,10 +178,15 @@ def check_file_references(content: str, project_root: str) -> tuple[list[str], l
     missing = []
 
     for filepath in found_files:
-        rel = filepath.lstrip('./')
-        resolves = (Path(project_root) / rel).exists() or any(
-            f == rel or f.endswith('/' + rel) for f in repo_files
-        )
+        expanded = Path(filepath).expanduser()
+        if expanded.is_absolute():
+            # Absolute path: check it directly, not relative to the repo.
+            resolves = expanded.exists()
+        else:
+            rel = filepath.lstrip('./')
+            resolves = (Path(project_root) / rel).exists() or any(
+                f == rel or f.endswith('/' + rel) for f in repo_files
+            )
         (existing if resolves else missing).append(filepath)
 
     return existing, missing
