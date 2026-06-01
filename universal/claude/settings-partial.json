@@ -9,6 +9,11 @@
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
+    "filesystem": {
+      "allowWrite": [
+        "~/.local/claude-handoffs"
+      ]
+    },
     "network": {
       "allowLocalBinding": true
     },
@@ -39,9 +44,9 @@
       "Read(//private/tmp/claude/**)",
       "Edit(//private/tmp/claude/**)",
       "Write(//private/tmp/claude/**)",
-      "Read(.claude/handoffs/**)",
-      "Edit(.claude/handoffs/**)",
-      "Write(.claude/handoffs/**)",
+      "Read(~/.local/claude-handoffs/**)",
+      "Edit(~/.local/claude-handoffs/**)",
+      "Write(~/.local/claude-handoffs/**)",
       "Bash(command -v *)",
       "Bash(echo *)",
       "Bash(gh auth status*)",
@@ -103,11 +108,6 @@
           {
             "type": "command",
             "command": "python3 ~/.claude/hooks/block-risky-commands.py"
-          },
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/enforce-git-root-for-handoffs.py",
-            "if": "Bash(*create_handoff*)"
           }
         ]
       },
@@ -126,6 +126,17 @@
           {
             "type": "command",
             "command": "python3 ~/.claude/hooks/log-mcp-tool-call.py 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/capture-handoff-origin.py"
           }
         ]
       }

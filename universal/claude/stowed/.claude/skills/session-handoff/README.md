@@ -147,7 +147,9 @@ See [references/handoff-template.md](references/handoff-template.md) for the com
 
 ## Storage Location
 
-Handoffs are stored in: `.claude/handoffs/`
+Handoffs are stored centrally, keyed by repo: `~/.local/claude-handoffs/<repo-key>/`
+(NOT under `~/.claude/`, which would trigger Claude Code's "edit its own settings"
+prompt). See SKILL.md "Storage Location" for the full rationale and resolution order.
 
 Naming convention: `YYYY-MM-DD-HHMMSS-[slug].md`
 

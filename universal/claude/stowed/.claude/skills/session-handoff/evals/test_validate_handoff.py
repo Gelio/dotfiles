@@ -12,6 +12,9 @@ Run directly:
 
 import importlib.util
 import re
+import shutil
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -120,6 +123,53 @@ class SectionHeadingDetectionTests(unittest.TestCase):
                 pattern,
                 f"required section not detected in template: {section}",
             )
+
+
+class FileReferenceResolutionTests(unittest.TestCase):
+    """References resolve against the repo root from `Project:` metadata, and
+    tolerate paths written relative to a working subdirectory.
+
+    Handoffs are stored centrally (~/.local/claude-handoffs/<repo-key>/...), so
+    the old `parent.parent.parent` base no longer points at the repo; the
+    validator now reads `Project:` and also matches files by path-suffix.
+    """
+
+    def setUp(self):
+        self.repo = tempfile.mkdtemp(prefix="handoff-test-repo.")
+        subprocess.run(["git", "-C", self.repo, "init", "-q"], check=True)
+        sub = Path(self.repo) / "universal" / "claude" / "scripts"
+        sub.mkdir(parents=True)
+        (sub / "thing.py").write_text("x = 1\n")  # untracked, but real
+
+    def tearDown(self):
+        shutil.rmtree(self.repo, ignore_errors=True)
+
+    def _handoff(self, body: str) -> str:
+        return f"# Handoff: T\n\n## Session Metadata\n- Project: {self.repo}\n\n{body}\n"
+
+    def test_extract_project_root_uses_project_metadata(self):
+        content = self._handoff("body")
+        handoff_path = Path(self.repo) / ".claude" / "handoffs" / "key" / "h.md"
+        root = validate_handoff.extract_project_root(content, handoff_path)
+        self.assertEqual(Path(root), Path(self.repo))
+
+    def test_subdir_relative_reference_resolves_via_suffix(self):
+        # Path written relative to universal/claude (a subdir), not the repo root.
+        content = self._handoff("| scripts/thing.py | changed | because |")
+        existing, missing = validate_handoff.check_file_references(content, self.repo)
+        self.assertIn("scripts/thing.py", existing)
+        self.assertEqual(missing, [])
+
+    def test_root_relative_reference_resolves(self):
+        content = self._handoff("`universal/claude/scripts/thing.py`")
+        existing, missing = validate_handoff.check_file_references(content, self.repo)
+        self.assertIn("universal/claude/scripts/thing.py", existing)
+        self.assertEqual(missing, [])
+
+    def test_genuinely_missing_reference_is_reported(self):
+        content = self._handoff("| scripts/nope.py | x | y |")
+        existing, missing = validate_handoff.check_file_references(content, self.repo)
+        self.assertIn("scripts/nope.py", missing)
 
 
 if __name__ == "__main__":

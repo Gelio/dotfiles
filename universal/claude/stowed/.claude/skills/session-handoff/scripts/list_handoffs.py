@@ -2,7 +2,7 @@
 """
 List available handoff documents in the current project.
 
-Searches for handoff documents in .claude/handoffs/ and displays:
+Searches the centralized store (~/.local/claude-handoffs/<repo-key>/) and displays:
 - Filename with date
 - Title extracted from document
 - Status (if marked complete)
@@ -17,6 +17,10 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
+
+# Allow importing the shared resolver whether run directly or via a symlink.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _handoff_paths import resolve_project_root, handoffs_dir as central_handoffs_dir
 
 
 def extract_title(filepath: Path) -> str:
@@ -65,8 +69,8 @@ def parse_date_from_filename(filename: str) -> datetime | None:
 
 
 def list_handoffs(project_path: str) -> list[dict]:
-    """List all handoff documents in a project."""
-    handoffs_dir = Path(project_path) / ".claude" / "handoffs"
+    """List all handoff documents for a project (from the centralized store)."""
+    handoffs_dir = central_handoffs_dir(project_path)
 
     if not handoffs_dir.exists():
         return []
@@ -97,17 +101,22 @@ def format_date(dt: datetime | None) -> str:
 
 
 def main():
-    # Get project path
-    project_path = sys.argv[1] if len(sys.argv) > 1 else os.getcwd()
+    # Get project path: explicit arg, else the session's origin git repository
+    # (independent of the current working directory).
+    explicit = sys.argv[1] if len(sys.argv) > 1 else None
+    project_path = resolve_project_root(explicit)
+    hdir = central_handoffs_dir(project_path)
 
     handoffs = list_handoffs(project_path)
 
     if not handoffs:
-        print(f"No handoffs found in {project_path}/.claude/handoffs/")
+        print(f"No handoffs found for {project_path}")
+        print(f"  (looked in {hdir})")
         print("\nTo create a handoff, run: python create_handoff.py [task-slug]")
         return
 
-    print(f"Found {len(handoffs)} handoff(s) in {project_path}/.claude/handoffs/\n")
+    print(f"Found {len(handoffs)} handoff(s) for {project_path}")
+    print(f"  (in {hdir})\n")
     print("-" * 80)
 
     for h in handoffs:

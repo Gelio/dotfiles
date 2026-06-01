@@ -16,6 +16,7 @@ Usage:
 
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -107,13 +108,54 @@ def scan_for_secrets(content: str) -> list[tuple[str, str]]:
     return findings
 
 
-def check_file_references(content: str, base_path: str) -> tuple[list[str], list[str]]:
-    """Check if referenced files exist."""
-    # Extract file paths from content (look for common patterns)
+def extract_project_root(content: str, handoff_path: Path) -> str:
+    """Determine the repo root that referenced paths are relative to.
+
+    Uses the handoff's `Project:` metadata (the origin repo root). Handoffs are
+    stored centrally (`~/.local/claude-handoffs/<repo-key>/...`), so the old
+    parent.parent.parent heuristic no longer points at the repo.
+    """
+    match = re.search(r'^\s*[-*]?\s*Project:\s*(.+?)\s*$', content, re.MULTILINE)
+    if match:
+        candidate = match.group(1).strip().strip('`').strip()
+        expanded = Path(candidate).expanduser()
+        if candidate and expanded.exists():
+            return str(expanded)
+    # Fallbacks: legacy in-repo layout, then the current directory.
+    legacy = handoff_path.parent.parent.parent
+    if (legacy / ".git").exists():
+        return str(legacy)
+    return os.getcwd()
+
+
+def repo_file_index(project_root: str) -> set[str]:
+    """All real files in the repo (tracked + untracked-but-not-ignored), as
+    repo-root-relative POSIX paths. Lets references written relative to a
+    working subdirectory still resolve, instead of false-positive warnings."""
+    try:
+        result = subprocess.run(
+            ["git", "-C", project_root, "ls-files",
+             "--cached", "--others", "--exclude-standard"],
+            capture_output=True, text=True, timeout=10,
+        )
+        if result.returncode == 0:
+            return {line for line in result.stdout.split("\n") if line}
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        pass
+    return set()
+
+
+def check_file_references(content: str, project_root: str) -> tuple[list[str], list[str]]:
+    """Check whether referenced files exist.
+
+    A reference counts as found if it resolves under the repo root OR matches a
+    file anywhere in the repo by path suffix (so paths written relative to a
+    working subdirectory still resolve). Genuinely absent / deleted files are
+    still reported.
+    """
     # Pattern 1: | path/to/file | in tables
     # Pattern 2: `path/to/file` in code
     # Pattern 3: path/to/file:123 with line numbers
-
     patterns = [
         r'\|\s*([a-zA-Z0-9_\-./]+\.[a-zA-Z]+)\s*\|',  # Table cells
         r'`([a-zA-Z0-9_\-./]+\.[a-zA-Z]+(?::\d+)?)`',  # Inline code
@@ -130,15 +172,16 @@ def check_file_references(content: str, base_path: str) -> tuple[list[str], list
             if filepath and not filepath.startswith('http') and '/' in filepath:
                 found_files.add(filepath)
 
+    repo_files = repo_file_index(project_root)
     existing = []
     missing = []
 
     for filepath in found_files:
-        full_path = Path(base_path) / filepath
-        if full_path.exists():
-            existing.append(filepath)
-        else:
-            missing.append(filepath)
+        rel = filepath.lstrip('./')
+        resolves = (Path(project_root) / rel).exists() or any(
+            f == rel or f.endswith('/' + rel) for f in repo_files
+        )
+        (existing if resolves else missing).append(filepath)
 
     return existing, missing
 
@@ -207,14 +250,14 @@ def validate_handoff(filepath: str) -> dict:
         return {"error": f"File not found: {filepath}"}
 
     content = path.read_text()
-    base_path = path.parent.parent.parent  # Go up from .claude/handoffs/
+    project_root = extract_project_root(content, path)
 
     # Run checks
     todos_clear, remaining_todos = check_todos(content)
     required_complete, missing_required = check_required_sections(content)
     missing_recommended = check_recommended_sections(content)
     secrets_found = scan_for_secrets(content)
-    existing_files, missing_files = check_file_references(content, str(base_path))
+    existing_files, missing_files = check_file_references(content, project_root)
 
     # Calculate score
     score, rating = calculate_quality_score(
@@ -224,6 +267,7 @@ def validate_handoff(filepath: str) -> dict:
 
     return {
         "filepath": str(path),
+        "project_root": project_root,
         "score": score,
         "rating": rating,
         "todos_clear": todos_clear,
@@ -278,6 +322,7 @@ def print_report(result: dict):
     # File references
     if result['files_missing']:
         print(f"\n[WARN] {len(result['files_missing'])} referenced file(s) not found:")
+        print(f"       (resolved relative to repo root: {result['project_root']})")
         for f in result['files_missing']:
             print(f"       - {f}")
     else:

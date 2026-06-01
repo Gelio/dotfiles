@@ -9,8 +9,8 @@ FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.filePath
 
 case "$TOOL" in
   Read|Write|Edit)
-    if echo "$FILE_PATH" | grep -qE '\.claude/handoffs/'; then
-      jq -n '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"Auto-allow access to .claude/handoffs (session-handoff skill)"}}'
+    if echo "$FILE_PATH" | grep -qE '/\.local/claude-handoffs/'; then
+      jq -n '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"Auto-allow access to ~/.local/claude-handoffs (session-handoff skill)"}}'
     fi
     ;;
 esac

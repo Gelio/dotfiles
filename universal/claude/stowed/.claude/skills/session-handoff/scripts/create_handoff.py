@@ -25,6 +25,10 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+# Allow importing the shared resolver whether run directly or via a symlink.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _handoff_paths import resolve_project_root, handoffs_dir as central_handoffs_dir
+
 
 def run_cmd(cmd: list[str], cwd: str = None) -> tuple[bool, str]:
     """Run a command and return (success, output)."""
@@ -91,8 +95,8 @@ def get_git_info(project_path: str) -> dict:
 
 
 def find_previous_handoffs(project_path: str) -> list[dict]:
-    """Find existing handoffs in the project."""
-    handoffs_dir = Path(project_path) / ".claude" / "handoffs"
+    """Find existing handoffs for the project (in the centralized store)."""
+    handoffs_dir = central_handoffs_dir(project_path)
     if not handoffs_dir.exists():
         return []
 
@@ -180,8 +184,8 @@ def generate_handoff(
 
     filename = f"{file_timestamp}-{slug}.md"
 
-    # Create handoffs directory
-    handoffs_dir = Path(project_path) / ".claude" / "handoffs"
+    # Create the centralized handoffs directory for this repo
+    handoffs_dir = central_handoffs_dir(project_path)
     handoffs_dir.mkdir(parents=True, exist_ok=True)
 
     filepath = handoffs_dir / filename
@@ -353,11 +357,19 @@ def main():
         dest="continues_from",
         help="Filename of previous handoff this continues from"
     )
+    parser.add_argument(
+        "--project-dir",
+        dest="project_dir",
+        default=None,
+        help="Override the project root (otherwise resolved to the session's "
+             "origin git repository, independent of the current directory)"
+    )
 
     args = parser.parse_args()
 
-    # Get project path (current working directory)
-    project_path = os.getcwd()
+    # Resolve the project root: always the git repo of the directory where this
+    # session started, regardless of where the agent has since cd'd to.
+    project_path = resolve_project_root(args.project_dir)
 
     # Check for existing handoffs to suggest chaining
     if not args.continues_from:
