@@ -13,9 +13,11 @@ export function makeRepo(dir: string): string {
   g('init', '-q', '-b', 'main');
   g('config', 'user.email', 't@t.t');
   g('config', 'user.name', 'test');
+  g('config', 'commit.gpgsign', 'false');
   fs.writeFileSync(path.join(dir, 'README.md'), 'root\n');
   g('add', '-A');
   g('commit', '-qm', 'init');
+  g('update-ref', 'refs/remotes/origin/main', 'HEAD');
   return dir;
 }
 
