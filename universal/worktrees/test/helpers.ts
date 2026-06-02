@@ -20,7 +20,9 @@ export function makeRepo(dir: string): string {
 }
 
 export function sandbox(): { root: string; repo: string; configHome: string } {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wt-'));
+  // Use realpathSync so the returned paths are canonical (e.g., /private/tmp
+  // rather than /tmp on macOS), matching what git and process.cwd() return.
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'wt-')));
   const repo = makeRepo(path.join(root, 'repo'));
   const configHome = path.join(root, 'config');
   return { root, repo, configHome };
