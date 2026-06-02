@@ -1,0 +1,14 @@
+{
+  "name": "worktrees",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "bin": { "worktrees": "bin/worktrees.ts" },
+  "exports": { ".": "./src/types.ts" },
+  "scripts": {
+    "test": "node --test --experimental-strip-types 'test/*.test.ts'",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": { "zx": "^8.2.0" },
+  "devDependencies": { "typescript": "^5.8.0", "@types/node": "^22.0.0" }
+}
