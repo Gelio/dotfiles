@@ -31,3 +31,21 @@ test('list --all spans registered repos', () => {
   assert.match(out, new RegExp(esc(r1)));
   assert.match(out, new RegExp(esc(r2)));
 });
+
+test('list --all survives a registered repo with a missing config', () => {
+  const { root, configHome } = sandbox();
+  const good = makeRepo(path.join(root, 'good'));
+  const broken = makeRepo(path.join(root, 'broken'));
+  fs.writeFileSync(path.join(root, 'good.mts'), CFG);
+  fs.symlinkSync(path.join(root, 'good.mts'), path.join(good, '.worktrees.mts'));
+  // good repo registers itself + creates a worktree
+  runEngine(good, ['setup', 'feature/ok'], { configHome });
+  // Manually register the broken repo (no config resolvable for it) by
+  // appending to the registry the same way the engine would.
+  const reg = path.join(configHome, 'registry');
+  fs.appendFileSync(reg, `${broken}\t${path.join(broken, '.worktrees.mts')}\n`);
+  const { out, code } = runEngine(good, ['list', '--all'], { configHome });
+  assert.equal(code, 0);                       // did NOT abort the whole run
+  assert.match(out, /feature-ok/);             // good repo still rendered
+  assert.match(out, /config error/);           // broken repo reported, not fatal
+});

@@ -102,7 +102,7 @@ export async function loadConfig(): Promise<LoadedConfig> {
 /** Load a config for an explicit repo path (used by `list --all`). */
 export async function loadConfigFor(repo: string): Promise<WorktreesConfig> {
   const source = resolveConfigSource(repo);
-  if (!source) die(`no worktrees config for ${repo}`);
+  if (!source) throw new Error(`no worktrees config for ${repo}`);
   const mod = (await import(pathToFileURL(source).href)) as {
     default?: WorktreesConfig;
   } & WorktreesConfig;
