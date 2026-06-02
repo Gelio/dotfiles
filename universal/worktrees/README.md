@@ -1,1 +1,176 @@
 # worktrees
+
+A machine-wide `worktrees` CLI for managing parallel git worktrees with
+per-repo typed configuration. Each repo describes its ports, symlinks, and
+setup hooks in a single TS config file; the engine handles worktree creation,
+port allocation, and hook execution.
+
+---
+
+## Runtime model
+
+- **No build step.** The entry point is a TypeScript file with a
+  `#!/usr/bin/env -S node --experimental-strip-types` shebang. Node strips the
+  types at load time; no compilation is needed.
+- **Node ≥ 22.6** is required (`--experimental-strip-types`). `import.meta.main`
+  requires ≥ 22.12.
+- If a repo pins an older Node via mise, use the escape hatch:
+  ```
+  mise x node@lts -- worktrees <command>
+  ```
+- The single runtime dependency is `zx` (installed by `install.sh`).
+
+---
+
+## Install
+
+```bash
+cd universal/worktrees
+./install.sh
+```
+
+`install.sh` does three things:
+
+1. Runs `npm ci` (or `npm install` when no lockfile is present) to install `zx`.
+2. Creates `~/.local/share/worktrees` → this project directory (stable anchor;
+   re-run install after relocating your dotfiles checkout).
+3. Creates `~/.local/bin/worktrees` → `bin/worktrees.ts` (the command).
+
+Ensure `~/.local/bin` is on your `$PATH`.
+
+---
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `worktrees init` | Scaffold a central config for the current repo at `~/.config/worktrees/repos/<repo-key>.mts`. |
+| `worktrees init --in-repo` | Print a starter config and add `.worktrees.mts` / `.worktrees.ts` to `.git/info/exclude`. Use when you want the config symlinked from a dotfiles checkout into the repo root. |
+| `worktrees setup <branch> [--from <base>]` | Create (or refresh) a worktree at `worktrees/<dir>/` for `<branch>`, branching from `<base>` (default: `origin/main`). Allocates ports, applies symlinks, runs `postCreate`. |
+| `worktrees teardown <name\|branch>` | Interactively remove a worktree, clean up the port registry, and optionally delete the branch. |
+| `worktrees list` | List worktrees for the current repo with branch, path, and port allocations. Marks stale entries. |
+| `worktrees list --all` | List worktrees for every repo in the central registry. |
+| `worktrees sync` | Interactively re-apply config (reset, re-symlink, `postSync`) to selected worktrees. |
+
+---
+
+## Config discovery and security guard
+
+For the repo rooted at `$CWD`, the engine resolves config in this order:
+
+1. **`<repo>/.worktrees.mts`** (then `.ts`) — accepted **only** when it is a
+   symlink whose `realpath` resolves **outside** the repo. Plain files and
+   symlinks pointing back inside the repo are refused as RCE vectors (the
+   engine `import()`s the resolved module).
+2. **`~/.config/worktrees/repos/<repo-key>.{mts,ts}`** — central fallback,
+   always accepted (plain files are fine here).
+
+Override the config home with `WORKTREES_CONFIG_HOME`:
+
+```bash
+WORKTREES_CONFIG_HOME=/path/to/configs worktrees list
+```
+
+A de-duplicated registry at `~/.config/worktrees/registry` (TSV
+`<repo>\t<source>`) is updated automatically on every command that loads a
+config and is read by `list --all`.
+
+---
+
+## WorktreesConfig contract
+
+Repo configs are `.mts` files (or `.ts` in a `"type":"module"` repo). They
+`export default` a `WorktreesConfig` object.
+
+Import types from the stable path created by `install.sh`:
+
+```ts
+import type { WorktreesConfig } from '~/.local/share/worktrees/src/types.ts';
+```
+
+> **Important:** configs must import **only** `node:*` builtins — not `zx` or
+> any other package. The engine injects `ctx.$` and `ctx.chalk` so hooks get
+> zx ergonomics without needing zx installed in the repo's `node_modules`.
+> (A dynamically-imported config resolves its own imports relative to its
+> `realpath`, where zx is not present.)
+
+### Declaration fields
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `ports` | `Record<string, number>` | — | Named base ports. Omit entirely if the repo needs no ports. |
+| `portStep` | `number` | `10` | Port spacing between worktree indices. |
+| `symlinkTargets` | `string[]` | — | Files/dirs symlinked from the main repo into each worktree. |
+| `mergeSymlinkDirs` | `string[]` | — | Dirs that are merge-symlinked recursively: each entry inside the dir is symlinked individually, preserving any tracked files in the worktree. |
+
+### Hooks
+
+All hooks receive a `HookContext` and may return `void` or a `Promise<void>`.
+
+| Hook | When it runs |
+|---|---|
+| `postCreate(ctx)` | After the worktree exists, ports are computed, and symlinks are applied. |
+| `postSync(ctx)` | Per selected worktree during `sync`, after reset and re-symlink. |
+| `summary(ctx): string \| void` | Optional; the returned string is printed at the end of `setup`. |
+
+### HookContext fields
+
+| Field | Type | Description |
+|---|---|---|
+| `wt` | `string` | Absolute path to the worktree. |
+| `mainRepo` | `string` | Absolute path to the main repo root. |
+| `branch` | `string` | The worktree's current branch. |
+| `dirName` | `string` | Sanitized directory name (`branch` with `/` → `-`). |
+| `ports` | `Record<string, number>` | Computed ports: `base + index * portStep` for each named port. |
+| `$` | zx `$` | Injected by the engine. Use for shell commands in hooks. |
+| `chalk` | zx `chalk` | Injected by the engine. Use for colored output in hooks. |
+
+---
+
+## Example config
+
+```ts
+// ~/.config/worktrees/repos/home-my-project.mts
+// (or symlinked from dotfiles to <repo>/.worktrees.mts)
+
+import type { WorktreesConfig } from '~/.local/share/worktrees/src/types.ts';
+
+const config: WorktreesConfig = {
+  // Named base ports. Each worktree gets base + index * portStep.
+  ports: {
+    UI_DEV: 3003,
+    SERVER: 3004,
+  },
+  portStep: 10,
+
+  // Symlink these from the main repo into every worktree.
+  symlinkTargets: ['CLAUDE.md', 'agent-docs', 'agent-plans'],
+
+  // Merge-symlink .claude: individual entries are linked, tracked files preserved.
+  mergeSymlinkDirs: ['.claude'],
+
+  // Write a .env after the worktree is ready.
+  async postCreate({ wt, ports }) {
+    const { writeFile } = await import('node:fs/promises');
+    await writeFile(
+      `${wt}/.env`,
+      `UI_DEV_PORT=${ports.UI_DEV}\nSERVER_PORT=${ports.SERVER}\n`,
+    );
+  },
+
+  // Re-apply .env on sync too.
+  async postSync({ wt, ports }) {
+    const { writeFile } = await import('node:fs/promises');
+    await writeFile(
+      `${wt}/.env`,
+      `UI_DEV_PORT=${ports.UI_DEV}\nSERVER_PORT=${ports.SERVER}\n`,
+    );
+  },
+
+  summary({ ports }) {
+    return `UI: http://localhost:${ports.UI_DEV}  Server: http://localhost:${ports.SERVER}`;
+  },
+};
+
+export default config;
+```
