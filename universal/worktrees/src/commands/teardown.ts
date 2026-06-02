@@ -1,9 +1,9 @@
 import * as path from 'node:path';
-import * as readline from 'node:readline/promises';
 import { die } from '../log.ts';
 import { git, gitOk } from '../git.ts';
 import { loadConfig } from '../config.ts';
 import { removePortRegistryEntry } from '../ports.ts';
+import { ask } from '../prompt.ts';
 
 function isYes(s: string): boolean {
   return /^y$/i.test(s.trim());
@@ -15,15 +15,6 @@ async function dirExists(p: string): Promise<boolean> {
     return true;
   } catch {
     return false;
-  }
-}
-
-async function ask(prompt: string): Promise<string> {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  try {
-    return await rl.question(prompt);
-  } finally {
-    rl.close();
   }
 }
 
