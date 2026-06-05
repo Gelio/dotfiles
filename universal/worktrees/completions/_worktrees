@@ -1,0 +1,62 @@
+#compdef worktrees
+# Zsh completion for the `worktrees` CLI.
+#
+# Hybrid: subcommands and flags are completed statically here (instant, no Node
+# startup); only the dynamic value slots — `setup --from <ref>` and
+# `teardown <name>` — shell out to `worktrees __complete`, which is the single
+# source of truth for those candidates.
+#
+# Installed by install.sh as ~/.zfunc/_worktrees (already on $fpath; compinit
+# autoloads it).
+
+_worktrees_refs() {
+  local -a refs
+  refs=(${(f)"$(worktrees __complete setup --from '' 2>/dev/null)"})
+  compadd -a refs
+}
+
+_worktrees_names() {
+  local -a names
+  names=(${(f)"$(worktrees __complete teardown '' 2>/dev/null)"})
+  compadd -a names
+}
+
+_worktrees() {
+  local state line
+  local -a subcommands
+  subcommands=(
+    'setup:Create/refresh a worktree for a branch'
+    'teardown:Remove a worktree (interactive)'
+    "list:List this repo's worktrees (--all: every registered repo)"
+    'sync:Re-apply config to selected worktrees (interactive)'
+    'init:Scaffold a config for this repo'
+  )
+
+  _arguments -C \
+    '1: :->command' \
+    '*::arg:->args'
+
+  case $state in
+    command)
+      _describe -t commands 'worktrees command' subcommands
+      ;;
+    args)
+      case $line[1] in
+        setup)
+          _arguments '--from[base ref to branch from]:base:_worktrees_refs'
+          ;;
+        teardown)
+          _arguments '1:worktree:_worktrees_names'
+          ;;
+        list)
+          _arguments '--all[list every registered repo]'
+          ;;
+        init)
+          _arguments '--in-repo[print in-repo symlink instructions]'
+          ;;
+      esac
+      ;;
+  esac
+}
+
+_worktrees "$@"

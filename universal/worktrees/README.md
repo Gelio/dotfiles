@@ -29,14 +29,34 @@ cd universal/worktrees
 ./install.sh
 ```
 
-`install.sh` does three things:
+`install.sh` does four things:
 
 1. Runs `npm ci` (or `npm install` when no lockfile is present) to install `zx`.
 2. Creates `~/.local/share/worktrees` → this project directory (stable anchor;
    re-run install after relocating your dotfiles checkout).
 3. Creates `~/.local/bin/worktrees` → `bin/worktrees.ts` (the command).
+4. Symlinks shell completions: `~/.zfunc/_worktrees` (zsh) and
+   `~/.local/share/bash-completion/completions/worktrees` (bash).
 
 Ensure `~/.local/bin` is on your `$PATH`.
+
+---
+
+## Shell completions
+
+`install.sh` installs zsh and bash completions for subcommands, flags, and
+two dynamic value slots: `setup --from <ref>` (local + remote branches) and
+`teardown <name>` (existing worktree dir names).
+
+They are *hybrid*: subcommands and flags complete in-shell (no Node startup);
+only the dynamic slots shell out to a hidden `worktrees __complete` subcommand,
+which is the single source of truth for those candidates and stays silent
+(exit 0, no output) outside a git repo.
+
+- **zsh** — `~/.zfunc` is assumed to be on `$fpath` with `compinit` loaded
+  (this repo's `.zshrc` does both). Start a new shell after install.
+- **bash** — requires the `bash-completion` package; the file lands in its
+  standard per-command autoload dir.
 
 ---
 

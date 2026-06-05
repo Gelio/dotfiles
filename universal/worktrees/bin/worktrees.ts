@@ -1,5 +1,4 @@
 #!/usr/bin/env -S node --experimental-strip-types
-import { parseArgs } from 'node:util';
 
 function usage(): void {
   console.error(
@@ -37,6 +36,9 @@ async function main(argv: string[]): Promise<void> {
     case '_config':
       await (await import('../src/config.ts')).debugConfig();
       break;
+    case '__complete':
+      await (await import('../src/commands/complete.ts')).cmdComplete(rest);
+      break;
     case '-h':
     case '--help':
       usage();
@@ -47,10 +49,6 @@ async function main(argv: string[]): Promise<void> {
       process.exit(1);
   }
 }
-
-// `parseArgs` is imported here so the entry owns CLI parsing concerns; commands
-// re-parse their own options. (Kept for future top-level flags.)
-void parseArgs;
 
 if (import.meta.main) {
   main(process.argv.slice(2)).catch((e: unknown) => {

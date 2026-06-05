@@ -24,6 +24,14 @@ ln -sfn "$HERE" "$HOME/.local/share/worktrees"
 # repo), strips types, and loads the rest of the project via relative imports.
 ln -sfn "$HERE/bin/worktrees.ts" "$HOME/.local/bin/worktrees"
 
+# Shell completions. zsh: ~/.zfunc is already on $fpath + compinit autoloads
+# _worktrees. bash: ~/.local/share/bash-completion/completions is the standard
+# per-command autoload dir. Both are symlinks, so edits track the checkout.
+mkdir -p "$HOME/.zfunc" "$HOME/.local/share/bash-completion/completions"
+ln -sfn "$HERE/completions/_worktrees" "$HOME/.zfunc/_worktrees"
+ln -sfn "$HERE/completions/worktrees.bash" "$HOME/.local/share/bash-completion/completions/worktrees"
+
 echo "Installed: $HOME/.local/bin/worktrees -> $HERE/bin/worktrees.ts"
 echo "Project:   $HOME/.local/share/worktrees -> $HERE"
 echo "Types at:  $HOME/.local/share/worktrees/src/types.ts (for repo configs)"
+echo "Completions: zsh -> ~/.zfunc/_worktrees, bash -> ~/.local/share/bash-completion/completions/worktrees"
