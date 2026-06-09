@@ -2,7 +2,7 @@ import * as fsp from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { repoRoot } from '../git.ts';
-import { CONFIG_HOME, registerRepo, repoKey } from '../config.ts';
+import { CONFIG_HOME, registerRepo, reposDir, centralConfigPath } from '../config.ts';
 
 // Stable type-import path: via the project dir symlink created by install.sh.
 const TYPES_PATH = path.join(os.homedir(), '.local', 'share', 'worktrees', 'src', 'types.ts');
@@ -91,11 +91,11 @@ export async function cmdInit(argv: string[]): Promise<void> {
     return;
   }
 
-  const dest = path.join(CONFIG_HOME, 'repos', `${repoKey(repo)}.mts`);
+  const dest = centralConfigPath(CONFIG_HOME, repo, '.mts');
   if (await fileExists(dest)) {
     console.log(`Config already exists: ${dest} (leaving it untouched)`);
   } else {
-    await fsp.mkdir(path.dirname(dest), { recursive: true });
+    await fsp.mkdir(reposDir(CONFIG_HOME), { recursive: true });
     await fsp.writeFile(dest, scaffold());
     console.log(`Scaffolded config: ${dest}`);
   }

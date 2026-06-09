@@ -25,6 +25,15 @@ export function repoKey(repo: string): string {
   return repo.replace(/^\//, '').replace(/\//g, '-');
 }
 
+/** Central config dir for a config home: `<configHome>/repos`. */
+export function reposDir(configHome: string): string {
+  return path.join(configHome, 'repos');
+}
+/** Central config path for a repo: `<configHome>/repos/<repoKey>.<ext>`. */
+export function centralConfigPath(configHome: string, repo: string, ext = '.mts'): string {
+  return path.join(reposDir(configHome), `${repoKey(repo)}${ext}`);
+}
+
 function isLink(p: string): boolean {
   try {
     return fs.lstatSync(p).isSymbolicLink();
@@ -65,7 +74,7 @@ function resolveConfigSource(repo: string): string | null {
     if ((fs.existsSync(f) || isLink(f)) && configPathIsSafe(repo, f)) return f;
   }
   for (const ext of CONFIG_EXTS) {
-    const c = path.join(CONFIG_HOME, 'repos', `${repoKey(repo)}${ext}`);
+    const c = centralConfigPath(CONFIG_HOME, repo, ext);
     if (fs.existsSync(c)) return c;
   }
   return null;

@@ -3,6 +3,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { reposDir, centralConfigPath } from '../src/config.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const ENGINE = path.join(HERE, '..', 'bin', 'worktrees.ts');
@@ -48,4 +49,17 @@ export function runEngine(
 export function linkCfg(root: string, repo: string, body: string, name = '.worktrees.mts'): void {
   fs.writeFileSync(path.join(root, 'cfg.mts'), body);
   fs.symlinkSync(path.join(root, 'cfg.mts'), path.join(repo, name));
+}
+
+/** Write a central config at <configHome>/repos/<repoKey>.<ext>; returns its path. */
+export function writeCentralConfig(
+  configHome: string,
+  repo: string,
+  body: string,
+  ext = '.mts',
+): string {
+  fs.mkdirSync(reposDir(configHome), { recursive: true });
+  const file = centralConfigPath(configHome, repo, ext);
+  fs.writeFileSync(file, body);
+  return file;
 }

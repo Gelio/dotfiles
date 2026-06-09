@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { sandbox, runEngine, linkCfg } from './helpers.ts';
+import { sandbox, runEngine, linkCfg, writeCentralConfig } from './helpers.ts';
 import { configPathIsSafe, repoKey } from '../src/config.ts';
 
 test('configPathIsSafe: outside symlink ok; inside/plain refused', () => {
@@ -41,10 +41,11 @@ test('discovery: plain file refused, points at init', () => {
 test('discovery: plain-JS central config (.mjs) loads', () => {
   const { repo, configHome } = sandbox();
   const key = repoKey(repo);
-  fs.mkdirSync(path.join(configHome, 'repos'), { recursive: true });
-  fs.writeFileSync(
-    path.join(configHome, 'repos', `${key}.mjs`),
+  writeCentralConfig(
+    configHome,
+    repo,
     `export default { symlinkTargets: ['README.md'] };\n`,
+    '.mjs',
   );
   const { out, code } = runEngine(repo, ['_config'], { configHome });
   assert.equal(code, 0);
@@ -53,9 +54,7 @@ test('discovery: plain-JS central config (.mjs) loads', () => {
 
 test('discovery: central fallback + de-duped registry', () => {
   const { repo, configHome } = sandbox();
-  const key = repoKey(repo);
-  fs.mkdirSync(path.join(configHome, 'repos'), { recursive: true });
-  fs.writeFileSync(path.join(configHome, 'repos', `${key}.mts`), OK_CFG);
+  writeCentralConfig(configHome, repo, OK_CFG);
   assert.equal(runEngine(repo, ['_config'], { configHome }).code, 0);
   runEngine(repo, ['_config'], { configHome });
   const reg = fs.readFileSync(path.join(configHome, 'registry'), 'utf8');
