@@ -5,6 +5,7 @@ import { ask } from '../prompt.ts';
 import { git, gitOk } from '../git.ts';
 import { loadConfig } from '../config.ts';
 import { computePorts, readPortRegistry } from '../ports.ts';
+import type { WorktreeName, PortIndex } from '../ports.ts';
 import { applySymlinks } from '../symlinks.ts';
 
 async function dirExists(p: string): Promise<boolean> {
@@ -16,22 +17,30 @@ async function dirExists(p: string): Promise<boolean> {
   }
 }
 
+/**
+ * Candidate worktree names to consider for syncing. Prefer the port registry's
+ * keys (repos with ports track each worktree there); fall back to listing
+ * `worktrees/` subdirectories for port-less repos that keep no registry.
+ */
+async function worktreeNames(
+  wtDir: string,
+  reg: Map<WorktreeName, PortIndex>,
+): Promise<WorktreeName[]> {
+  if (reg.size > 0) return [...reg.keys()];
+  try {
+    const ents = await fsp.readdir(wtDir, { withFileTypes: true });
+    return ents.filter((e) => e.isDirectory()).map((e) => e.name);
+  } catch {
+    return [];
+  }
+}
+
 export async function cmdSync(): Promise<void> {
   const { config, repo } = await loadConfig();
   const wtDir = path.join(repo, 'worktrees');
 
   const reg = await readPortRegistry(repo);
-  let names: string[];
-  if (reg.size > 0) {
-    names = [...reg.keys()];
-  } else {
-    try {
-      const ents = await fsp.readdir(wtDir, { withFileTypes: true });
-      names = ents.filter((e) => e.isDirectory()).map((e) => e.name);
-    } catch {
-      names = [];
-    }
-  }
+  const names = await worktreeNames(wtDir, reg);
 
   const entries: { name: string; branch: string }[] = [];
   for (const name of names) {

@@ -2,12 +2,21 @@ import * as fsp from 'node:fs/promises';
 import * as path from 'node:path';
 import type { WorktreesConfig, ResolvedWorktreesConfig } from './types.ts';
 
+/** A worktree directory name under `<repo>/worktrees/` (e.g. `feature-x`). */
+export type WorktreeName = string;
+/** A worktree's port-allocation index; ports are `base + index * portStep`. */
+export type PortIndex = number;
+
 function portRegistryPath(repo: string): string {
   return path.join(repo, 'worktrees', '.port-registry');
 }
 
-/** Read `<repo>/worktrees/.port-registry` (lines `name:index`) into a Map. */
-export async function readPortRegistry(repo: string): Promise<Map<string, number>> {
+/**
+ * Read `<repo>/worktrees/.port-registry` into a `worktreeName -> portIndex`
+ * Map, parsed from its `name:index` lines. Returns an empty Map when the repo
+ * keeps no registry (e.g. a port-less repo, or one with no worktrees yet).
+ */
+export async function readPortRegistry(repo: string): Promise<Map<WorktreeName, PortIndex>> {
   const m = new Map<string, number>();
   let text: string;
   try {
