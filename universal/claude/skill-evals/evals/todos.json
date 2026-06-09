@@ -1,0 +1,34 @@
+{
+  "skill": "todos",
+  "skill_path": "../../stowed/.claude/skills/todos/SKILL.md",
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "orchestration-plan",
+      "kind": "core",
+      "prompt": "I want you to work through this todos.md. Before you touch anything, walk me through exactly how you'll approach it: how you'll do the code changes, how you'll handle commits, and the order of operations.\n\ntodos.md:\n\n## Tasks\n- [ ] Add a null check to FileAssessmentsTable\n- [ ] Extract the assessments fetch into a shared hook\n\n## Stuff I'll handle myself\n- [ ] Decide on the empty-state copy with design\n\n## Parking these for now\n- [ ] Flaky E2E on slow CI\n",
+      "assertions": [
+        {
+          "text": "It plans to delegate the code changes to subagents rather than writing the code itself inline",
+          "type": "judge"
+        },
+        {
+          "text": "It will NOT rebase (or squash) until the user explicitly approves the commit plan first",
+          "type": "judge"
+        },
+        {
+          "text": "It skips the 'Stuff I'll handle myself' and 'Parking these for now' sections (loosely-matched as for-me / deferred) rather than working those items",
+          "type": "judge"
+        },
+        {
+          "text": "It plans to mark each task done in the todos.md immediately as it completes, not in a batch at the end",
+          "type": "judge"
+        },
+        {
+          "text": "It references using the commit-conventions workflow (git absorb for fixups / fixup vs standalone decision) for commits",
+          "type": "judge"
+        }
+      ]
+    }
+  ]
+}

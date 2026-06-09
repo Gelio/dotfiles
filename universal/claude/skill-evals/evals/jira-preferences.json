@@ -1,0 +1,57 @@
+{
+  "skill": "jira-preferences",
+  "skill_path": "../../stowed/.claude/skills/jira-preferences/SKILL.md",
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "reconstruct-adf-for-edit",
+      "kind": "core",
+      "prompt": "I'm editing the description of Jira ticket MIG-1234 via the Atlassian MCP. The current description (fetched as Markdown) is:\n\n## Background\nWe need to support SQL file uploads.\n\n## Acceptance criteria\n- Users can drag and drop files\n\nI want to add a new 'Testing' section that says to see MIG-7921 for the test plan. Show me exactly what you'll send to the editJiraIssue tool (the description payload) and how you'll go about it.",
+      "assertions": [
+        {
+          "text": "The payload is an ADF document (a JSON object with \"type\": \"doc\"), not Markdown",
+          "type": "regex",
+          "pattern": "\"type\"\\s*:\\s*\"doc\""
+        },
+        {
+          "text": "The MIG-7921 reference uses an inlineCard ADF node rather than a bare URL or plain text",
+          "type": "contains",
+          "needle": "inlineCard"
+        },
+        {
+          "text": "The existing Background and Acceptance criteria content is preserved in the reconstructed ADF, not dropped",
+          "type": "judge"
+        },
+        {
+          "text": "It states it will preview the change and wait for the user's approval before calling the editJiraIssue tool",
+          "type": "judge"
+        },
+        {
+          "text": "It uses contentFormat 'adf' (not Markdown mode) for the write",
+          "type": "contains",
+          "needle": "adf"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "code-reference-permalink",
+      "kind": "core",
+      "prompt": "I'm writing a Jira comment that needs to point at the EstateIngesterProjectRoleName constant, which is hard-coded in test-runner/pkg/testruninit/project.go around lines 12-15 in the EnterpriseDB/nexus-tests repo. Write the sentence I should put in the comment.",
+      "assertions": [
+        {
+          "text": "The code reference is a SHA-pinned GitHub permalink (a blob/<commit-sha>/ URL, or an explicit <sha> placeholder the user is told to substitute) \u2014 NOT a bare path:line reference and NOT a mutable blob/main / blob/master URL presented as the link to use. A prose warning that mentions blob/main does not count as using it.",
+          "type": "judge"
+        },
+        {
+          "text": "It does not present a bare blob/main or blob/master URL as the link the user should paste",
+          "type": "judge"
+        },
+        {
+          "text": "The link is not applied on top of inline code formatting (no markdown like [`Name`](url) that combines code + link)",
+          "type": "judge"
+        }
+      ]
+    }
+  ]
+}

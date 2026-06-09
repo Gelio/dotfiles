@@ -1,0 +1,26 @@
+[project]
+name = "skill-evals"
+version = "0.1.0"
+description = "Behavior benchmark harness for my Claude skills"
+requires-python = ">=3.10"
+# The harness itself depends only on the standard library; `claude` is invoked
+# as an external CLI, not imported.
+dependencies = []
+
+[dependency-groups]
+# Dev tooling, managed by uv — run via `uv run ruff ...` / `uv run basedpyright`.
+# Deliberately not sourced from Mason so the harness is reproducible standalone.
+dev = [
+    "ruff>=0.14",
+    "basedpyright>=1.31",
+]
+
+[tool.uv]
+# Not an installable package — uv only manages the environment for the scripts.
+package = false
+
+[tool.basedpyright]
+# Only our code is type-checked. vendor/ is vendored third-party (skill-creator)
+# and runs/ is generated output — neither is ours to keep clean.
+include = ["run_behavior_eval.py"]
+exclude = ["vendor", "runs", "**/__pycache__"]

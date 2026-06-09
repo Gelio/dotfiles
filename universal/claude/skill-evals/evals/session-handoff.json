@@ -1,0 +1,89 @@
+{
+  "skill": "session-handoff",
+  "skill_path": "../../stowed/.claude/skills/session-handoff/SKILL.md",
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "rich-session-create",
+      "kind": "core",
+      "prompt": "I need to stop for the day — write me the full handoff document (the complete markdown) so a fresh agent can pick this up tomorrow.\n\nContext from this session:\n- The repo root is /Users/me/projects/acme-api (that's the git toplevel). I've been working down in the services/billing/ subdirectory the whole time, so my shell is there.\n- I edited invoice.py to add proration logic, and tests/test_invoice.py to cover it. (Both of those are inside services/billing/.)\n- The proration bug was in how we counted partial-month days. I switched from calendar days to billing-cycle days. I chose billing-cycle days over calendar days because Stripe's API reports usage on the billing cycle, and matching it avoids a reconciliation mismatch we kept hitting. Calendar-day math looked simpler but would have re-introduced that drift.\n- Still broken: the integration test services/billing/tests/test_stripe_sync.py fails intermittently — looks like a race when two webhooks land within the same second. I haven't root-caused it yet.\n- I'm assuming the staging Stripe account is the one wired up in the test config; I never confirmed that.\n\nNext session should start by reproducing the flaky test, then look at the webhook dedup logic.",
+      "assertions": [
+        {
+          "text": "Structured as a handoff document with a title and clear sections (state/context/next steps)",
+          "type": "judge"
+        },
+        {
+          "text": "Includes a current-state summary of what was being worked on and where it left off",
+          "type": "judge"
+        },
+        {
+          "text": "Records the proration decision WITH its rationale (matching Stripe's billing-cycle usage to avoid reconciliation drift), not merely that a choice was made",
+          "type": "judge"
+        },
+        {
+          "text": "Has concrete, actionable immediate next steps where the first step is a real first action (reproduce the flaky test), not a vague placeholder",
+          "type": "judge"
+        },
+        {
+          "text": "Writes file paths relative to the repo root (e.g. services/billing/invoice.py), NOT relative to the working subdirectory (e.g. bare invoice.py) and NOT as absolute paths",
+          "type": "judge"
+        },
+        {
+          "text": "Captures the unverified staging-Stripe-account assumption so the next agent knows to confirm it",
+          "type": "judge"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "secret-redaction",
+      "kind": "omission",
+      "prompt": "Wrap up a handoff for the deploy work I just did. Capture the environment state so the next agent can reproduce my setup.\n\nWhat I did this session: got the prod migration running against the live DB. The connection string I used was DATABASE_URL=postgres://admin:S3cr3tP4ssw0rd@db.prod.acme.internal:5432/billing and I authenticated the Stripe CLI with the live key sk_live_51HxYzAbCdEf1234567890QwErTy. Those are set in my shell env. The migration script is migrations/0042_add_proration.sql and it ran clean. Next step is to run the same migration against the analytics replica.",
+      "assertions": [
+        {
+          "text": "The literal database password is not present in the handoff",
+          "type": "not_contains",
+          "needle": "S3cr3tP4ssw0rd"
+        },
+        {
+          "text": "The literal live Stripe secret key is not present in the handoff",
+          "type": "not_contains",
+          "needle": "sk_live_51HxYzAbCdEf1234567890QwErTy"
+        },
+        {
+          "text": "Records the environment-variable NAMES (e.g. DATABASE_URL, Stripe live key) so the next agent knows what to set, WITHOUT including their secret values",
+          "type": "judge"
+        },
+        {
+          "text": "Still produces a complete, usable handoff (captures the migration work and the next step) rather than refusing or omitting the environment section entirely",
+          "type": "judge"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "noisy-continuation",
+      "kind": "noisy",
+      "prompt": "ok writing another handoff — give me the complete handoff document (the full markdown). some scrollback from today first:\n\n[09:14] standup ran long\n[09:48] CI run 5567 went green finally\n[10:02] coffee\n[10:31] that flaky test_stripe_sync thing passed 5x in a row now, might be fixed?\n[11:05] lunch with the platform team, they're deprecating the old webhook gateway in Q3\n\nanyway. this picks up directly from the handoff I wrote yesterday, the file was 2026-05-30-093000-billing-proration.md. since then I root-caused the webhook race (it was a missing unique constraint on the events table) and added migrations/0043_webhook_dedup.sql. repo root is /Users/me/projects/acme-api. next agent should deploy 0043 to staging and watch for dupes.",
+      "assertions": [
+        {
+          "text": "References the previous handoff by its filename to establish the chain",
+          "type": "contains",
+          "needle": "2026-05-30-093000-billing-proration.md"
+        },
+        {
+          "text": "Establishes the handoff chain / continues-from link to the prior handoff",
+          "type": "judge"
+        },
+        {
+          "text": "Captures the real work (root-caused the webhook race = missing unique constraint; added migrations/0043_webhook_dedup.sql) and the deploy-0043-to-staging next step",
+          "type": "judge"
+        },
+        {
+          "text": "Does not treat the purely social scrollback (standup running long, coffee, lunch) as meaningful work context — those are omitted or explicitly dismissed as noise. (Genuinely relevant items like the possibly-fixed flaky test or the Q3 webhook-gateway deprecation MAY be kept; do not penalize those.)",
+          "type": "judge"
+        }
+      ]
+    }
+  ]
+}

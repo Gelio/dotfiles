@@ -1,0 +1,12 @@
+# Benchmark run outputs (regenerated on every run; not source)
+runs/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# uv-managed dev tooling environment
+.venv/
+
+# Tool caches
+.ruff_cache/

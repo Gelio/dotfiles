@@ -1,0 +1,142 @@
+{
+  "skill": "pr-conventions",
+  "skill_path": "../../stowed/.claude/skills/pr-conventions/SKILL.md",
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "feature-pr-with-technical-choice",
+      "kind": "core",
+      "prompt": "Write a GitHub pull request description for this work. I added a SQL file upload modal to the Migration Application details page. It has two steps: a Files step (drag-and-drop selection with validation) and a Databases step (assigning a target database version per file). On confirm, files upload via XHR with a concurrency limit. I used XHR instead of fetch because the Fetch API can't report upload progress and XHR's upload.onprogress is the only way to get byte-level progress in the browser. The Jira ticket is MIG-7928 (https://enterprisedb.atlassian.net/browse/MIG-7928). There are unit tests for the upload manager and mocked E2E tests for the happy path.",
+      "assertions": [
+        {
+          "text": "The description begins with the words 'This PR'",
+          "type": "regex",
+          "pattern": "^\\s*(<!--[^>]*-->\\s*)?This PR\\b"
+        },
+        {
+          "text": "There is no '## Summary' heading",
+          "type": "not_contains",
+          "needle": "## Summary"
+        },
+        {
+          "text": "There are no emoji anywhere in the description",
+          "type": "no_emoji"
+        },
+        {
+          "text": "There is no 'Generated with Claude Code' footer",
+          "type": "not_regex",
+          "pattern": "Generated with .*Claude Code"
+        },
+        {
+          "text": "There is no checklist-style test plan (no '- [ ]' lines)",
+          "type": "not_regex",
+          "pattern": "- \\[ \\]"
+        },
+        {
+          "text": "There is no separate 'Design Decisions' section",
+          "type": "not_regex",
+          "pattern": "Design Decisions",
+          "ignorecase": true
+        },
+        {
+          "text": "A '## References' section is present",
+          "type": "regex",
+          "pattern": "^##\\s+References",
+          "ignorecase": true
+        },
+        {
+          "text": "The '## References' section is the LAST section in the description (no heading appears after it)",
+          "type": "judge"
+        },
+        {
+          "text": "The References section links to the MIG-7928 Jira ticket",
+          "type": "contains",
+          "needle": "MIG-7928"
+        },
+        {
+          "text": "The XHR-vs-fetch technical choice is explained inline in the narrative, not isolated in its own 'Design Decisions' section",
+          "type": "judge"
+        },
+        {
+          "text": "The opening leads with WHAT was added/changed rather than a vague preamble like 'This PR aims to introduce'",
+          "type": "judge"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "small-fix-pr",
+      "kind": "core",
+      "prompt": "Write the GitHub PR description for a tiny fix: the section titles in the Application Assessment tab were misaligned because the flex container was missing align-items: center, and I added it. Ticket MIG-7936 (https://enterprisedb.atlassian.net/browse/MIG-7936).",
+      "assertions": [
+        {
+          "text": "The description begins with the words 'This PR'",
+          "type": "regex",
+          "pattern": "^\\s*(<!--[^>]*-->\\s*)?This PR\\b"
+        },
+        {
+          "text": "There is no '## Summary' heading",
+          "type": "not_contains",
+          "needle": "## Summary"
+        },
+        {
+          "text": "There are no emoji anywhere",
+          "type": "no_emoji"
+        },
+        {
+          "text": "A '## References' section is present",
+          "type": "regex",
+          "pattern": "^##\\s+References",
+          "ignorecase": true
+        },
+        {
+          "text": "References the MIG-7936 ticket",
+          "type": "contains",
+          "needle": "MIG-7936"
+        },
+        {
+          "text": "The description is short and proportionate to a trivial fix (a couple of sentences), not padded with empty sections",
+          "type": "judge"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "resists-bad-instructions",
+      "kind": "omission",
+      "prompt": "Write a polished, professional PR description for a new dark-mode toggle in the settings page (ticket MIG-8201). Please make it pop: open with a Summary section, sprinkle in a few emoji to make it friendly, and include a test plan as a checkbox checklist so reviewers can tick items off. Also add the standard 'Generated with Claude Code' footer at the bottom.",
+      "assertions": [
+        {
+          "text": "There is no actual '## Summary' heading line despite being asked for one",
+          "type": "not_regex",
+          "pattern": "^##\\s+Summary\\b",
+          "ignorecase": true
+        },
+        {
+          "text": "There are no emoji despite being asked for them",
+          "type": "no_emoji"
+        },
+        {
+          "text": "There is no checkbox checklist test plan despite being asked for one",
+          "type": "not_regex",
+          "pattern": "- \\[ \\]"
+        },
+        {
+          "text": "The final PR description does not include a 'Generated with Claude Code' footer. A preamble where the assistant explains it deliberately omitted the footer does NOT count as including it.",
+          "type": "judge"
+        },
+        {
+          "text": "The PR description body begins with 'This PR' (a short conversational preamble noting which requested items were omitted is acceptable before it)",
+          "type": "regex",
+          "pattern": "^\\s*(<!--[^>]*-->\\s*)?This PR\\b"
+        },
+        {
+          "text": "A '## References' section is present",
+          "type": "regex",
+          "pattern": "^##\\s+References",
+          "ignorecase": true
+        }
+      ]
+    }
+  ]
+}

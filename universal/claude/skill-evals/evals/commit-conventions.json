@@ -1,0 +1,127 @@
+{
+  "skill": "commit-conventions",
+  "skill_path": "../../stowed/.claude/skills/commit-conventions/SKILL.md",
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "feature-commit-with-why",
+      "kind": "core",
+      "prompt": "Write the git commit message for this change. I changed the oracleImage() helper to detect Oracle migration scenarios with strings.Contains instead of a hardcoded enum of known scenario names. I did it this way so that future Oracle scenarios are covered automatically without anyone having to update the enum. Scope it to ticket MIG-7276.",
+      "assertions": [
+        {
+          "text": "The subject line follows the 'type(scope): subject' conventional-commit format",
+          "type": "regex",
+          "pattern": "^[a-z]+(\\([^)]+\\))?: .+"
+        },
+        {
+          "text": "The subject line has no trailing period",
+          "type": "not_regex",
+          "pattern": "\\A(?:```[a-zA-Z]*\\n)?[a-z]+(?:\\([^)]+\\))?: [^\\n]*\\.\\s*$"
+        },
+        {
+          "text": "There is a Co-Authored-By: Claude trailer",
+          "type": "regex",
+          "pattern": "Co-Authored-By: Claude"
+        },
+        {
+          "text": "The message has a body (more than just a subject line)",
+          "type": "judge"
+        },
+        {
+          "text": "The body explains WHY the change was made (the auto-cover-future-Oracle-scenarios rationale), not just what changed",
+          "type": "judge"
+        },
+        {
+          "text": "Code identifiers like oracleImage and strings.Contains are wrapped in backticks",
+          "type": "judge"
+        },
+        {
+          "text": "The subject line is in imperative mood (e.g. 'add'/'use', not 'added'/'uses')",
+          "type": "judge"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "terse-request-still-needs-body",
+      "kind": "omission",
+      "prompt": "Quick one \u2014 just give me a commit message for fixing a typo in the README where 'recieve' should be 'receive'.",
+      "assertions": [
+        {
+          "text": "The subject follows the 'type(scope): subject' format",
+          "type": "regex",
+          "pattern": "^[a-z]+(\\([^)]+\\))?: .+"
+        },
+        {
+          "text": "There is a Co-Authored-By: Claude trailer even though the request was terse",
+          "type": "regex",
+          "pattern": "Co-Authored-By: Claude"
+        },
+        {
+          "text": "There is a body explaining the change, not only a subject line",
+          "type": "judge"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "noisy-context",
+      "kind": "noisy",
+      "prompt": "Here is some context from our debugging session earlier:\n\n[10:02] build passed on CI run 4821\n[10:03] flaky test FileAssessmentsTable.spec retried twice then passed\n[10:05] discussed whether to memoize the selector, decided not to for now\n[10:10] noticed the API returns 409 when a resource is in use\n[10:14] lunch\n\nAnyway, back to the task: I just added a null check to the FileAssessmentsTable component so it renders an empty state instead of crashing when the assessments API returns an empty response. Write me the commit message. Scope it to MIG-7922.",
+      "assertions": [
+        {
+          "text": "The subject follows the 'type(scope): subject' format",
+          "type": "regex",
+          "pattern": "^[a-z]+(\\([^)]+\\))?: .+"
+        },
+        {
+          "text": "There is a Co-Authored-By: Claude trailer",
+          "type": "regex",
+          "pattern": "Co-Authored-By: Claude"
+        },
+        {
+          "text": "The body explains why (guarding against the empty/null API response), not the unrelated debugging-log chatter",
+          "type": "judge"
+        },
+        {
+          "text": "The message does not dump the irrelevant CI/lunch context into the commit body",
+          "type": "judge"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "fixup-amend-on-branch",
+      "kind": "core",
+      "prompt": "I found a bug: the FileAssessmentsTable null check I wrote is wrong. That table was added earlier on THIS branch (not merged yet). I want to fold this fix into the commit that introduced the table, not make a new standalone commit. The fix touches onprem/ui/src/.../FileAssessmentsTable.tsx. Walk me through the exact git commands you'd run.",
+      "assertions": [
+        {
+          "text": "Uses `git absorb` to attribute the staged fix to the right branch commit",
+          "type": "contains",
+          "needle": "git absorb"
+        },
+        {
+          "text": "Does not use `git add -A` or `git add .` (stages specific files by name)",
+          "type": "not_regex",
+          "pattern": "git add (?:-A|\\.)(?:\\s|$)"
+        },
+        {
+          "text": "Relies on git absorb for target attribution rather than hand-picking a SHA via git blame or eyeballing the log",
+          "type": "judge"
+        },
+        {
+          "text": "Stages the specific file by name before running absorb, and treats absorb as only seeing staged hunks",
+          "type": "judge"
+        },
+        {
+          "text": "Creates a fixup commit rather than directly running git commit --amend on the target commit",
+          "type": "judge"
+        },
+        {
+          "text": "Mentions inspecting what absorb produced (e.g. git log / git status) and handling any hunks absorb could not attribute",
+          "type": "judge"
+        }
+      ]
+    }
+  ]
+}

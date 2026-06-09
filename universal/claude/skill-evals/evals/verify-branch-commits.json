@@ -1,0 +1,38 @@
+{
+  "skill": "verify-branch-commits",
+  "skill_path": "../../stowed/.claude/skills/verify-branch-commits/SKILL.md",
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "per-commit-verification-plan",
+      "kind": "core",
+      "prompt": "I just rebased my branch and I want to make sure every commit on it independently passes our checks before I open a PR. The base is main. Walk me through exactly how you'll verify this, step by step. (Our checks are documented in AGENTS.md: tsc, eslint, vitest, prettier.)",
+      "assertions": [
+        {
+          "text": "It uses an interactive rebase that marks every commit as 'edit' (e.g. via GIT_SEQUENCE_EDITOR replacing pick with edit) so it can stop at each commit",
+          "type": "judge"
+        },
+        {
+          "text": "At each commit it runs the FULL check suite \u2014 compilation, lint, tests, and formatting \u2014 not just a subset",
+          "type": "judge"
+        },
+        {
+          "text": "It never skips a commit, even refactors or test-only commits",
+          "type": "judge"
+        },
+        {
+          "text": "When a check fails it fixes and amends the commit rather than marking it a known failure and moving on",
+          "type": "judge"
+        },
+        {
+          "text": "It does not assume any failure is pre-existing (everything must pass on every commit)",
+          "type": "judge"
+        },
+        {
+          "text": "It ends with a reminder to sign the commits before pushing",
+          "type": "judge"
+        }
+      ]
+    }
+  ]
+}

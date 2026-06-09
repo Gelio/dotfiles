@@ -1,0 +1,40 @@
+{
+  "skill": "enrich-todos",
+  "skill_path": "../../stowed/.claude/skills/enrich-todos/SKILL.md",
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "annotate-with-context-skip-trivial",
+      "kind": "core",
+      "prompt": "Earlier in our session we found these things while implementing: the delete mutation pattern lives in useIdpDeleteAction at onprem/ui/src/components/IdentityProviders/actions/useIdpDeleteAction.tsx, and it wraps onError with errorHandler from @/utils/errorHandler.ts; the delete endpoint returns 409 when the resource is still in use. We also learned the status filter dropdown renders inside data-testid=\"status-filter\" and you must scope getByRole('combobox') to it because there are multiple comboboxes on the page.\n\nHere is the TODO file. Enrich it with context for the next agent and output the full updated file:\n\n- [ ] Add error handling to the delete mutation\n- [ ] Rename oldVar to newVar\n- [ ] Add e2e test for the new filter dropdown",
+      "assertions": [
+        {
+          "text": "All three original TODO items are still present and unchanged in wording",
+          "type": "judge"
+        },
+        {
+          "text": "At least one item gains a '**Context:**' annotation",
+          "type": "contains",
+          "needle": "**Context:**"
+        },
+        {
+          "text": "The delete-mutation item's context mentions the useIdpDeleteAction pattern and/or the 409 detail",
+          "type": "judge"
+        },
+        {
+          "text": "The 'Rename oldVar to newVar' item is left without a context note (nothing specific to add)",
+          "type": "judge"
+        },
+        {
+          "text": "No item is marked done (no '- [x]')",
+          "type": "not_contains",
+          "needle": "[x]"
+        },
+        {
+          "text": "The added notes carry specific, non-obvious detail (file paths, testids, the 409) rather than restating the TODO in other words",
+          "type": "judge"
+        }
+      ]
+    }
+  ]
+}
