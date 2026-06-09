@@ -23,7 +23,7 @@ export async function cmdSetup(argv: string[]): Promise<void> {
   });
   const branch = positionals[0];
   if (!branch) die('usage: worktrees setup <branch> [--from <base>]');
-  const base = (values.from as string | undefined) ?? 'origin/main';
+  const base = values.from ?? 'origin/main';
 
   const { config, repo } = await loadConfig();
   const dirName = branch.replace(/\//g, '-');
