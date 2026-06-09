@@ -86,15 +86,25 @@ export interface LoadedConfig {
   repo: string;
 }
 
+/**
+ * Dynamically import a resolved config module and unwrap it.
+ * `export default` configs arrive as `mod.default` (the normal path); the
+ * `?? mod` fallback supports a config authored as named/namespace exports
+ * without a default export.
+ */
+async function importConfig(source: string): Promise<WorktreesConfig> {
+  const mod = (await import(pathToFileURL(source).href)) as {
+    default?: WorktreesConfig;
+  } & WorktreesConfig;
+  return mod.default ?? mod;
+}
+
 /** Resolve the repo, discover + import its config, register it. */
 export async function loadConfig(): Promise<LoadedConfig> {
   const repo = await repoRoot();
   const source = resolveConfigSource(repo);
   if (!source) die(`no worktrees config for ${repo} — run: worktrees init`);
-  const mod = (await import(pathToFileURL(source).href)) as {
-    default?: WorktreesConfig;
-  } & WorktreesConfig;
-  const config: WorktreesConfig = mod.default ?? mod;
+  const config = await importConfig(source);
   await registerRepo(repo, source);
   return { source, config, repo };
 }
@@ -103,10 +113,7 @@ export async function loadConfig(): Promise<LoadedConfig> {
 export async function loadConfigFor(repo: string): Promise<WorktreesConfig> {
   const source = resolveConfigSource(repo);
   if (!source) throw new Error(`no worktrees config for ${repo}`);
-  const mod = (await import(pathToFileURL(source).href)) as {
-    default?: WorktreesConfig;
-  } & WorktreesConfig;
-  return mod.default ?? mod;
+  return importConfig(source);
 }
 
 /** Test-only debug arm wired into the entry. */
