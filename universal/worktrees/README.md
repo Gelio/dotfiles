@@ -10,10 +10,12 @@ port allocation, and hook execution.
 ## Runtime model
 
 - **No build step.** The entry point is a TypeScript file with a
-  `#!/usr/bin/env -S node --experimental-strip-types` shebang. Node strips the
-  types at load time; no compilation is needed.
-- **Node ≥ 22.6** is required (`--experimental-strip-types`). `import.meta.main`
-  requires ≥ 22.12.
+  `#!/usr/bin/env node` shebang. Node strips the types at load time; no
+  compilation is needed.
+- **Node ≥ 24** is required (enforced via the `engines` field in
+  `package.json`). On Node 24 type-stripping is enabled by default, so no
+  `--experimental-strip-types` flag is needed, and `import.meta.main` is
+  available.
 - If a repo pins an older Node via mise, use the escape hatch:
   ```
   mise x node@lts -- worktrees <command>

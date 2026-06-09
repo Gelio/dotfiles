@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "bin": {
     "worktrees": "bin/worktrees.ts"
   },
@@ -10,9 +13,9 @@
     ".": "./src/types.ts"
   },
   "scripts": {
-    "test": "node --test --experimental-strip-types 'test/*.test.ts'",
-    "test:coverage": "mkdir -p coverage && node --test --experimental-strip-types --experimental-test-coverage --test-coverage-exclude='test/**' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info 'test/*.test.ts'",
-    "test:update-snapshots": "node --test --experimental-strip-types --test-update-snapshots 'test/*.test.ts'",
+    "test": "node --test 'test/*.test.ts'",
+    "test:coverage": "mkdir -p coverage && node --test --experimental-test-coverage --test-coverage-exclude='test/**' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info 'test/*.test.ts'",
+    "test:update-snapshots": "node --test --test-update-snapshots 'test/*.test.ts'",
     "lint": "oxlint",
     "typecheck": "tsc --noEmit",
     "format": "oxfmt --write src bin test",

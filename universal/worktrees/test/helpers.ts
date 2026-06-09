@@ -53,7 +53,7 @@ export function runEngine(
   args: string[],
   opts: { input?: string; configHome?: string } = {},
 ): { out: string; code: number } {
-  const res = spawnSync('node', ['--experimental-strip-types', ENGINE, ...args], {
+  const res = spawnSync('node', [ENGINE, ...args], {
     cwd,
     input: opts.input ?? '',
     encoding: 'utf8',
