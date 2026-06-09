@@ -1,0 +1,7 @@
+exports[`no-args usage text 1`] = `
+"Usage: worktrees <command> [args]\\n\\nCommands:\\n  setup <branch> [--from <base>]   Create/refresh a worktree for <branch>\\n  teardown <name|branch>           Remove a worktree (interactive)\\n  list [--all]                     List this repo's worktrees (--all: every registered repo)\\n  sync                             Re-apply config to selected worktrees (interactive)\\n  init [--in-repo]                 Scaffold a config for this repo\\n"
+`;
+
+exports[`top-level subcommand completion listing 1`] = `
+"setup\\nteardown\\nlist\\nsync\\ninit\\n"
+`;
