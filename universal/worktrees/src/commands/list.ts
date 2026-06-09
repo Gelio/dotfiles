@@ -5,6 +5,10 @@ import { git } from '../git.ts';
 import { CONFIG_HOME, loadConfig, loadConfigFor } from '../config.ts';
 import { computePorts, hasPorts, readPortRegistry } from '../ports.ts';
 
+function pad(s: string, n: number): string {
+  return s.padEnd(n);
+}
+
 function portsString(config: WorktreesConfig, index: number): string {
   if (!hasPorts(config)) return '-';
   return Object.values(computePorts(config, index)).join('/');
@@ -53,7 +57,6 @@ async function listOne(repo: string, config: WorktreesConfig): Promise<void> {
 
   const c1 = Math.max(6, ...rows.map((r) => r.branch.length)) + 2;
   const c2 = Math.max(4, ...rows.map((r) => r.pathCol.length)) + 2;
-  const pad = (s: string, n: number) => s.padEnd(n);
   console.log(pad('BRANCH', c1) + pad('PATH', c2) + 'PORTS');
   console.log(pad('------', c1) + pad('----', c2) + '-----');
   for (const r of rows) console.log(pad(r.branch, c1) + pad(r.pathCol, c2) + r.ports);
