@@ -5,8 +5,8 @@ import { git } from '../git.ts';
 import { CONFIG_HOME, loadConfig, loadConfigFor } from '../config.ts';
 import { computePorts, hasPorts, readPortRegistry } from '../ports.ts';
 
-function pad(s: string, n: number): string {
-  return s.padEnd(n);
+function pad(s: string, n: number, fill = ' '): string {
+  return s.padEnd(n, fill);
 }
 
 function portsString(config: ResolvedWorktreesConfig, index: number): string {
@@ -57,9 +57,10 @@ async function listOne(repo: string, config: ResolvedWorktreesConfig): Promise<v
 
   const c1 = Math.max(6, ...rows.map((r) => r.branch.length)) + 2;
   const c2 = Math.max(4, ...rows.map((r) => r.pathCol.length)) + 2;
-  console.log(pad('BRANCH', c1) + pad('PATH', c2) + 'PORTS');
-  console.log(pad('------', c1) + pad('----', c2) + '-----');
-  for (const r of rows) console.log(pad(r.branch, c1) + pad(r.pathCol, c2) + r.ports);
+  const c3 = Math.max(5, ...rows.map((r) => r.ports.length)) + 2;
+  console.log(pad('BRANCH', c1) + pad('PATH', c2) + pad('PORTS', c3));
+  console.log(pad('', c1, '-') + pad('', c2, '-') + pad('', c3, '-'));
+  for (const r of rows) console.log(pad(r.branch, c1) + pad(r.pathCol, c2) + pad(r.ports, c3));
 }
 
 export async function cmdList(argv: string[]): Promise<void> {
