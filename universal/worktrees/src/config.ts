@@ -108,6 +108,9 @@ export interface LoadedConfig {
  * without a default export.
  */
 async function importConfig(source: string): Promise<ResolvedWorktreesConfig> {
+  // The dynamic import of an arbitrary user config module is `any`; asserting
+  // the expected shape here is intentional (it is validated by resolveConfig).
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const mod = (await import(pathToFileURL(source).href)) as {
     default?: WorktreesConfig;
   } & WorktreesConfig;

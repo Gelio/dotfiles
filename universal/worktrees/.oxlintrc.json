@@ -9,5 +9,17 @@
     "correctness": "error",
     "suspicious": "warn"
   },
+  "rules": {
+    "typescript/no-unnecessary-type-assertion": "error",
+    "typescript/no-floating-promises": "error"
+  },
+  "overrides": [
+    {
+      "files": ["test/**/*.ts"],
+      "rules": {
+        "typescript/no-floating-promises": "off"
+      }
+    }
+  ],
   "ignorePatterns": ["node_modules", "dist", "build", "coverage"]
 }
