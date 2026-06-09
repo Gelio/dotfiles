@@ -14,13 +14,15 @@
     "lint": "oxlint",
     "typecheck": "tsc --noEmit",
     "format": "oxfmt --write src bin test",
-    "format:check": "oxfmt --check src bin test"
+    "format:check": "oxfmt --check src bin test",
+    "knip": "knip"
   },
   "dependencies": {
     "zx": "^8.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "knip": "^6.16.1",
     "oxfmt": "0.54.0",
     "oxlint": "1.69.0",
     "typescript": "^5.8.0"
