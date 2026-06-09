@@ -52,6 +52,18 @@ test('discovery: plain-JS central config (.mjs) loads', () => {
   assert.match(out, new RegExp(`${key}\\.mjs`));
 });
 
+test('loading: a config with a syntax error fails loudly (no exit 0, no hang)', () => {
+  const { root, repo, configHome } = sandbox();
+  // Unterminated object literal -> the dynamic import() throws while parsing.
+  linkCfg(root, repo, 'export default { ports: {\n');
+  const { out, code } = runEngine(repo, ['_config'], { configHome });
+  // The entry's main().catch() surfaces the import failure as a readable
+  // `Error: ...` line and exits non-zero, rather than hanging or swallowing it.
+  assert.notEqual(code, 0);
+  assert.match(out, /Error:/);
+  assert.match(out, /Unexpected token/);
+});
+
 test('discovery: central fallback + de-duped registry', () => {
   const { repo, configHome } = sandbox();
   writeCentralConfig(configHome, repo, OK_CFG);
