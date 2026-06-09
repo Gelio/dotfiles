@@ -6,4 +6,3 @@ export function die(msg: string): never {
 }
 export const warn = (msg: string): void => console.error(chalk.yellow(msg));
 export const ok = (msg: string): void => console.log(chalk.green(msg));
-export const info = (msg: string): void => console.log(msg);

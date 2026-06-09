@@ -2,7 +2,7 @@ import * as fsp from 'node:fs/promises';
 import * as path from 'node:path';
 import type { WorktreesConfig, ResolvedWorktreesConfig } from './types.ts';
 
-export function portRegistryPath(repo: string): string {
+function portRegistryPath(repo: string): string {
   return path.join(repo, 'worktrees', '.port-registry');
 }
 
