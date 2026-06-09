@@ -17,6 +17,16 @@ test('list shows main row + worktree row', (t) => {
   assert.match(out, /feature-list1/);
 });
 
+test('list renders [STALE] when a worktree dir is gone but the registry entry remains', (t) => {
+  const { root, repo, configHome } = sandbox(t);
+  linkCfg(root, repo, CFG);
+  runEngine(repo, ['setup', 'feature/gone'], { configHome });
+  // Remove the worktree dir but leave the port-registry entry intact.
+  fs.rmSync(path.join(repo, 'worktrees', 'feature-gone'), { recursive: true, force: true });
+  const { out } = runEngine(repo, ['list'], { configHome });
+  assert.match(out, /STALE/);
+});
+
 test('list --all spans registered repos', (t) => {
   const { root, configHome } = sandbox(t);
   const r1 = makeRepo(path.join(root, 'r1'));

@@ -16,6 +16,14 @@ test('init (central) scaffolds a typed config + registers', (t) => {
   assert.match(out, new RegExp(`repos.${repoKey(repo)}\\.mts`));
 });
 
+test('init (central) is idempotent: second run leaves config untouched', (t) => {
+  const { repo, configHome } = sandbox(t);
+  runEngine(repo, ['init'], { configHome });
+  const { out, code } = runEngine(repo, ['init'], { configHome });
+  assert.equal(code, 0);
+  assert.match(out, /Config already exists/);
+});
+
 test('init --in-repo appends exclude idempotently + prints guidance', (t) => {
   const { repo, configHome } = sandbox(t);
   runEngine(repo, ['init', '--in-repo'], { configHome });
