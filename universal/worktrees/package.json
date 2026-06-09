@@ -11,6 +11,7 @@
   },
   "scripts": {
     "test": "node --test --experimental-strip-types 'test/*.test.ts'",
+    "lint": "oxlint",
     "typecheck": "tsc --noEmit",
     "format": "oxfmt --write src bin test",
     "format:check": "oxfmt --check src bin test"
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "oxfmt": "0.54.0",
+    "oxlint": "1.69.0",
     "typescript": "^5.8.0"
   }
 }
