@@ -9,9 +9,11 @@ test('mergeSymlink: links new, recurses real dirs, preserves real files', async 
   const { root } = sandbox();
   const src = path.join(root, 'src');
   const dst = path.join(root, 'dst');
-  fs.mkdirSync(path.join(src, 'sub'), { recursive: true });
+  fs.mkdirSync(path.join(src, 'sub', 'foo'), { recursive: true });
   fs.writeFileSync(path.join(src, 'a.txt'), 'a');
   fs.writeFileSync(path.join(src, 'sub', 'b.txt'), 'b');
+  fs.writeFileSync(path.join(src, 'sub', 'c.txt'), 'c'); // new file inside a recursed real dir
+  fs.writeFileSync(path.join(src, 'sub', 'foo', 'x.txt'), 'x'); // whole subdir symlinked
   fs.mkdirSync(path.join(dst, 'sub'), { recursive: true });
   fs.writeFileSync(path.join(dst, 'sub', 'b.txt'), 'local'); // real file preserved
   const skipped: string[] = [];
@@ -19,5 +21,10 @@ test('mergeSymlink: links new, recurses real dirs, preserves real files', async 
   assert.equal(fs.lstatSync(path.join(dst, 'a.txt')).isSymbolicLink(), true);
   assert.equal(fs.lstatSync(path.join(dst, 'sub', 'b.txt')).isSymbolicLink(), false);
   assert.equal(fs.readFileSync(path.join(dst, 'sub', 'b.txt'), 'utf8'), 'local');
+  // New file inside the recursed real dst/sub -> symlinked.
+  assert.equal(fs.lstatSync(path.join(dst, 'sub', 'c.txt')).isSymbolicLink(), true);
+  // Whole new subdir inside the recursed real dst/sub -> symlinked as a directory.
+  assert.equal(fs.lstatSync(path.join(dst, 'sub', 'foo')).isSymbolicLink(), true);
+  assert.equal(fs.statSync(path.join(dst, 'sub', 'foo')).isDirectory(), true);
   assert.deepEqual(skipped, [path.join(dst, 'sub', 'b.txt')]);
 });
