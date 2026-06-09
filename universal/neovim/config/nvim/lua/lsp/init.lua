@@ -2,6 +2,7 @@ local utils = require("lsp.utils")
 
 local enabled_lsp_clients = {
 	"ansiblels",
+	"basedpyright",
 	"bashls",
 	"buf_ls",
 	"clangd",
@@ -16,6 +17,7 @@ local enabled_lsp_clients = {
 	"oxfmt",
 	"prismals",
 	"protols",
+	"ruff",
 	"rust_analyzer",
 	"stylelint_lsp",
 	"svelte",

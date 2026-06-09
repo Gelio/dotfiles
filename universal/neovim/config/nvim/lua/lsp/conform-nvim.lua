@@ -3,6 +3,7 @@ local formatters_by_ft = {
 	sh = { "shfmt" },
 	go = { "gofumpt" },
 	plantuml = { "trim_whitespace" },
+	python = { "ruff_organize_imports", "ruff_format" },
 	proto = { "buf" },
 	query = { "format-queries" },
 }
