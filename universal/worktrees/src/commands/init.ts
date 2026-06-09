@@ -51,6 +51,8 @@ async function excludeAdd(repo: string, pattern: string): Promise<void> {
     /* none */
   }
   if (!lines.includes(pattern)) {
+    // Drop only the trailing empty element from a final newline (not internal
+    // blank lines) so the re-joined file keeps exactly one trailing newline.
     const trimmed = lines.filter((l, i) => !(l === '' && i === lines.length - 1));
     trimmed.push(pattern);
     await fsp.writeFile(ex, trimmed.join('\n') + '\n');
