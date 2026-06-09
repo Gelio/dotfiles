@@ -65,7 +65,7 @@ which is the single source of truth for those candidates and stays silent
 | Command | What it does |
 |---|---|
 | `worktrees init` | Scaffold a central config for the current repo at `~/.config/worktrees/repos/<repo-key>.mts`. |
-| `worktrees init --in-repo` | Print a starter config and add `.worktrees.mts` / `.worktrees.ts` to `.git/info/exclude`. Use when you want the config symlinked from a dotfiles checkout into the repo root. |
+| `worktrees init --in-repo` | Print a starter config and add `.worktrees.{mts,ts,mjs,js}` to `.git/info/exclude`. Use when you want the config symlinked from a dotfiles checkout into the repo root. |
 | `worktrees setup <branch> [--from <base>]` | Create (or refresh) a worktree at `worktrees/<dir>/` for `<branch>`, branching from `<base>` (default: `origin/main`). Allocates ports, applies symlinks, runs `postCreate`. |
 | `worktrees teardown <name\|branch>` | Interactively remove a worktree, clean up the port registry, and optionally delete the branch. |
 | `worktrees list` | List worktrees for the current repo with branch, path, and port allocations. Marks stale entries. |
@@ -78,12 +78,12 @@ which is the single source of truth for those candidates and stays silent
 
 For the repo rooted at `$CWD`, the engine resolves config in this order:
 
-1. **`<repo>/.worktrees.mts`** (then `.ts`) — accepted **only** when it is a
-   symlink whose `realpath` resolves **outside** the repo. Plain files and
-   symlinks pointing back inside the repo are refused as RCE vectors (the
-   engine `import()`s the resolved module).
-2. **`~/.config/worktrees/repos/<repo-key>.{mts,ts}`** — central fallback,
-   always accepted (plain files are fine here).
+1. **`<repo>/.worktrees.{mts,ts,mjs,js}`** (TS variants take precedence) —
+   accepted **only** when it is a symlink whose `realpath` resolves **outside**
+   the repo. Plain files and symlinks pointing back inside the repo are refused
+   as RCE vectors (the engine `import()`s the resolved module).
+2. **`~/.config/worktrees/repos/<repo-key>.{mts,ts,mjs,js}`** — central
+   fallback, always accepted (plain files are fine here).
 
 Override the config home with `WORKTREES_CONFIG_HOME`:
 
@@ -99,8 +99,11 @@ config and is read by `list --all`.
 
 ## WorktreesConfig contract
 
-Repo configs are `.mts` files (or `.ts` in a `"type":"module"` repo). They
-`export default` a `WorktreesConfig` object.
+Repo configs are `.mts` files (or `.ts` in a `"type":"module"` repo). Plain
+JavaScript is also accepted — `.mjs`, or `.js` in a `"type":"module"` repo —
+for users who don't want TypeScript (no type-checking, but the
+`WorktreesConfig` shape still applies). They `export default` a
+`WorktreesConfig` object.
 
 Import types from the stable path created by `install.sh`:
 

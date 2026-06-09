@@ -12,7 +12,7 @@ export const CONFIG_HOME =
     ? process.env.WORKTREES_CONFIG_HOME
     : path.join(os.homedir(), '.config', 'worktrees');
 
-const CONFIG_EXTS = ['.mts', '.ts'] as const;
+const CONFIG_EXTS = ['.mts', '.ts', '.mjs', '.js'] as const;
 
 /** Sanitized key for a repo's absolute toplevel: /a/b/c -> a-b-c */
 export function repoKey(repo: string): string {

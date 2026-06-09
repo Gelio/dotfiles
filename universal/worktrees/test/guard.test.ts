@@ -38,6 +38,19 @@ test('discovery: plain file refused, points at init', () => {
   assert.match(out, /worktrees init/);
 });
 
+test('discovery: plain-JS central config (.mjs) loads', () => {
+  const { repo, configHome } = sandbox();
+  const key = repoKey(repo);
+  fs.mkdirSync(path.join(configHome, 'repos'), { recursive: true });
+  fs.writeFileSync(
+    path.join(configHome, 'repos', `${key}.mjs`),
+    `export default { symlinkTargets: ['README.md'] };\n`,
+  );
+  const { out, code } = runEngine(repo, ['_config'], { configHome });
+  assert.equal(code, 0);
+  assert.match(out, new RegExp(`${key}\\.mjs`));
+});
+
 test('discovery: central fallback + de-duped registry', () => {
   const { repo, configHome } = sandbox();
   const key = repoKey(repo);

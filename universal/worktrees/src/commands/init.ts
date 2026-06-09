@@ -72,16 +72,17 @@ export async function cmdInit(argv: string[]): Promise<void> {
   const repo = await repoRoot();
 
   if (argv[0] === '--in-repo') {
-    await excludeAdd(repo, '.worktrees.mts');
-    await excludeAdd(repo, '.worktrees.ts');
+    for (const ext of ['.mts', '.ts', '.mjs', '.js']) {
+      await excludeAdd(repo, `.worktrees${ext}`);
+    }
     const baseName = path.basename(repo);
     console.log('In-repo config selected. Create the config in your dotfiles and symlink it:\n');
     console.log(
       `  ln -s "$PWD/path/to/dotfiles/${baseName}/.worktrees.mts" "${repo}/.worktrees.mts"\n`,
     );
     console.log(
-      `The engine imports <repo>/.worktrees.{mts,ts} ONLY when it is a symlink whose target ` +
-        `resolves OUTSIDE the repo (security guard). Added '.worktrees.mts' and '.worktrees.ts' ` +
+      `The engine imports <repo>/.worktrees.{mts,ts,mjs,js} ONLY when it is a symlink whose target ` +
+        `resolves OUTSIDE the repo (security guard). Added '.worktrees.{mts,ts,mjs,js}' ` +
         `to ${repo}/.git/info/exclude (idempotent).\n`,
     );
     console.log('Starter config to copy:');
