@@ -23,7 +23,11 @@ async function exists(p: string): Promise<boolean> {
  *  - dst is a real directory   -> recurse (preserve tracked files within)
  *  - dst is a real file        -> leave alone, record in `skipped`
  */
-export async function mergeSymlink(srcDir: string, dstDir: string, skipped: string[]): Promise<void> {
+export async function mergeSymlink(
+  srcDir: string,
+  dstDir: string,
+  skipped: string[],
+): Promise<void> {
   await fsp.mkdir(dstDir, { recursive: true });
   for (const name of await fsp.readdir(srcDir)) {
     const srcItem = path.join(srcDir, name);

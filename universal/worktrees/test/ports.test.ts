@@ -11,5 +11,13 @@ test('computePorts: base + index*step', () => {
 
 test('nextIndex: max+1', () => {
   assert.equal(nextIndex(new Map()), 1);
-  assert.equal(nextIndex(new Map([['a', 1], ['b', 3]])), 4);
+  assert.equal(
+    nextIndex(
+      new Map([
+        ['a', 1],
+        ['b', 3],
+      ]),
+    ),
+    4,
+  );
 });

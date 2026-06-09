@@ -6,7 +6,13 @@ import type { HookContext } from '../types.ts';
 import { die, ok } from '../log.ts';
 import { git } from '../git.ts';
 import { loadConfig } from '../config.ts';
-import { appendPortRegistry, computePorts, hasPorts, nextIndex, readPortRegistry } from '../ports.ts';
+import {
+  appendPortRegistry,
+  computePorts,
+  hasPorts,
+  nextIndex,
+  readPortRegistry,
+} from '../ports.ts';
 import { applySymlinks, symlinkInfoExclude } from '../symlinks.ts';
 
 export async function cmdSetup(argv: string[]): Promise<void> {

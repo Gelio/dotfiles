@@ -16,9 +16,9 @@ export interface HookContext {
    * relative to ITS location (the repo's dotfiles), where zx is NOT installed.
    * Injection sidesteps that and gives configs zx ergonomics for free.
    */
-  $: typeof import('zx')['$'];
+  $: (typeof import('zx'))['$'];
   /** zx's chalk, for colored hook output. */
-  chalk: typeof import('zx')['chalk'];
+  chalk: (typeof import('zx'))['chalk'];
 }
 
 /** A repo's worktrees config — `export default` this from `.worktrees.mts`. */

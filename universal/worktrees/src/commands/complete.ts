@@ -32,9 +32,17 @@ async function safeRepoRoot(): Promise<string | null> {
 
 /** Local + remote branch names, for `setup --from <base>`. Empty outside a repo. */
 async function refs(): Promise<string[]> {
-  const out = await gitQuiet(['for-each-ref', '--format=%(refname:short)', 'refs/heads', 'refs/remotes']);
+  const out = await gitQuiet([
+    'for-each-ref',
+    '--format=%(refname:short)',
+    'refs/heads',
+    'refs/remotes',
+  ]);
   if (out === null) return [];
-  return out.split('\n').map((s) => s.trim()).filter(Boolean);
+  return out
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 /** Existing worktree dir names under `<repo>/worktrees/` — the arg `teardown` resolves. */

@@ -44,7 +44,11 @@ async function listOne(repo: string, config: WorktreesConfig): Promise<void> {
     } else {
       status = ' [STALE]';
     }
-    rows.push({ branch, pathCol: `./worktrees/${name}${status}`, ports: portsString(config, index) });
+    rows.push({
+      branch,
+      pathCol: `./worktrees/${name}${status}`,
+      ports: portsString(config, index),
+    });
   }
 
   const c1 = Math.max(6, ...rows.map((r) => r.branch.length)) + 2;

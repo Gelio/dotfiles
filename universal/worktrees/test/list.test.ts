@@ -45,7 +45,7 @@ test('list --all survives a registered repo with a missing config', () => {
   const reg = path.join(configHome, 'registry');
   fs.appendFileSync(reg, `${broken}\t${path.join(broken, '.worktrees.mts')}\n`);
   const { out, code } = runEngine(good, ['list', '--all'], { configHome });
-  assert.equal(code, 0);                       // did NOT abort the whole run
-  assert.match(out, /feature-ok/);             // good repo still rendered
-  assert.match(out, /config error/);           // broken repo reported, not fatal
+  assert.equal(code, 0); // did NOT abort the whole run
+  assert.match(out, /feature-ok/); // good repo still rendered
+  assert.match(out, /config error/); // broken repo reported, not fatal
 });

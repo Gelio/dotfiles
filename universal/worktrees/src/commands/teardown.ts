@@ -46,7 +46,8 @@ export async function cmdTeardown(argv: string[]): Promise<void> {
 
   if (branch) {
     if (isYes(await ask(`Delete branch '${branch}'? [y/N] `))) {
-      if (!(await gitOk(['branch', '-D', branch]))) console.log(`Could not delete branch ${branch}`);
+      if (!(await gitOk(['branch', '-D', branch])))
+        console.log(`Could not delete branch ${branch}`);
     }
   }
   await git(['worktree', 'prune']);

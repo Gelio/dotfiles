@@ -43,7 +43,10 @@ export async function removePortRegistryEntry(repo: string, name: string): Promi
   } catch {
     return;
   }
-  const kept = text.split('\n').filter(Boolean).filter((l) => l.split(':')[0] !== name);
+  const kept = text
+    .split('\n')
+    .filter(Boolean)
+    .filter((l) => l.split(':')[0] !== name);
   await fsp.writeFile(p, kept.length ? kept.join('\n') + '\n' : '');
 }
 
