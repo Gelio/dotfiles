@@ -2,7 +2,7 @@ import * as fsp from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { repoRoot } from '../git.ts';
-import { CONFIG_HOME, registerRepo, reposDir, centralConfigPath } from '../config.ts';
+import { CONFIG_HOME, CONFIG_EXTS, registerRepo, reposDir, centralConfigPath } from '../config.ts';
 
 // Stable type-import path: via the project dir symlink created by install.sh.
 const TYPES_PATH = path.join(os.homedir(), '.local', 'share', 'worktrees', 'src', 'types.ts');
@@ -72,7 +72,8 @@ export async function cmdInit(argv: string[]): Promise<void> {
   const repo = await repoRoot();
 
   if (argv[0] === '--in-repo') {
-    for (const ext of ['.mts', '.ts', '.mjs', '.js']) {
+    const extList = `{${CONFIG_EXTS.map((e) => e.slice(1)).join(',')}}`;
+    for (const ext of CONFIG_EXTS) {
       await excludeAdd(repo, `.worktrees${ext}`);
     }
     const baseName = path.basename(repo);
@@ -81,8 +82,8 @@ export async function cmdInit(argv: string[]): Promise<void> {
       `  ln -s "$PWD/path/to/dotfiles/${baseName}/.worktrees.mts" "${repo}/.worktrees.mts"\n`,
     );
     console.log(
-      `The engine imports <repo>/.worktrees.{mts,ts,mjs,js} ONLY when it is a symlink whose target ` +
-        `resolves OUTSIDE the repo (security guard). Added '.worktrees.{mts,ts,mjs,js}' ` +
+      `The engine imports <repo>/.worktrees.${extList} ONLY when it is a symlink whose target ` +
+        `resolves OUTSIDE the repo (security guard). Added '.worktrees.${extList}' ` +
         `to ${repo}/.git/info/exclude (idempotent).\n`,
     );
     console.log('Starter config to copy:');

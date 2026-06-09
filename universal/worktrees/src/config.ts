@@ -12,7 +12,7 @@ export const CONFIG_HOME =
     ? process.env.WORKTREES_CONFIG_HOME
     : path.join(os.homedir(), '.config', 'worktrees');
 
-const CONFIG_EXTS = ['.mts', '.ts', '.mjs', '.js'] as const;
+export const CONFIG_EXTS = ['.mts', '.ts', '.mjs', '.js'] as const;
 
 const DEFAULT_PORT_STEP = 10;
 /** Apply engine defaults to a raw config. */
