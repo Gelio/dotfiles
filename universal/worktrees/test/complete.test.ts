@@ -18,9 +18,10 @@ test('setup --from completes git refs (local + remote)', () => {
   linkCfg(root, repo, CFG);
   runEngine(repo, ['setup', 'feature/x'], { configHome });
   const { out } = runEngine(repo, ['__complete', 'setup', '--from', ''], { configHome });
-  assert.match(out, /^main$/m);
-  assert.match(out, /^origin\/main$/m);
-  assert.match(out, /^feature\/x$/m);
+  assert.deepEqual(
+    out.trim().split('\n').toSorted(),
+    ['feature/x', 'main', 'origin/main'].toSorted(),
+  );
 });
 
 test('setup positional offers the --from flag, not refs', () => {
