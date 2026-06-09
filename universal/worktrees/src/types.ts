@@ -38,3 +38,8 @@ export interface WorktreesConfig {
   /** Optional footer string printed at the end of `setup`. */
   summary?(ctx: HookContext): string | void;
 }
+
+/** A WorktreesConfig with engine defaults applied (portStep guaranteed). */
+export interface ResolvedWorktreesConfig extends WorktreesConfig {
+  portStep: number;
+}

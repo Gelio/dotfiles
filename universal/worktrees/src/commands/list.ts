@@ -1,6 +1,6 @@
 import * as fsp from 'node:fs/promises';
 import * as path from 'node:path';
-import type { WorktreesConfig } from '../types.ts';
+import type { ResolvedWorktreesConfig } from '../types.ts';
 import { git } from '../git.ts';
 import { CONFIG_HOME, loadConfig, loadConfigFor } from '../config.ts';
 import { computePorts, hasPorts, readPortRegistry } from '../ports.ts';
@@ -9,7 +9,7 @@ function pad(s: string, n: number): string {
   return s.padEnd(n);
 }
 
-function portsString(config: WorktreesConfig, index: number): string {
+function portsString(config: ResolvedWorktreesConfig, index: number): string {
   if (!hasPorts(config)) return '-';
   return Object.values(computePorts(config, index)).join('/');
 }
@@ -23,7 +23,7 @@ async function dirExists(p: string): Promise<boolean> {
   }
 }
 
-async function listOne(repo: string, config: WorktreesConfig): Promise<void> {
+async function listOne(repo: string, config: ResolvedWorktreesConfig): Promise<void> {
   type Row = { branch: string; pathCol: string; ports: string };
   const rows: Row[] = [];
 

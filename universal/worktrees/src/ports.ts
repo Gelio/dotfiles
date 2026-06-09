@@ -1,6 +1,6 @@
 import * as fsp from 'node:fs/promises';
 import * as path from 'node:path';
-import type { WorktreesConfig } from './types.ts';
+import type { WorktreesConfig, ResolvedWorktreesConfig } from './types.ts';
 
 export function portRegistryPath(repo: string): string {
   return path.join(repo, 'worktrees', '.port-registry');
@@ -50,8 +50,11 @@ export async function removePortRegistryEntry(repo: string, name: string): Promi
   await fsp.writeFile(p, kept.length ? kept.join('\n') + '\n' : '');
 }
 
-export function computePorts(config: WorktreesConfig, index: number): Record<string, number> {
-  const step = config.portStep ?? 10;
+export function computePorts(
+  config: ResolvedWorktreesConfig,
+  index: number,
+): Record<string, number> {
+  const step = config.portStep;
   const out: Record<string, number> = {};
   for (const [name, base] of Object.entries(config.ports ?? {})) out[name] = base + index * step;
   return out;

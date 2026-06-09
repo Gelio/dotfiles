@@ -3,7 +3,7 @@ import * as fsp from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { pathToFileURL } from 'node:url';
-import type { WorktreesConfig } from './types.ts';
+import type { WorktreesConfig, ResolvedWorktreesConfig } from './types.ts';
 import { die } from './log.ts';
 import { repoRoot } from './git.ts';
 
@@ -13,6 +13,12 @@ export const CONFIG_HOME =
     : path.join(os.homedir(), '.config', 'worktrees');
 
 const CONFIG_EXTS = ['.mts', '.ts', '.mjs', '.js'] as const;
+
+const DEFAULT_PORT_STEP = 10;
+/** Apply engine defaults to a raw config. */
+export function resolveConfig(config: WorktreesConfig): ResolvedWorktreesConfig {
+  return { ...config, portStep: config.portStep ?? DEFAULT_PORT_STEP };
+}
 
 /** Sanitized key for a repo's absolute toplevel: /a/b/c -> a-b-c */
 export function repoKey(repo: string): string {
@@ -82,7 +88,7 @@ export async function registerRepo(repo: string, source: string): Promise<void> 
 
 export interface LoadedConfig {
   source: string;
-  config: WorktreesConfig;
+  config: ResolvedWorktreesConfig;
   repo: string;
 }
 
@@ -92,11 +98,11 @@ export interface LoadedConfig {
  * `?? mod` fallback supports a config authored as named/namespace exports
  * without a default export.
  */
-async function importConfig(source: string): Promise<WorktreesConfig> {
+async function importConfig(source: string): Promise<ResolvedWorktreesConfig> {
   const mod = (await import(pathToFileURL(source).href)) as {
     default?: WorktreesConfig;
   } & WorktreesConfig;
-  return mod.default ?? mod;
+  return resolveConfig(mod.default ?? mod);
 }
 
 /** Resolve the repo, discover + import its config, register it. */
@@ -110,7 +116,7 @@ export async function loadConfig(): Promise<LoadedConfig> {
 }
 
 /** Load a config for an explicit repo path (used by `list --all`). */
-export async function loadConfigFor(repo: string): Promise<WorktreesConfig> {
+export async function loadConfigFor(repo: string): Promise<ResolvedWorktreesConfig> {
   const source = resolveConfigSource(repo);
   if (!source) throw new Error(`no worktrees config for ${repo}`);
   return importConfig(source);
