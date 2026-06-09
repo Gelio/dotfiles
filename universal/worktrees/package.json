@@ -3,12 +3,24 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "bin": { "worktrees": "bin/worktrees.ts" },
-  "exports": { ".": "./src/types.ts" },
+  "bin": {
+    "worktrees": "bin/worktrees.ts"
+  },
+  "exports": {
+    ".": "./src/types.ts"
+  },
   "scripts": {
     "test": "node --test --experimental-strip-types 'test/*.test.ts'",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "format": "oxfmt --write src bin test",
+    "format:check": "oxfmt --check src bin test"
   },
-  "dependencies": { "zx": "^8.2.0" },
-  "devDependencies": { "typescript": "^5.8.0", "@types/node": "^22.0.0" }
+  "dependencies": {
+    "zx": "^8.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "oxfmt": "0.54.0",
+    "typescript": "^5.8.0"
+  }
 }
