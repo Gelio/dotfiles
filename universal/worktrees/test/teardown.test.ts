@@ -6,8 +6,8 @@ import { sandbox, runEngine, linkCfg } from './helpers.ts';
 
 const CFG = `export default { ports: { UI: 3003 }, symlinkTargets: ['README.md'] };`;
 
-test('teardown removes worktree + registry entry (y, then n)', () => {
-  const { root, repo, configHome } = sandbox();
+test('teardown removes worktree + registry entry (y, then n)', (t) => {
+  const { root, repo, configHome } = sandbox(t);
   linkCfg(root, repo, CFG);
   runEngine(repo, ['setup', 'feature/gone'], { configHome });
   assert.equal(fs.existsSync(path.join(repo, 'worktrees', 'feature-gone')), true);
@@ -17,8 +17,8 @@ test('teardown removes worktree + registry entry (y, then n)', () => {
   assert.equal(reg.split('\n').filter((l) => l.startsWith('feature-gone:')).length, 0);
 });
 
-test('teardown aborts on N', () => {
-  const { root, repo, configHome } = sandbox();
+test('teardown aborts on N', (t) => {
+  const { root, repo, configHome } = sandbox(t);
   linkCfg(root, repo, CFG);
   runEngine(repo, ['setup', 'feature/stay'], { configHome });
   runEngine(repo, ['teardown', 'feature/stay'], { configHome, input: 'n\n' });

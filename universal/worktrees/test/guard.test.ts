@@ -5,8 +5,8 @@ import * as path from 'node:path';
 import { sandbox, runEngine, linkCfg, writeCentralConfig } from './helpers.ts';
 import { configPathIsSafe, repoKey } from '../src/config.ts';
 
-test('configPathIsSafe: outside symlink ok; inside/plain refused', () => {
-  const { root, repo } = sandbox();
+test('configPathIsSafe: outside symlink ok; inside/plain refused', (t) => {
+  const { root, repo } = sandbox(t);
   const f = path.join(repo, '.worktrees.mts');
   fs.writeFileSync(path.join(root, 'real.mts'), 'export default {}');
   fs.symlinkSync(path.join(root, 'real.mts'), f);
@@ -22,24 +22,24 @@ test('configPathIsSafe: outside symlink ok; inside/plain refused', () => {
 
 const OK_CFG = `export default { symlinkTargets: ['README.md'] };\n`;
 
-test('discovery: outside symlink accepted (_config reports it)', () => {
-  const { root, repo, configHome } = sandbox();
+test('discovery: outside symlink accepted (_config reports it)', (t) => {
+  const { root, repo, configHome } = sandbox(t);
   linkCfg(root, repo, OK_CFG);
   const { out, code } = runEngine(repo, ['_config'], { configHome });
   assert.equal(code, 0);
   assert.match(out, /\.worktrees\.mts/);
 });
 
-test('discovery: plain file refused, points at init', () => {
-  const { repo, configHome } = sandbox();
+test('discovery: plain file refused, points at init', (t) => {
+  const { repo, configHome } = sandbox(t);
   fs.writeFileSync(path.join(repo, '.worktrees.mts'), OK_CFG);
   const { out, code } = runEngine(repo, ['_config'], { configHome });
   assert.notEqual(code, 0);
   assert.match(out, /worktrees init/);
 });
 
-test('discovery: plain-JS central config (.mjs) loads', () => {
-  const { repo, configHome } = sandbox();
+test('discovery: plain-JS central config (.mjs) loads', (t) => {
+  const { repo, configHome } = sandbox(t);
   const key = repoKey(repo);
   writeCentralConfig(
     configHome,
@@ -52,8 +52,8 @@ test('discovery: plain-JS central config (.mjs) loads', () => {
   assert.match(out, new RegExp(`${key}\\.mjs`));
 });
 
-test('loading: a config with a syntax error fails loudly (no exit 0, no hang)', () => {
-  const { root, repo, configHome } = sandbox();
+test('loading: a config with a syntax error fails loudly (no exit 0, no hang)', (t) => {
+  const { root, repo, configHome } = sandbox(t);
   // Unterminated object literal -> the dynamic import() throws while parsing.
   linkCfg(root, repo, 'export default { ports: {\n');
   const { out, code } = runEngine(repo, ['_config'], { configHome });
@@ -64,8 +64,8 @@ test('loading: a config with a syntax error fails loudly (no exit 0, no hang)', 
   assert.match(out, /Unexpected token/);
 });
 
-test('discovery: central fallback + de-duped registry', () => {
-  const { repo, configHome } = sandbox();
+test('discovery: central fallback + de-duped registry', (t) => {
+  const { repo, configHome } = sandbox(t);
   writeCentralConfig(configHome, repo, OK_CFG);
   assert.equal(runEngine(repo, ['_config'], { configHome }).code, 0);
   runEngine(repo, ['_config'], { configHome });

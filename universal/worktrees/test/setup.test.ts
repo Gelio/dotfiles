@@ -15,8 +15,8 @@ const HOOK_CFG = `export default {
   summary({ ports }) { return 'SUMMARY ui=' + ports.UI; },
 };`;
 
-test('setup creates worktree, computes ports, runs hook + summary', () => {
-  const { root, repo, configHome } = sandbox();
+test('setup creates worktree, computes ports, runs hook + summary', (t) => {
+  const { root, repo, configHome } = sandbox(t);
   linkCfg(root, repo, HOOK_CFG);
   const { out, code } = runEngine(repo, ['setup', 'feature/abc', '--from', 'main'], { configHome });
   assert.equal(code, 0);
@@ -28,8 +28,8 @@ test('setup creates worktree, computes ports, runs hook + summary', () => {
   assert.equal(fs.lstatSync(path.join(wt, 'README.md')).isSymbolicLink(), true);
 });
 
-test('setup idempotent: reuses index, no duplicate registry entry', () => {
-  const { root, repo, configHome } = sandbox();
+test('setup idempotent: reuses index, no duplicate registry entry', (t) => {
+  const { root, repo, configHome } = sandbox(t);
   linkCfg(root, repo, HOOK_CFG);
   runEngine(repo, ['setup', 'feature/a'], { configHome });
   runEngine(repo, ['setup', 'feature/b'], { configHome });
@@ -39,8 +39,8 @@ test('setup idempotent: reuses index, no duplicate registry entry', () => {
   assert.equal(reg.split('\n').filter((l) => l.startsWith('feature-a:')).length, 1);
 });
 
-test('setup with no ports skips the port-registry', () => {
-  const { root, repo, configHome } = sandbox();
+test('setup with no ports skips the port-registry', (t) => {
+  const { root, repo, configHome } = sandbox(t);
   linkCfg(root, repo, `export default { symlinkTargets: ['README.md'] };`);
   assert.equal(runEngine(repo, ['setup', 'feature/y'], { configHome }).code, 0);
   assert.equal(fs.existsSync(path.join(repo, 'worktrees', '.port-registry')), false);

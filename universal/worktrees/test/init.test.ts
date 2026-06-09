@@ -5,8 +5,8 @@ import * as path from 'node:path';
 import { sandbox, runEngine } from './helpers.ts';
 import { repoKey } from '../src/config.ts';
 
-test('init (central) scaffolds a typed config + registers', () => {
-  const { repo, configHome } = sandbox();
+test('init (central) scaffolds a typed config + registers', (t) => {
+  const { repo, configHome } = sandbox(t);
   const { out } = runEngine(repo, ['init'], { configHome });
   const dest = path.join(configHome, 'repos', `${repoKey(repo)}.mts`);
   assert.equal(fs.existsSync(dest), true);
@@ -16,8 +16,8 @@ test('init (central) scaffolds a typed config + registers', () => {
   assert.match(out, new RegExp(`repos.${repoKey(repo)}\\.mts`));
 });
 
-test('init --in-repo appends exclude idempotently + prints guidance', () => {
-  const { repo, configHome } = sandbox();
+test('init --in-repo appends exclude idempotently + prints guidance', (t) => {
+  const { repo, configHome } = sandbox(t);
   runEngine(repo, ['init', '--in-repo'], { configHome });
   runEngine(repo, ['init', '--in-repo'], { configHome });
   const ex = fs.readFileSync(path.join(repo, '.git', 'info', 'exclude'), 'utf8');

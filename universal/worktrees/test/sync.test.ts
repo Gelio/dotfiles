@@ -12,8 +12,8 @@ const CFG = `export default {
   },
 };`;
 
-test('sync re-applies symlinks and runs postSync (select all)', () => {
-  const { root, repo, configHome } = sandbox();
+test('sync re-applies symlinks and runs postSync (select all)', (t) => {
+  const { root, repo, configHome } = sandbox(t);
   linkCfg(root, repo, CFG);
   runEngine(repo, ['setup', 'feature/syncme'], { configHome });
   const wt = path.join(repo, 'worktrees', 'feature-syncme');

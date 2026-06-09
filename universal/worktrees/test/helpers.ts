@@ -3,7 +3,18 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { fileURLToPath } from 'node:url';
+import type { TestContext } from 'node:test';
 import { reposDir, centralConfigPath } from '../src/config.ts';
+
+// The Node v24 runtime exposes `TestContext#passed` (a boolean, readable from
+// `t.after` hooks), but @types/node (both ^22 and ^24 as of writing) does not
+// type it on TestContext. Augment it locally rather than bumping the dependency,
+// since the bump would not add the property anyway.
+declare module 'node:test' {
+  interface TestContext {
+    readonly passed: boolean;
+  }
+}
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const ENGINE = path.join(HERE, '..', 'bin', 'worktrees.ts');
@@ -22,10 +33,16 @@ export function makeRepo(dir: string): string {
   return dir;
 }
 
-export function sandbox(): { root: string; repo: string; configHome: string } {
+export function sandbox(t: TestContext): { root: string; repo: string; configHome: string } {
   // Use realpathSync so the returned paths are canonical (e.g., /private/tmp
   // rather than /tmp on macOS), matching what git and process.cwd() return.
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'wt-')));
+  t.diagnostic(`sandbox: ${root}`);
+  t.after(() => {
+    // Clean up only on success; keep the dir on failure so it can be inspected.
+    if (t.passed) fs.rmSync(root, { recursive: true, force: true });
+    else t.diagnostic(`kept sandbox for debugging: ${root}`);
+  });
   const repo = makeRepo(path.join(root, 'repo'));
   const configHome = path.join(root, 'config');
   return { root, repo, configHome };

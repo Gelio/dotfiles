@@ -5,8 +5,8 @@ import * as path from 'node:path';
 import { sandbox } from './helpers.ts';
 import { mergeSymlink } from '../src/symlinks.ts';
 
-test('mergeSymlink: links new, recurses real dirs, preserves real files', async () => {
-  const { root } = sandbox();
+test('mergeSymlink: links new, recurses real dirs, preserves real files', async (t) => {
+  const { root } = sandbox(t);
   const src = path.join(root, 'src');
   const dst = path.join(root, 'dst');
   fs.mkdirSync(path.join(src, 'sub', 'foo'), { recursive: true });

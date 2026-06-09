@@ -7,8 +7,8 @@ import { sandbox, runEngine, linkCfg, makeRepo } from './helpers.ts';
 const CFG = `export default { ports: { UI: 3003 }, symlinkTargets: ['README.md'] };`;
 const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-test('list shows main row + worktree row', () => {
-  const { root, repo, configHome } = sandbox();
+test('list shows main row + worktree row', (t) => {
+  const { root, repo, configHome } = sandbox(t);
   linkCfg(root, repo, CFG);
   runEngine(repo, ['setup', 'feature/list1'], { configHome });
   const { out } = runEngine(repo, ['list'], { configHome });
@@ -17,8 +17,8 @@ test('list shows main row + worktree row', () => {
   assert.match(out, /feature-list1/);
 });
 
-test('list --all spans registered repos', () => {
-  const { root, configHome } = sandbox();
+test('list --all spans registered repos', (t) => {
+  const { root, configHome } = sandbox(t);
   const r1 = makeRepo(path.join(root, 'r1'));
   const r2 = makeRepo(path.join(root, 'r2'));
   fs.writeFileSync(path.join(root, 'c1.mts'), CFG);
@@ -32,8 +32,8 @@ test('list --all spans registered repos', () => {
   assert.match(out, new RegExp(esc(r2)));
 });
 
-test('list --all survives a registered repo with a missing config', () => {
-  const { root, configHome } = sandbox();
+test('list --all survives a registered repo with a missing config', (t) => {
+  const { root, configHome } = sandbox(t);
   const good = makeRepo(path.join(root, 'good'));
   const broken = makeRepo(path.join(root, 'broken'));
   fs.writeFileSync(path.join(root, 'good.mts'), CFG);
