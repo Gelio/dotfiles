@@ -35,6 +35,7 @@ Vendored skills, symlinked into `~/.claude/skills/` by `stow.sh`:
 
 - **commit-conventions** — universal commit authoring rules
 - **pr-conventions** — PR description style guide
+- **pr-comments** — PR review comment style (permalinks, linked tickets, in-thread replies)
 - **todos** — orchestrate work through a todos.md task list
 - **enrich-todos** — annotate a TODO file with context for the next agent
 - **verify-branch-commits** — verify every branch commit passes checks

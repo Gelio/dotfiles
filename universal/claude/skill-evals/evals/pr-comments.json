@@ -1,0 +1,89 @@
+{
+  "skill": "pr-comments",
+  "skill_path": "../../stowed/.claude/skills/pr-comments/SKILL.md",
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "code-location-permalink",
+      "kind": "core",
+      "prompt": "Draft a GitHub PR review comment for the EnterpriseDB/nexus-tests repo. I want to flag that the function sortProceduralLanguagesByName at line 412 of test-runner/pkg/testscenarios/scenario_183.go sorts the slice in place, mutating the caller's assessment.ProceduralLanguages — risky if a future validator reads the same assessment and the ordering turns out to be load-bearing. The branch tip is commit 6f017fb1eb58347cacc1f1308e815d5b754f681a and it is already pushed to origin. Suggest sorting a copy instead.",
+      "assertions": [
+        {
+          "text": "The code location is a SHA-pinned blob permalink to the right file and line (blob/<sha>/...scenario_183.go#L<n>)",
+          "type": "regex",
+          "pattern": "blob/[0-9a-f]{7,40}/[^)\\s]*scenario_183\\.go#L\\d+"
+        },
+        {
+          "text": "The permalink pins a commit SHA, not a branch name (no blob/main, blob/master, or blob/HEAD)",
+          "type": "not_regex",
+          "pattern": "blob/(main|master|HEAD)/"
+        },
+        {
+          "text": "There is no emoji",
+          "type": "no_emoji"
+        },
+        {
+          "text": "The code location is given as a clickable SHA-pinned permalink, not merely a bare path or a prose line number like 'line 412' / 'L412'",
+          "type": "judge"
+        },
+        {
+          "text": "The permalink has descriptive anchor text (the symbol name or a file:line label), and the inline-code identifier is not placed inside the link text",
+          "type": "judge"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "ticket-reference-linked",
+      "kind": "core",
+      "prompt": "Draft a PR review comment on EnterpriseDB/nexus-tests asking the author to apply the MIG-9641 rules to the Markdown test scenario they added in this PR, since yesterday's team decision was to point to Go code rather than duplicate it as prose.",
+      "assertions": [
+        {
+          "text": "The MIG-9641 ticket is a Markdown link to the Jira browse URL",
+          "type": "regex",
+          "pattern": "\\[MIG-9641\\]\\(https://enterprisedb\\.atlassian\\.net/browse/MIG-9641\\)"
+        },
+        {
+          "text": "Every ticket reference in the comment is a link, none left as a bare key",
+          "type": "judge"
+        },
+        {
+          "text": "There is no emoji",
+          "type": "no_emoji"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "reply-in-stale-thread",
+      "kind": "core",
+      "prompt": "A reviewer left a comment on PR #118 (EnterpriseDB/nexus-tests) on an inline thread asking me to sort a copy instead of mutating the slice. I've since force-pushed and the line they commented on has moved, so the thread is now anchored to an outdated diff. I've addressed the feedback. How and where should I post my reply, and draft it for me?",
+      "assertions": [
+        {
+          "text": "Recommends replying within the existing review thread (reply-to-comment / pulls/comments/<id>/replies), not opening a new top-level comment on the current diff",
+          "type": "judge"
+        },
+        {
+          "text": "Gives preserving the conversation history / keeping the discussion together as the reason, despite the thread being anchored to an outdated diff",
+          "type": "judge"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "pending-review-no-autosubmit",
+      "kind": "omission",
+      "prompt": "I'm doing a review pass on PR #118 in EnterpriseDB/nexus-tests and want to leave a few inline comments as I go through the diff, then look at them all together before I decide whether to approve or request changes. Draft the comments and tell me how to post them.",
+      "assertions": [
+        {
+          "text": "Keeps the review PENDING (creates the review with no event) so the user can add more comments and submit later, rather than auto-submitting APPROVE / REQUEST_CHANGES / COMMENT",
+          "type": "judge"
+        },
+        {
+          "text": "Leaves submitting the review to the user rather than doing it for them",
+          "type": "judge"
+        }
+      ]
+    }
+  ]
+}
