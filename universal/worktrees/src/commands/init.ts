@@ -1,7 +1,7 @@
 import * as fsp from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import { repoRoot } from '../git.ts';
+import { repoRoot, addRepoExclude } from '../git.ts';
 import { CONFIG_HOME, CONFIG_EXTS, registerRepo, reposDir, centralConfigPath } from '../config.ts';
 
 // Stable type-import path: via the project dir symlink created by install.sh.
@@ -41,24 +41,6 @@ export default config;
 `;
 }
 
-async function excludeAdd(repo: string, pattern: string): Promise<void> {
-  const ex = path.join(repo, '.git', 'info', 'exclude');
-  await fsp.mkdir(path.dirname(ex), { recursive: true });
-  let lines: string[] = [];
-  try {
-    lines = (await fsp.readFile(ex, 'utf8')).split('\n');
-  } catch {
-    /* none */
-  }
-  if (!lines.includes(pattern)) {
-    // Drop only the trailing empty element from a final newline (not internal
-    // blank lines) so the re-joined file keeps exactly one trailing newline.
-    const trimmed = lines.filter((l, i) => !(l === '' && i === lines.length - 1));
-    trimmed.push(pattern);
-    await fsp.writeFile(ex, trimmed.join('\n') + '\n');
-  }
-}
-
 async function fileExists(p: string): Promise<boolean> {
   try {
     await fsp.stat(p);
@@ -74,7 +56,7 @@ export async function cmdInit(argv: string[]): Promise<void> {
   if (argv[0] === '--in-repo') {
     const extList = `{${CONFIG_EXTS.map((e) => e.slice(1)).join(',')}}`;
     for (const ext of CONFIG_EXTS) {
-      await excludeAdd(repo, `.worktrees${ext}`);
+      await addRepoExclude(repo, `.worktrees${ext}`);
     }
     const baseName = path.basename(repo);
     console.log('In-repo config selected. Create the config in your dotfiles and symlink it:\n');

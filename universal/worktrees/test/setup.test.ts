@@ -40,6 +40,18 @@ test('setup idempotent: reuses index, no duplicate registry entry', (t) => {
   assert.equal(reg.split('\n').filter((l) => l.startsWith('feature-a:')).length, 1);
 });
 
+test('setup excludes the worktrees/ dir from the main repo, idempotently', (t) => {
+  const { root, repo, configHome } = sandbox(t);
+  linkCfg(root, repo, `export default { symlinkTargets: ['README.md'] };`);
+  runEngine(repo, ['setup', 'feature/a'], { configHome });
+  runEngine(repo, ['setup', 'feature/b'], { configHome });
+  const ex = fs.readFileSync(path.join(repo, '.git', 'info', 'exclude'), 'utf8');
+  assert.equal(ex.split('\n').filter((l) => l === '/worktrees/').length, 1);
+  // git agrees the base dir is ignored, so it never pollutes `git status`.
+  const check = spawnSync('git', ['-C', repo, 'check-ignore', 'worktrees'], { encoding: 'utf8' });
+  assert.equal(check.status, 0);
+});
+
 test('setup with no ports skips the port-registry', (t) => {
   const { root, repo, configHome } = sandbox(t);
   linkCfg(root, repo, `export default { symlinkTargets: ['README.md'] };`);

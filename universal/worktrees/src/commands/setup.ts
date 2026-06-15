@@ -4,7 +4,7 @@ import { parseArgs } from 'node:util';
 import { $, chalk, spinner } from 'zx';
 import type { HookContext } from '../types.ts';
 import { die, ok } from '../log.ts';
-import { git } from '../git.ts';
+import { git, addRepoExclude } from '../git.ts';
 import { loadConfig } from '../config.ts';
 import {
   appendPortRegistry,
@@ -29,6 +29,10 @@ export async function cmdSetup(argv: string[]): Promise<void> {
   const dirName = branch.replace(/\//g, '-');
   const wt = path.join(repo, 'worktrees', dirName);
   await fsp.mkdir(path.join(repo, 'worktrees'), { recursive: true });
+  // Keep the worktree base dir out of the main repo's git status. The pattern is
+  // root-anchored + dir-only because the tree always lives at <repo>/worktrees/.
+  // symlinkInfoExclude shares this file into each worktree, so one entry covers all.
+  await addRepoExclude(repo, '/worktrees/');
 
   if (await dirExists(wt)) {
     console.log(`Worktree already exists at ${wt} — updating configuration...`);
