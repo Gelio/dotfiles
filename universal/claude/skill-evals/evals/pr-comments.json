@@ -16,7 +16,7 @@
         {
           "text": "The permalink pins a commit SHA, not a branch name (no blob/main, blob/master, or blob/HEAD)",
           "type": "not_regex",
-          "pattern": "blob/(main|master|HEAD)/"
+          "pattern": "blob/(main|master|HEAD)/[\\w.-]"
         },
         {
           "text": "There is no emoji",
@@ -82,6 +82,36 @@
         {
           "text": "Leaves submitting the review to the user rather than doing it for them",
           "type": "judge"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "noisy-reply-with-permalink",
+      "kind": "noisy",
+      "prompt": "Ugh, what a morning. The CI on nexus-tests has been flaky all week — the Postgres 16 matrix keeps timing out on the container pull, and I still owe Priya a Slack reply about the staging DB credentials rotation. Also need to remember to book the offsite flights before the fare changes. Anyway: on PR #118 (EnterpriseDB/nexus-tests), the reviewer Tomek left an inline comment a few days ago on the validatePostgresProceduralLanguages function asking why the nil guard there differs from the one in validatePostgisExtension. I've since reworked that file and force-pushed, so his comment is now sitting on an old version of the diff. The current answer lives at test-runner/pkg/testscenarios/scenario_183.go line 201, and the branch tip 9c2d4af0b1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6 is already on origin. I'm planning to keep going through the rest of the diff and leave a couple more notes before I figure out whether to approve. Draft my response to Tomek and tell me how to post it.",
+      "assertions": [
+        {
+          "text": "Recommends posting the reply within Tomek's existing review thread (reply-to-comment / pulls/comments/<id>/replies), not as a new top-level comment, despite the thread being anchored to an outdated diff",
+          "type": "judge"
+        },
+        {
+          "text": "The code location is a SHA-pinned blob permalink to scenario_183.go#L201",
+          "type": "regex",
+          "pattern": "blob/[0-9a-f]{7,40}/[^)\\s]*scenario_183\\.go#L201"
+        },
+        {
+          "text": "The permalink pins a commit SHA, not a branch name (no blob/main, blob/master, or blob/HEAD)",
+          "type": "not_regex",
+          "pattern": "blob/(main|master|HEAD)/[\\w.-]"
+        },
+        {
+          "text": "Does not auto-submit the review (no APPROVE / REQUEST_CHANGES / COMMENT event); leaves the approve/submit decision to the user since they are still going through the diff",
+          "type": "judge"
+        },
+        {
+          "text": "There is no emoji",
+          "type": "no_emoji"
         }
       ]
     }
