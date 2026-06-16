@@ -8,7 +8,7 @@ import { sandbox, runEngine, linkCfg } from './helpers.ts';
 const HOOK_CFG = `export default {
   ports: { UI: 3003 },
   portStep: 10,
-  symlinkTargets: ['README.md'],
+  symlinkTargets: ['notes.local'],
   async postCreate({ wt, ports }) {
     console.log('HOOK ui=' + ports.UI);
     await (await import('node:fs/promises')).writeFile(wt + '/.post_create_ran', '');
@@ -18,6 +18,8 @@ const HOOK_CFG = `export default {
 
 test('setup creates worktree, computes ports, runs hook + summary', (t) => {
   const { root, repo, configHome } = sandbox(t);
+  // An untracked file in the main repo is a valid symlink source.
+  fs.writeFileSync(path.join(repo, 'notes.local'), 'local\n');
   linkCfg(root, repo, HOOK_CFG);
   const { out, code } = runEngine(repo, ['setup', 'feature/abc', '--from', 'main'], { configHome });
   assert.equal(code, 0);
@@ -26,7 +28,37 @@ test('setup creates worktree, computes ports, runs hook + summary', (t) => {
   assert.equal(fs.existsSync(path.join(wt, '.post_create_ran')), true);
   assert.match(out, /ui=3013/);
   assert.match(out, /SUMMARY ui=3013/);
-  assert.equal(fs.lstatSync(path.join(wt, 'README.md')).isSymbolicLink(), true);
+  assert.equal(fs.lstatSync(path.join(wt, 'notes.local')).isSymbolicLink(), true);
+});
+
+test('setup leaves a tracked symlinkTarget alone (no dirty typechange)', (t) => {
+  const { root, repo, configHome } = sandbox(t);
+  // README.md is committed by makeRepo, so it is tracked in every worktree.
+  linkCfg(root, repo, `export default { symlinkTargets: ['README.md'] };`);
+  const { out, code } = runEngine(repo, ['setup', 'feature/tracked'], { configHome });
+  assert.equal(code, 0);
+  const wt = path.join(repo, 'worktrees', 'feature-tracked');
+  // Tracked file kept as the real checkout, not replaced by a symlink...
+  assert.equal(fs.lstatSync(path.join(wt, 'README.md')).isSymbolicLink(), false);
+  assert.match(out, /README\.md is tracked/);
+  // ...so the worktree stays clean.
+  const st = spawnSync('git', ['-C', wt, 'status', '--porcelain'], { encoding: 'utf8' });
+  assert.equal(st.stdout.trim(), '');
+});
+
+test('setup excludes an untracked symlinkTarget so the worktree stays clean', (t) => {
+  const { root, repo, configHome } = sandbox(t);
+  // A symlink is a file to git, so a dir-only ignore pattern would miss it;
+  // setup must add a type-agnostic exclude that the worktree inherits.
+  fs.mkdirSync(path.join(repo, 'agent-plans'));
+  fs.writeFileSync(path.join(repo, 'agent-plans', 'plan.md'), 'plan\n');
+  linkCfg(root, repo, `export default { symlinkTargets: ['agent-plans'] };`);
+  const { code } = runEngine(repo, ['setup', 'feature/ignored'], { configHome });
+  assert.equal(code, 0);
+  const wt = path.join(repo, 'worktrees', 'feature-ignored');
+  assert.equal(fs.lstatSync(path.join(wt, 'agent-plans')).isSymbolicLink(), true);
+  const st = spawnSync('git', ['-C', wt, 'status', '--porcelain'], { encoding: 'utf8' });
+  assert.equal(st.stdout.trim(), '');
 });
 
 test('setup idempotent: reuses index, no duplicate registry entry', (t) => {

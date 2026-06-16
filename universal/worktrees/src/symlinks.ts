@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import type { Stats } from 'node:fs';
 import type { WorktreesConfig } from './types.ts';
 import { warn } from './log.ts';
-import { git } from './git.ts';
+import { git, addRepoExclude } from './git.ts';
 
 async function lstatOrNull(p: string): Promise<Stats | null> {
   try {
@@ -55,10 +55,28 @@ export async function applySymlinks(
   for (const target of config.symlinkTargets ?? []) {
     const src = path.join(repo, target);
     const dst = path.join(wt, target);
+    // Never symlink over a file git tracks: replacing a tracked regular file
+    // with a symlink shows up as a dirty `typechange`. Undo any symlink a prior
+    // run left in its place (so `git checkout` restores the tracked copy), then
+    // leave the target alone. `ls-files` (rather than `--error-unmatch`) stays
+    // quiet for the common untracked case: it just prints nothing.
+    if ((await git(['ls-files', '--', target], wt)) !== '') {
+      if ((await lstatOrNull(dst))?.isSymbolicLink()) {
+        await fsp.rm(dst);
+        await git(['checkout', '--', target], wt);
+      }
+      warn(`Warning: ${target} is tracked by git — leaving the repo's copy (not symlinking)`);
+      continue;
+    }
     if (await lstatOrNull(dst)) await fsp.rm(dst, { recursive: true, force: true });
     if (await exists(src)) {
       await fsp.mkdir(path.dirname(dst), { recursive: true });
       await fsp.symlink(src, dst);
+      // Keep the symlink out of `git status`. A trailing-slash (dir-only)
+      // ignore pattern won't match it — git sees a symlink as a file, not a
+      // dir — so anchor without a slash to cover files, dirs, and symlinks
+      // alike. The worktree inherits this via the symlinked info/exclude.
+      await addRepoExclude(repo, `/${target}`);
     } else {
       warn(`Warning: ${src} does not exist, skipping symlink for ${target}`);
     }

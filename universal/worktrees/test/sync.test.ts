@@ -7,7 +7,7 @@ import { sandbox, runEngine, linkCfg } from './helpers.ts';
 
 const CFG = `export default {
   ports: { UI: 3003 },
-  symlinkTargets: ['README.md'],
+  symlinkTargets: ['notes.local'],
   async postSync({ wt }) {
     await (await import('node:fs/promises')).writeFile(wt + '/.post_sync_ran', '');
   },
@@ -15,12 +15,14 @@ const CFG = `export default {
 
 test('sync re-applies symlinks and runs postSync (select all)', (t) => {
   const { root, repo, configHome } = sandbox(t);
+  // Untracked file -> a valid symlink source (tracked files are left alone).
+  fs.writeFileSync(path.join(repo, 'notes.local'), 'local\n');
   linkCfg(root, repo, CFG);
   runEngine(repo, ['setup', 'feature/syncme'], { configHome });
   const wt = path.join(repo, 'worktrees', 'feature-syncme');
-  fs.rmSync(path.join(wt, 'README.md')); // break symlink
+  fs.rmSync(path.join(wt, 'notes.local')); // break symlink
   runEngine(repo, ['sync'], { configHome, input: 'a\n' });
-  assert.equal(fs.lstatSync(path.join(wt, 'README.md')).isSymbolicLink(), true);
+  assert.equal(fs.lstatSync(path.join(wt, 'notes.local')).isSymbolicLink(), true);
   assert.equal(fs.existsSync(path.join(wt, '.post_sync_ran')), true);
 });
 

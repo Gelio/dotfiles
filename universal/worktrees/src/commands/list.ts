@@ -23,34 +23,83 @@ async function dirExists(p: string): Promise<boolean> {
   }
 }
 
+interface Worktree {
+  /** Absolute path to the worktree's working tree. */
+  path: string;
+  /** Checked-out branch, or `'detached'` for a detached HEAD. */
+  branch: string;
+  /** git reports the worktree's dir is gone (a removed-but-unpruned worktree). */
+  prunable: boolean;
+}
+
+/** Parse `git worktree list --porcelain` into one entry per worktree. */
+function parseWorktrees(porcelain: string): Worktree[] {
+  const entries: Worktree[] = [];
+  let cur: Worktree | null = null;
+  for (const line of porcelain.split('\n')) {
+    if (line.startsWith('worktree ')) {
+      cur = { path: line.slice('worktree '.length), branch: 'detached', prunable: false };
+      entries.push(cur);
+    } else if (!cur) {
+      continue;
+    } else if (line.startsWith('branch ')) {
+      cur.branch = line.slice('branch '.length).replace(/^refs\/heads\//, '');
+    } else if (line.startsWith('prunable')) {
+      cur.prunable = true;
+    }
+  }
+  return entries;
+}
+
 async function listOne(repo: string, config: ResolvedWorktreesConfig): Promise<void> {
   type Row = { branch: string; pathCol: string; ports: string };
   const rows: Row[] = [];
+  const reg = await readPortRegistry(repo);
 
-  let mainBranch = 'unknown';
+  // Enumerate from git itself rather than the port registry: this lists every
+  // worktree (including port-less repos that keep no registry) and reports each
+  // one's real path — which can diverge from its dir name after a `git checkout`.
+  let worktrees: Worktree[] = [];
   try {
-    mainBranch = (await git(['branch', '--show-current'], repo)) || 'unknown';
+    worktrees = parseWorktrees(await git(['worktree', 'list', '--porcelain'], repo));
   } catch {
-    /* ignore */
+    /* not a git repo / git error — fall through to a best-effort main row */
   }
-  rows.push({ branch: mainBranch, pathCol: '.', ports: `${portsString(config, 0)} (main)` });
-
-  for (const [name, index] of await readPortRegistry(repo)) {
-    const wt = path.join(repo, 'worktrees', name);
-    let branch = '?';
-    let status = '';
-    if (await dirExists(wt)) {
-      try {
-        branch = (await git(['branch', '--show-current'], wt)) || '?';
-      } catch {
-        /* ignore */
-      }
-    } else {
-      status = ' [STALE]';
+  // git always lists the main worktree first; synthesize a row if git gave us
+  // nothing so the output is never empty.
+  if (worktrees.length === 0) {
+    let mainBranch = 'unknown';
+    try {
+      mainBranch = (await git(['branch', '--show-current'], repo)) || 'unknown';
+    } catch {
+      /* ignore */
     }
+    worktrees = [{ path: repo, branch: mainBranch, prunable: false }];
+  }
+
+  for (const [i, wt] of worktrees.entries()) {
+    const isMain = i === 0;
+    const name = path.basename(wt.path);
+    const stale = wt.prunable || !(await dirExists(wt.path));
+    const status = stale ? ' [STALE]' : '';
+    const rel = isMain ? '.' : `./${path.relative(repo, wt.path)}`;
+    const index = isMain ? 0 : reg.get(name);
+    const ports = index === undefined ? '-' : portsString(config, index);
     rows.push({
-      branch,
-      pathCol: `./worktrees/${name}${status}`,
+      branch: wt.branch,
+      pathCol: `${rel}${status}`,
+      ports: isMain ? `${ports} (main)` : ports,
+    });
+  }
+
+  // Registry entries git no longer knows about (worktree removed and pruned)
+  // still get a STALE row so the orphaned port index stays visible.
+  const known = new Set(worktrees.map((w) => path.basename(w.path)));
+  for (const [name, index] of reg) {
+    if (known.has(name)) continue;
+    rows.push({
+      branch: '?',
+      pathCol: `./worktrees/${name} [STALE]`,
       ports: portsString(config, index),
     });
   }

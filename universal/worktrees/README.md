@@ -125,7 +125,7 @@ import type { WorktreesConfig } from '~/.local/share/worktrees/src/types.ts';
 |---|---|---|---|
 | `ports` | `Record<string, number>` | — | Named base ports. Omit entirely if the repo needs no ports. |
 | `portStep` | `number` | `10` | Port spacing between worktree indices. |
-| `symlinkTargets` | `string[]` | — | Files/dirs symlinked from the main repo into each worktree. |
+| `symlinkTargets` | `string[]` | — | Files/dirs symlinked from the main repo into each worktree. A target that git **tracks** is left as the worktree's own checkout (symlinking over it would show as a dirty `typechange`); untracked targets are symlinked and added to the repo's `.git/info/exclude` so the link never pollutes `git status`. |
 | `mergeSymlinkDirs` | `string[]` | — | Dirs that are merge-symlinked recursively: each entry inside the dir is symlinked individually, preserving any tracked files in the worktree. |
 
 ### Hooks
