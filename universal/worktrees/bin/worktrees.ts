@@ -11,6 +11,7 @@ function usage(): void {
       "  list [--all]                     List this repo's worktrees (--all: every registered repo)",
       '  sync                             Re-apply config to selected worktrees (interactive)',
       '  init [--in-repo]                 Scaffold a config for this repo',
+      "  config-path                      Print the path to this repo's config file",
     ].join('\n'),
   );
 }
@@ -32,6 +33,9 @@ async function main(argv: string[]): Promise<void> {
       break;
     case 'init':
       await (await import('../src/commands/init.ts')).cmdInit(rest);
+      break;
+    case 'config-path':
+      await (await import('../src/commands/config-path.ts')).cmdConfigPath();
       break;
     case '_config':
       await (await import('../src/config.ts')).debugConfig();

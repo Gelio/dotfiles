@@ -68,7 +68,7 @@ export function configPathIsSafe(repo: string, configPath: string): boolean {
   return !inside;
 }
 
-function resolveConfigSource(repo: string): string | null {
+export function resolveConfigSource(repo: string): string | null {
   for (const ext of CONFIG_EXTS) {
     const f = path.join(repo, `.worktrees${ext}`);
     if ((fs.existsSync(f) || isLink(f)) && configPathIsSafe(repo, f)) return f;

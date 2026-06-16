@@ -19,7 +19,7 @@ _worktrees() {
   fi
 
   if [[ $cword -eq 1 ]]; then
-    COMPREPLY=( $(compgen -W "setup teardown list sync init" -- "$cur") )
+    COMPREPLY=( $(compgen -W "setup teardown list sync init config-path" -- "$cur") )
     return
   fi
 

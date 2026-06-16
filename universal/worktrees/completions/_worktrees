@@ -30,6 +30,7 @@ _worktrees() {
     "list:List this repo's worktrees (--all: every registered repo)"
     'sync:Re-apply config to selected worktrees (interactive)'
     'init:Scaffold a config for this repo'
+    "config-path:Print the path to this repo's config file"
   )
 
   _arguments -C \

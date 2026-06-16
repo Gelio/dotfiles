@@ -73,6 +73,7 @@ which is the single source of truth for those candidates and stays silent
 | `worktrees list` | List worktrees for the current repo with branch, path, and port allocations. Marks stale entries. |
 | `worktrees list --all` | List worktrees for every repo in the central registry. |
 | `worktrees sync` | Interactively re-apply config (reset, re-symlink, `postSync`) to selected worktrees. |
+| `worktrees config-path` | Print the path to the config the engine would use for the current repo (the local symlink or the central file, per the discovery order below). Resolves the path only — it does not import/execute the config — so it works even with a broken config. Exits non-zero if no config exists. |
 
 ---
 
