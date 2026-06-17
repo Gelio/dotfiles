@@ -12,13 +12,13 @@ jq = "latest"
 yq = "latest"
 python = "3.14"
 claude = "latest"
-"npm:@google/gemini-cli" = "latest"
 "npm:tree-sitter-cli" = "latest"
 "npm:mcp-hub" = "latest"
 "npm:@github/copilot" = "latest"
 "npm:typescript" = "latest"
 "npm:@zed-industries/claude-agent-acp" = "latest"
 "aqua:ankitpokhrel/jira-cli" = "latest"
+antigravity-cli = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]
