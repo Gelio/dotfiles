@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { helpFor, wantsHelp } from '../src/help.ts';
+
 function usage(): void {
   console.error(
     [
@@ -18,6 +20,18 @@ function usage(): void {
 
 async function main(argv: string[]): Promise<void> {
   const [sub, ...rest] = argv;
+
+  // `<sub> -h|--help` prints that subcommand's help and exits cleanly, before
+  // any config loading or command logic runs. Unknown subcommands (helpFor ===
+  // null) fall through to the switch, which reports the error via usage().
+  if (sub && wantsHelp(rest)) {
+    const help = helpFor(sub);
+    if (help !== null) {
+      console.log(help);
+      return;
+    }
+  }
+
   switch (sub) {
     case 'setup':
       await (await import('../src/commands/setup.ts')).cmdSetup(rest);

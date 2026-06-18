@@ -75,6 +75,8 @@ which is the single source of truth for those candidates and stays silent
 | `worktrees sync` | Interactively re-apply config (reset, re-symlink, `postSync`) to selected worktrees. |
 | `worktrees config-path` | Print the path to the config the engine would use for the current repo (the local symlink or the central file, per the discovery order below). Resolves the path only — it does not import/execute the config — so it works even with a broken config. Exits non-zero if no config exists. |
 
+Pass `-h` or `--help` to any subcommand (e.g. `worktrees setup --help`) to print its usage, summary, and flags. Help short-circuits before config loading or command logic, so it works anywhere — even outside a configured repo.
+
 ---
 
 ## Config discovery and security guard
