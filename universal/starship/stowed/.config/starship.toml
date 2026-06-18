@@ -11,6 +11,9 @@ disabled = false
 [directory]
 # NOTE: show more directory levels than the default 3
 truncation_length = 8
+# NOTE: show truncated ancestor directories beyond the repository root.
+# Most useful with nested git submodules to show more of the path
+fish_style_pwd_dir_length = 1
 
 [aws]
 disabled = true
