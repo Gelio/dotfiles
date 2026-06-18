@@ -44,16 +44,30 @@ _worktrees() {
     args)
       case $line[1] in
         setup)
-          _arguments '--from[base ref to branch from]:base:_worktrees_refs'
+          _arguments \
+            '--from[base ref to branch from]:base:_worktrees_refs' \
+            '(-h --help)'{-h,--help}'[show help]'
           ;;
         teardown)
-          _arguments '1:worktree:_worktrees_names'
+          _arguments \
+            '1:worktree:_worktrees_names' \
+            '(-h --help)'{-h,--help}'[show help]'
           ;;
         list)
-          _arguments '--all[list every registered repo]'
+          _arguments \
+            '--all[list every registered repo]' \
+            '(-h --help)'{-h,--help}'[show help]'
+          ;;
+        sync)
+          _arguments '(-h --help)'{-h,--help}'[show help]'
           ;;
         init)
-          _arguments '--in-repo[print in-repo symlink instructions]'
+          _arguments \
+            '--in-repo[print in-repo symlink instructions]' \
+            '(-h --help)'{-h,--help}'[show help]'
+          ;;
+        config-path)
+          _arguments '(-h --help)'{-h,--help}'[show help]'
           ;;
       esac
       ;;

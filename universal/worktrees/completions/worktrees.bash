@@ -28,17 +28,23 @@ _worktrees() {
       if [[ "$prev" == "--from" ]]; then
         COMPREPLY=( $(compgen -W "$(worktrees __complete setup --from '' 2>/dev/null)" -- "$cur") )
       else
-        COMPREPLY=( $(compgen -W "--from" -- "$cur") )
+        COMPREPLY=( $(compgen -W "--from -h --help" -- "$cur") )
       fi
       ;;
     teardown)
-      COMPREPLY=( $(compgen -W "$(worktrees __complete teardown '' 2>/dev/null)" -- "$cur") )
+      COMPREPLY=( $(compgen -W "-h --help $(worktrees __complete teardown '' 2>/dev/null)" -- "$cur") )
       ;;
     list)
-      COMPREPLY=( $(compgen -W "--all" -- "$cur") )
+      COMPREPLY=( $(compgen -W "--all -h --help" -- "$cur") )
+      ;;
+    sync)
+      COMPREPLY=( $(compgen -W "-h --help" -- "$cur") )
       ;;
     init)
-      COMPREPLY=( $(compgen -W "--in-repo" -- "$cur") )
+      COMPREPLY=( $(compgen -W "--in-repo -h --help" -- "$cur") )
+      ;;
+    config-path)
+      COMPREPLY=( $(compgen -W "-h --help" -- "$cur") )
       ;;
   esac
 }

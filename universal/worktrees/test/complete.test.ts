@@ -40,12 +40,32 @@ test('teardown completes existing worktree dir names', (t) => {
   assert.match(out, /^feature-x$/m);
 });
 
-test('teardown offers nothing for a flag-like current word', (t) => {
+test('teardown offers help flags (not names) for a flag-like current word', (t) => {
   const { root, repo, configHome } = sandbox(t);
   linkCfg(root, repo, CFG);
   runEngine(repo, ['setup', 'feature/x'], { configHome });
   const { out } = runEngine(repo, ['__complete', 'teardown', '-'], { configHome });
-  assert.equal(out.trim(), '');
+  assert.match(out, /^-h$/m);
+  assert.match(out, /^--help$/m);
+  assert.doesNotMatch(out, /^feature-x$/m);
+});
+
+test('every subcommand offers -h/--help', (t) => {
+  const { root, repo, configHome } = sandbox(t);
+  linkCfg(root, repo, CFG);
+  for (const sub of ['setup', 'teardown', 'list', 'sync', 'init']) {
+    const { out } = runEngine(repo, ['__complete', sub, '-'], { configHome });
+    assert.match(out, /^-h$/m, `${sub} should offer -h`);
+    assert.match(out, /^--help$/m, `${sub} should offer --help`);
+  }
+});
+
+test('already-typed help flag is not offered again', (t) => {
+  const { root, repo, configHome } = sandbox(t);
+  linkCfg(root, repo, CFG);
+  const { out } = runEngine(repo, ['__complete', 'list', '--help', '-'], { configHome });
+  assert.doesNotMatch(out, /^--help$/m);
+  assert.match(out, /^-h$/m);
 });
 
 test('list completes --all', (t) => {

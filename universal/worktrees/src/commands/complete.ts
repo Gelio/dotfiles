@@ -15,14 +15,17 @@ async function gitQuiet(args: string[]): Promise<string | null> {
 
 const SUBCOMMANDS = ['setup', 'teardown', 'list', 'sync', 'init'];
 
+// Every subcommand accepts these (handled by the dispatcher in bin/worktrees.ts).
+const HELP_FLAGS = ['-h', '--help'];
+
 // Flags each subcommand accepts. Used both to offer flags and to drop ones
 // already present on the line.
 const FLAGS: Record<string, string[]> = {
-  setup: ['--from'],
-  list: ['--all'],
-  init: ['--in-repo'],
-  teardown: [],
-  sync: [],
+  setup: ['--from', ...HELP_FLAGS],
+  list: ['--all', ...HELP_FLAGS],
+  init: ['--in-repo', ...HELP_FLAGS],
+  teardown: [...HELP_FLAGS],
+  sync: [...HELP_FLAGS],
 };
 
 /** Repo toplevel, or null if not inside a git repo. */
@@ -78,11 +81,15 @@ async function computeCandidates(words: string[]): Promise<string[]> {
     case 'setup':
       return prev === '--from' ? refs() : remainingFlags('setup', typed);
     case 'teardown':
-      return cur.startsWith('-') ? [] : worktreeNames();
+      // teardown's arg is a positional worktree name; offer flags only once the
+      // user starts a flag (names never begin with '-').
+      return cur.startsWith('-') ? remainingFlags('teardown', typed) : worktreeNames();
     case 'list':
       return remainingFlags('list', typed);
     case 'init':
       return remainingFlags('init', typed);
+    case 'sync':
+      return remainingFlags('sync', typed);
     default:
       return [];
   }
