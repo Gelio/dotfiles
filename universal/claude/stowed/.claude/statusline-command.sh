@@ -7,12 +7,9 @@ input=$(cat)
 model_id=$(echo "$input" | jq -r '.model.id // empty')
 cwd=$(echo "$input" | jq -r '.workspace.current_dir // empty')
 context_size=$(echo "$input" | jq -r '.context_window.context_window_size // 0')
-used_pct=$(echo "$input" | jq -r '.context_window.used_percentage // 0')
 remaining_pct=$(echo "$input" | jq -r '.context_window.remaining_percentage // empty')
-current_input=$(echo "$input" | jq -r '.context_window.current_usage.input_tokens // 0')
-current_output=$(echo "$input" | jq -r '.context_window.current_usage.output_tokens // 0')
-cache_creation=$(echo "$input" | jq -r '.context_window.current_usage.cache_creation_input_tokens // 0')
-cache_read=$(echo "$input" | jq -r '.context_window.current_usage.cache_read_input_tokens // 0')
+total_input=$(echo "$input" | jq -r '.context_window.total_input_tokens // 0')
+total_output=$(echo "$input" | jq -r '.context_window.total_output_tokens // 0')
 worktree_name=$(echo "$input" | jq -r '.worktree.name // empty')
 
 # Convert model ID to short name
@@ -59,7 +56,7 @@ RED='\033[31m'
 RESET='\033[0m'
 
 # Context usage (used/total + percentage + auto-compact estimate)
-current_used=$((current_input + current_output + cache_creation + cache_read))
+current_used=$((total_input + total_output))
 token_display=""
 if [[ $context_size -gt 0 ]]; then
     # Format as used/total in k
