@@ -17,7 +17,9 @@ worktree_name=$(echo "$input" | jq -r '.worktree.name // empty')
 
 # Convert model ID to short name
 model_short="Claude"
-if [[ "$model_id" == *"opus"* ]]; then
+if [[ "$model_id" == *"fable"* ]]; then
+    model_short="Fable"
+elif [[ "$model_id" == *"opus"* ]]; then
     model_short="Opus"
 elif [[ "$model_id" == *"sonnet"* ]]; then
     model_short="Sonnet"
