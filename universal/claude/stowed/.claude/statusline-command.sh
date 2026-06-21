@@ -99,6 +99,17 @@ if [[ $context_size -gt 0 ]]; then
     fi
 fi
 
+# Session cost (from cost.total_cost_usd in statusline JSON — exact, not estimated)
+total_cost_usd=$(echo "$input" | jq -r '.cost.total_cost_usd // empty')
+session_cost_display=""
+if [[ -n "$total_cost_usd" ]] && [[ "$total_cost_usd" != "0" ]]; then
+    session_cost_display=$(awk "BEGIN {
+        cost = $total_cost_usd;
+        if (cost < 0.005) printf \"<\$0.01\"
+        else printf \"\$%.2f\", cost
+    }")
+fi
+
 # Elapsed time (session duration)
 # Calculate based on transcript modification time
 transcript_path=$(echo "$input" | jq -r '.transcript_path // empty')
@@ -149,6 +160,11 @@ parts+=("$short_cwd")
 # Context usage
 if [[ -n "$token_display" ]]; then
     parts+=("$token_display")
+fi
+
+# Session cost
+if [[ -n "$session_cost_display" ]]; then
+    parts+=("$session_cost_display")
 fi
 
 # Elapsed time
