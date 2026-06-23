@@ -41,7 +41,7 @@ _worktrees() {
       COMPREPLY=( $(compgen -W "-h --help" -- "$cur") )
       ;;
     init)
-      COMPREPLY=( $(compgen -W "--in-repo -h --help" -- "$cur") )
+      COMPREPLY=( $(compgen -W "-h --help" -- "$cur") )
       ;;
     config-path)
       COMPREPLY=( $(compgen -W "-h --help" -- "$cur") )

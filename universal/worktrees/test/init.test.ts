@@ -23,13 +23,3 @@ test('init (central) is idempotent: second run leaves config untouched', (t) => 
   assert.equal(code, 0);
   assert.match(out, /Config already exists/);
 });
-
-test('init --in-repo appends exclude idempotently + prints guidance', (t) => {
-  const { repo, configHome } = sandbox(t);
-  runEngine(repo, ['init', '--in-repo'], { configHome });
-  runEngine(repo, ['init', '--in-repo'], { configHome });
-  const ex = fs.readFileSync(path.join(repo, '.git', 'info', 'exclude'), 'utf8');
-  assert.equal(ex.split('\n').filter((l) => l === '.worktrees.mts').length, 1);
-  const { out } = runEngine(repo, ['init', '--in-repo'], { configHome });
-  assert.match(out, /ln -s/);
-});

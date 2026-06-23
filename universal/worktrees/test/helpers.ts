@@ -62,10 +62,13 @@ export function runEngine(
   return { out: (res.stdout ?? '') + (res.stderr ?? ''), code: res.status ?? 1 };
 }
 
-/** Write a config file and symlink it into the repo as a safe (outside) config. */
-export function linkCfg(root: string, repo: string, body: string, name = '.worktrees.mts'): void {
-  fs.writeFileSync(path.join(root, 'cfg.mts'), body);
-  fs.symlinkSync(path.join(root, 'cfg.mts'), path.join(repo, name));
+/**
+ * Write a central config for `repo` under the sandbox's config home
+ * (`<root>/config`, matching `sandbox()`). The standard way tests give a repo a
+ * config to load.
+ */
+export function writeCfg(root: string, repo: string, body: string): void {
+  writeCentralConfig(path.join(root, 'config'), repo, body);
 }
 
 /** Write a central config at <configHome>/repos/<repoKey>.<ext>; returns its path. */

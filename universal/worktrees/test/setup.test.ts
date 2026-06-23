@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { sandbox, runEngine, linkCfg } from './helpers.ts';
+import { sandbox, runEngine, writeCfg } from './helpers.ts';
 
 const HOOK_CFG = `export default {
   ports: { UI: 3003 },
@@ -20,7 +20,7 @@ test('setup creates worktree, computes ports, runs hook + summary', (t) => {
   const { root, repo, configHome } = sandbox(t);
   // An untracked file in the main repo is a valid symlink source.
   fs.writeFileSync(path.join(repo, 'notes.local'), 'local\n');
-  linkCfg(root, repo, HOOK_CFG);
+  writeCfg(root, repo, HOOK_CFG);
   const { out, code } = runEngine(repo, ['setup', 'feature/abc', '--from', 'main'], { configHome });
   assert.equal(code, 0);
   const wt = path.join(repo, 'worktrees', 'feature-abc');
@@ -34,7 +34,7 @@ test('setup creates worktree, computes ports, runs hook + summary', (t) => {
 test('setup leaves a tracked symlinkTarget alone (no dirty typechange)', (t) => {
   const { root, repo, configHome } = sandbox(t);
   // README.md is committed by makeRepo, so it is tracked in every worktree.
-  linkCfg(root, repo, `export default { symlinkTargets: ['README.md'] };`);
+  writeCfg(root, repo, `export default { symlinkTargets: ['README.md'] };`);
   const { out, code } = runEngine(repo, ['setup', 'feature/tracked'], { configHome });
   assert.equal(code, 0);
   const wt = path.join(repo, 'worktrees', 'feature-tracked');
@@ -52,7 +52,7 @@ test('setup excludes an untracked symlinkTarget so the worktree stays clean', (t
   // setup must add a type-agnostic exclude that the worktree inherits.
   fs.mkdirSync(path.join(repo, 'agent-plans'));
   fs.writeFileSync(path.join(repo, 'agent-plans', 'plan.md'), 'plan\n');
-  linkCfg(root, repo, `export default { symlinkTargets: ['agent-plans'] };`);
+  writeCfg(root, repo, `export default { symlinkTargets: ['agent-plans'] };`);
   const { code } = runEngine(repo, ['setup', 'feature/ignored'], { configHome });
   assert.equal(code, 0);
   const wt = path.join(repo, 'worktrees', 'feature-ignored');
@@ -63,7 +63,7 @@ test('setup excludes an untracked symlinkTarget so the worktree stays clean', (t
 
 test('setup idempotent: reuses index, no duplicate registry entry', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, HOOK_CFG);
+  writeCfg(root, repo, HOOK_CFG);
   runEngine(repo, ['setup', 'feature/a'], { configHome });
   runEngine(repo, ['setup', 'feature/b'], { configHome });
   const { out } = runEngine(repo, ['setup', 'feature/a'], { configHome });
@@ -74,7 +74,7 @@ test('setup idempotent: reuses index, no duplicate registry entry', (t) => {
 
 test('setup excludes the worktrees/ dir from the main repo, idempotently', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, `export default { symlinkTargets: ['README.md'] };`);
+  writeCfg(root, repo, `export default { symlinkTargets: ['README.md'] };`);
   runEngine(repo, ['setup', 'feature/a'], { configHome });
   runEngine(repo, ['setup', 'feature/b'], { configHome });
   const ex = fs.readFileSync(path.join(repo, '.git', 'info', 'exclude'), 'utf8');
@@ -86,14 +86,14 @@ test('setup excludes the worktrees/ dir from the main repo, idempotently', (t) =
 
 test('setup with no ports skips the port-registry', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, `export default { symlinkTargets: ['README.md'] };`);
+  writeCfg(root, repo, `export default { symlinkTargets: ['README.md'] };`);
   assert.equal(runEngine(repo, ['setup', 'feature/y'], { configHome }).code, 0);
   assert.equal(fs.existsSync(path.join(repo, 'worktrees', '.port-registry')), false);
 });
 
 test('setup warns and skips a symlinkTarget whose source is missing', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, `export default { symlinkTargets: ['does-not-exist'] };`);
+  writeCfg(root, repo, `export default { symlinkTargets: ['does-not-exist'] };`);
   const { out, code } = runEngine(repo, ['setup', 'feature/missing'], { configHome });
   assert.equal(code, 0);
   assert.match(out, /Warning:/);
@@ -116,7 +116,7 @@ test('setup merge-symlinks a configured dir and reports tracked collisions', (t)
   g('add', '-A');
   g('commit', '-qm', 'add .claude');
   g('update-ref', 'refs/remotes/origin/main', 'HEAD');
-  linkCfg(root, repo, `export default { mergeSymlinkDirs: ['.claude'] };`);
+  writeCfg(root, repo, `export default { mergeSymlinkDirs: ['.claude'] };`);
   const { out, code } = runEngine(repo, ['setup', 'feature/merge'], { configHome });
   assert.equal(code, 0);
   const wt = path.join(repo, 'worktrees', 'feature-merge');
@@ -132,7 +132,7 @@ test('setup merge-symlinks a new dir entry (no tracked collision)', (t) => {
   // no real .claude, so every entry gets symlinked through the merge loop.
   fs.mkdirSync(path.join(repo, '.claude'), { recursive: true });
   fs.writeFileSync(path.join(repo, '.claude', 'config.json'), '{}\n');
-  linkCfg(root, repo, `export default { mergeSymlinkDirs: ['.claude'] };`);
+  writeCfg(root, repo, `export default { mergeSymlinkDirs: ['.claude'] };`);
   const { code } = runEngine(repo, ['setup', 'feature/mergenew'], { configHome });
   assert.equal(code, 0);
   const link = path.join(repo, 'worktrees', 'feature-mergenew', '.claude', 'config.json');

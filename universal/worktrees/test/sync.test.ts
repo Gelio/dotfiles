@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { sandbox, runEngine, linkCfg } from './helpers.ts';
+import { sandbox, runEngine, writeCfg } from './helpers.ts';
 
 const CFG = `export default {
   ports: { UI: 3003 },
@@ -17,7 +17,7 @@ test('sync re-applies symlinks and runs postSync (select all)', (t) => {
   const { root, repo, configHome } = sandbox(t);
   // Untracked file -> a valid symlink source (tracked files are left alone).
   fs.writeFileSync(path.join(repo, 'notes.local'), 'local\n');
-  linkCfg(root, repo, CFG);
+  writeCfg(root, repo, CFG);
   runEngine(repo, ['setup', 'feature/syncme'], { configHome });
   const wt = path.join(repo, 'worktrees', 'feature-syncme');
   fs.rmSync(path.join(wt, 'notes.local')); // break symlink
@@ -28,7 +28,7 @@ test('sync re-applies symlinks and runs postSync (select all)', (t) => {
 
 test('sync numeric selection syncs only the chosen index, reports invalid token', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, CFG);
+  writeCfg(root, repo, CFG);
   // Two worktrees: order in the registry/list is creation order (a, then b).
   runEngine(repo, ['setup', 'feature/a'], { configHome });
   runEngine(repo, ['setup', 'feature/b'], { configHome });
@@ -43,7 +43,7 @@ test('sync numeric selection syncs only the chosen index, reports invalid token'
 
 test('sync empty selection syncs nothing', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, CFG);
+  writeCfg(root, repo, CFG);
   runEngine(repo, ['setup', 'feature/only'], { configHome });
   const wt = path.join(repo, 'worktrees', 'feature-only');
   const { out } = runEngine(repo, ['sync'], { configHome, input: '\n' });
@@ -53,7 +53,7 @@ test('sync empty selection syncs nothing', (t) => {
 
 test('sync skips a worktree with unstaged tracked changes', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, CFG);
+  writeCfg(root, repo, CFG);
   runEngine(repo, ['setup', 'feature/dirty'], { configHome });
   const wt = path.join(repo, 'worktrees', 'feature-dirty');
   // README.md is a symlink (a symlinkTarget); modify a real tracked file

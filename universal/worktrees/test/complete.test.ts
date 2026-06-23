@@ -1,12 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { sandbox, runEngine, linkCfg } from './helpers.ts';
+import { sandbox, runEngine, writeCfg } from './helpers.ts';
 
 const CFG = `export default { symlinkTargets: ['README.md'] };`;
 
 test('completes subcommands when no subcommand typed', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, CFG);
+  writeCfg(root, repo, CFG);
   const { out, code } = runEngine(repo, ['__complete', ''], { configHome });
   assert.equal(code, 0);
   for (const s of ['setup', 'teardown', 'list', 'sync', 'init'])
@@ -15,7 +15,7 @@ test('completes subcommands when no subcommand typed', (t) => {
 
 test('setup --from completes git refs (local + remote)', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, CFG);
+  writeCfg(root, repo, CFG);
   runEngine(repo, ['setup', 'feature/x'], { configHome });
   const { out } = runEngine(repo, ['__complete', 'setup', '--from', ''], { configHome });
   assert.deepEqual(
@@ -26,7 +26,7 @@ test('setup --from completes git refs (local + remote)', (t) => {
 
 test('setup positional offers the --from flag, not refs', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, CFG);
+  writeCfg(root, repo, CFG);
   const { out } = runEngine(repo, ['__complete', 'setup', ''], { configHome });
   assert.match(out, /^--from$/m);
   assert.doesNotMatch(out, /origin\/main/);
@@ -34,7 +34,7 @@ test('setup positional offers the --from flag, not refs', (t) => {
 
 test('teardown completes existing worktree dir names', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, CFG);
+  writeCfg(root, repo, CFG);
   runEngine(repo, ['setup', 'feature/x'], { configHome });
   const { out } = runEngine(repo, ['__complete', 'teardown', ''], { configHome });
   assert.match(out, /^feature-x$/m);
@@ -42,7 +42,7 @@ test('teardown completes existing worktree dir names', (t) => {
 
 test('teardown offers help flags (not names) for a flag-like current word', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, CFG);
+  writeCfg(root, repo, CFG);
   runEngine(repo, ['setup', 'feature/x'], { configHome });
   const { out } = runEngine(repo, ['__complete', 'teardown', '-'], { configHome });
   assert.match(out, /^-h$/m);
@@ -52,7 +52,7 @@ test('teardown offers help flags (not names) for a flag-like current word', (t) 
 
 test('every subcommand offers -h/--help', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, CFG);
+  writeCfg(root, repo, CFG);
   for (const sub of ['setup', 'teardown', 'list', 'sync', 'init']) {
     const { out } = runEngine(repo, ['__complete', sub, '-'], { configHome });
     assert.match(out, /^-h$/m, `${sub} should offer -h`);
@@ -62,7 +62,7 @@ test('every subcommand offers -h/--help', (t) => {
 
 test('already-typed help flag is not offered again', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, CFG);
+  writeCfg(root, repo, CFG);
   const { out } = runEngine(repo, ['__complete', 'list', '--help', '-'], { configHome });
   assert.doesNotMatch(out, /^--help$/m);
   assert.match(out, /^-h$/m);
@@ -70,16 +70,9 @@ test('already-typed help flag is not offered again', (t) => {
 
 test('list completes --all', (t) => {
   const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, CFG);
+  writeCfg(root, repo, CFG);
   const { out } = runEngine(repo, ['__complete', 'list', ''], { configHome });
   assert.match(out, /^--all$/m);
-});
-
-test('init completes --in-repo', (t) => {
-  const { root, repo, configHome } = sandbox(t);
-  linkCfg(root, repo, CFG);
-  const { out } = runEngine(repo, ['__complete', 'init', ''], { configHome });
-  assert.match(out, /^--in-repo$/m);
 });
 
 test('completion is silent and exits 0 outside a git repo', (t) => {

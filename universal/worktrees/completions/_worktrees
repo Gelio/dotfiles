@@ -62,9 +62,7 @@ _worktrees() {
           _arguments '(-h --help)'{-h,--help}'[show help]'
           ;;
         init)
-          _arguments \
-            '--in-repo[print in-repo symlink instructions]' \
-            '(-h --help)'{-h,--help}'[show help]'
+          _arguments '(-h --help)'{-h,--help}'[show help]'
           ;;
         config-path)
           _arguments '(-h --help)'{-h,--help}'[show help]'

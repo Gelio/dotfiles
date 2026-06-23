@@ -23,7 +23,7 @@ const HELP_FLAGS = ['-h', '--help'];
 const FLAGS: Record<string, string[]> = {
   setup: ['--from', ...HELP_FLAGS],
   list: ['--all', ...HELP_FLAGS],
-  init: ['--in-repo', ...HELP_FLAGS],
+  init: [...HELP_FLAGS],
   teardown: [...HELP_FLAGS],
   sync: [...HELP_FLAGS],
 };

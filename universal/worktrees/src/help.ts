@@ -34,9 +34,8 @@ const COMMANDS: Record<string, CommandHelp> = {
     summary: 'Re-apply config (reset, re-symlink, postSync) to selected worktrees (interactive).',
   },
   init: {
-    usage: 'worktrees init [--in-repo]',
+    usage: 'worktrees init',
     summary: 'Scaffold a worktrees config for this repo and register it.',
-    options: [['--in-repo', 'Print instructions for an in-repo symlinked config instead']],
   },
   'config-path': {
     usage: 'worktrees config-path',

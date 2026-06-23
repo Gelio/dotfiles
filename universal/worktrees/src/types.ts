@@ -21,7 +21,7 @@ export interface HookContext {
   chalk: (typeof import('zx'))['chalk'];
 }
 
-/** A repo's worktrees config — `export default` this from `.worktrees.mts`. */
+/** A repo's worktrees config — `export default` this from the central config. */
 export interface WorktreesConfig {
   /** Named base ports. Omit entirely if the repo needs no ports. */
   ports?: Record<string, number>;

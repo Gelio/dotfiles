@@ -67,28 +67,24 @@ which is the single source of truth for those candidates and stays silent
 | Command | What it does |
 |---|---|
 | `worktrees init` | Scaffold a central config for the current repo at `~/.config/worktrees/repos/<repo-key>.mts`. |
-| `worktrees init --in-repo` | Print a starter config and add `.worktrees.{mts,ts,mjs,js}` to `.git/info/exclude`. Use when you want the config symlinked from a dotfiles checkout into the repo root. |
 | `worktrees setup <branch> [--from <base>]` | Create (or refresh) a worktree at `worktrees/<dir>/` for `<branch>`, branching from `<base>` (default: `origin/main`). Allocates ports, applies symlinks, runs `postCreate`. |
 | `worktrees teardown <name\|branch>` | Interactively remove a worktree, clean up the port registry, and optionally delete the branch. |
 | `worktrees list` | List worktrees for the current repo with branch, path, and port allocations. Marks stale entries. |
 | `worktrees list --all` | List worktrees for every repo in the central registry. |
 | `worktrees sync` | Interactively re-apply config (reset, re-symlink, `postSync`) to selected worktrees. |
-| `worktrees config-path` | Print the path to the config the engine would use for the current repo (the local symlink or the central file, per the discovery order below). Resolves the path only — it does not import/execute the config — so it works even with a broken config. Exits non-zero if no config exists. |
+| `worktrees config-path` | Print the path to the central config the engine would use for the current repo. Resolves the path only — it does not import/execute the config — so it works even with a broken config. Exits non-zero if no config exists. |
 
 Pass `-h` or `--help` to any subcommand (e.g. `worktrees setup --help`) to print its usage, summary, and flags. Help short-circuits before config loading or command logic, so it works anywhere — even outside a configured repo.
 
 ---
 
-## Config discovery and security guard
+## Config discovery
 
-For the repo rooted at `$CWD`, the engine resolves config in this order:
-
-1. **`<repo>/.worktrees.{mts,ts,mjs,js}`** (TS variants take precedence) —
-   accepted **only** when it is a symlink whose `realpath` resolves **outside**
-   the repo. Plain files and symlinks pointing back inside the repo are refused
-   as RCE vectors (the engine `import()`s the resolved module).
-2. **`~/.config/worktrees/repos/<repo-key>.{mts,ts,mjs,js}`** — central
-   fallback, always accepted (plain files are fine here).
+For the repo rooted at `$CWD`, the engine looks for a central config at
+**`~/.config/worktrees/repos/<repo-key>.{mts,ts,mjs,js}`** (TS variants take
+precedence). Keeping configs out of the repo means the engine never `import()`s
+a file checked into the working tree, and tools like `tsc` don't trip over a
+config sitting outside their workspace.
 
 Override the config home with `WORKTREES_CONFIG_HOME`:
 
@@ -159,7 +155,6 @@ All hooks receive a `HookContext` and may return `void` or a `Promise<void>`.
 
 ```ts
 // ~/.config/worktrees/repos/home-my-project.mts
-// (or symlinked from dotfiles to <repo>/.worktrees.mts)
 
 import type { WorktreesConfig } from '~/.local/share/worktrees/src/types.ts';
 

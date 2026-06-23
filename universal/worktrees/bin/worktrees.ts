@@ -12,7 +12,7 @@ function usage(): void {
       '  teardown <name|branch>           Remove a worktree (interactive)',
       "  list [--all]                     List this repo's worktrees (--all: every registered repo)",
       '  sync                             Re-apply config to selected worktrees (interactive)',
-      '  init [--in-repo]                 Scaffold a config for this repo',
+      '  init                             Scaffold a config for this repo',
       "  config-path                      Print the path to this repo's config file",
     ].join('\n'),
   );
@@ -46,7 +46,7 @@ async function main(argv: string[]): Promise<void> {
       await (await import('../src/commands/sync.ts')).cmdSync();
       break;
     case 'init':
-      await (await import('../src/commands/init.ts')).cmdInit(rest);
+      await (await import('../src/commands/init.ts')).cmdInit();
       break;
     case 'config-path':
       await (await import('../src/commands/config-path.ts')).cmdConfigPath();

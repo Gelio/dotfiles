@@ -34,45 +34,7 @@ export function centralConfigPath(configHome: string, repo: string, ext = '.mts'
   return path.join(reposDir(configHome), `${repoKey(repo)}${ext}`);
 }
 
-function isLink(p: string): boolean {
-  try {
-    return fs.lstatSync(p).isSymbolicLink();
-  } catch {
-    return false;
-  }
-}
-
-/**
- * True iff `configPath` is a symlink whose realpath resolves OUTSIDE `repo`.
- * Refuses plain files and symlinks pointing back inside the repo (RCE vectors,
- * since the engine imports the resolved module).
- */
-export function configPathIsSafe(repo: string, configPath: string): boolean {
-  let st: fs.Stats;
-  try {
-    st = fs.lstatSync(configPath);
-  } catch {
-    return false;
-  }
-  if (!st.isSymbolicLink()) return false;
-  let target: string;
-  let repoReal: string;
-  try {
-    target = fs.realpathSync(configPath);
-    repoReal = fs.realpathSync(repo);
-  } catch {
-    return false;
-  }
-  const rel = path.relative(repoReal, target);
-  const inside = rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
-  return !inside;
-}
-
 export function resolveConfigSource(repo: string): string | null {
-  for (const ext of CONFIG_EXTS) {
-    const f = path.join(repo, `.worktrees${ext}`);
-    if ((fs.existsSync(f) || isLink(f)) && configPathIsSafe(repo, f)) return f;
-  }
   for (const ext of CONFIG_EXTS) {
     const c = centralConfigPath(CONFIG_HOME, repo, ext);
     if (fs.existsSync(c)) return c;
