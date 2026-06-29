@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+#
+# git-branch-merged - report whether a branch is already merged into an upstream
+# ref, detecting every merge style GitHub offers: real merge commits,
+# fast-forwards, rebase merges (commits cherry-picked individually), and squash
+# merges (the whole branch collapsed into one commit).
+#
+# Plain `git branch --merged` / `git merge-base --is-ancestor` only catch the
+# first two; the squash/rebase cases rewrite commits so the branch tip is never
+# an ancestor of the target. We additionally patch-id-match commits with
+# `git cherry`, and for squash merges build a single dangling commit of the whole
+# branch diff via `git commit-tree` and cherry that against the upstream.
+#
+# Usage: git-branch-merged [-u|--upstream <ref>] [-d|--delete] [-h|--help] [branch]
+#   branch        branch to check (default: current branch)
+#   -u, --upstream <ref>
+#                 target ref to check against. Default: the branch's configured
+#                 upstream (@{u}), falling back to "main".
+#   -d, --delete  delete the branch (force) if it is merged.
+#
+# Exit codes: 0 merged, 1 not merged, 2 usage/error.
+
+set -euo pipefail
+
+prog=${0##*/}
+
+# Colors: only when stdout is a terminal and NO_COLOR is unset.
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+  c_reset=$'\033[0m'
+  c_green=$'\033[32m'
+  c_red=$'\033[31m'
+  c_yellow=$'\033[33m'
+  c_bold=$'\033[1m'
+else
+  c_reset='' c_green='' c_red='' c_yellow='' c_bold=''
+fi
+
+usage() {
+  cat <<EOF
+Usage: $prog [-u|--upstream <ref>] [-d|--delete] [-h|--help] [branch]
+
+Check whether <branch> (default: current branch) is already merged into an
+upstream ref, including GitHub squash and rebase merges.
+
+Options:
+  -u, --upstream <ref>  Target ref to check against. Default: the branch's
+                        configured upstream (\@{u}), else "main".
+  -d, --delete          Delete the branch (force) if it is merged.
+  -h, --help            Show this help.
+
+Exit codes: 0 merged, 1 not merged, 2 usage/error.
+EOF
+}
+
+die() {
+  echo "${c_red}${prog}: $*${c_reset}" >&2
+  exit 2
+}
+
+upstream=""
+branch=""
+delete=0
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -u | --upstream)
+      [ $# -ge 2 ] || die "option $1 requires an argument"
+      upstream=$2
+      shift 2
+      ;;
+    -d | --delete)
+      delete=1
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      die "unknown option: $1"
+      ;;
+    *)
+      [ -z "$branch" ] || die "unexpected extra argument: $1"
+      branch=$1
+      shift
+      ;;
+  esac
+done
+
+# Any remaining positional args after `--`.
+if [ $# -gt 0 ]; then
+  [ -z "$branch" ] || die "unexpected extra argument: $1"
+  branch=$1
+  shift
+  [ $# -eq 0 ] || die "unexpected extra argument: $1"
+fi
+
+# Must be inside a work tree.
+git rev-parse --git-dir >/dev/null 2>&1 || die "not inside a git repository"
+
+# Current branch (empty if detached); used to guard against self-deletion.
+current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+[ "$current_branch" = "HEAD" ] && current_branch=""
+
+# Resolve branch (default: current branch).
+if [ -z "$branch" ]; then
+  branch=$current_branch
+  [ -n "$branch" ] || die "detached HEAD; specify a branch explicitly"
+fi
+git rev-parse --verify --quiet "$branch^{commit}" >/dev/null || die "no such branch/ref: $branch"
+
+# Resolve upstream: -u, else branch's @{u}, else "main".
+if [ -z "$upstream" ]; then
+  if upstream=$(git rev-parse --abbrev-ref --symbolic-full-name "$branch@{upstream}" 2>/dev/null); then
+    :
+  else
+    upstream="main"
+  fi
+fi
+git rev-parse --verify --quiet "$upstream^{commit}" >/dev/null || die "no such upstream/ref: $upstream"
+
+merged() {
+  echo "${c_green}✓${c_reset} ${c_bold}${branch}${c_reset} is ${c_green}merged${c_reset} into ${c_bold}${upstream}${c_reset} (${1})"
+  if [ "$delete" -eq 1 ]; then
+    if [ "$branch" = "$current_branch" ]; then
+      echo "${c_yellow}! not deleting ${branch}: it is the current branch${c_reset}" >&2
+    elif [ "$branch" = "$upstream" ]; then
+      echo "${c_yellow}! not deleting ${branch}: it is the upstream ref${c_reset}" >&2
+    else
+      # Detection above is authoritative (covers squash/rebase merges that
+      # `git branch -d` would reject), so force-delete.
+      git branch -D "$branch" >/dev/null
+      echo "${c_yellow}🗑  deleted ${c_bold}${branch}${c_reset}"
+    fi
+  fi
+  exit 0
+}
+
+mb=$(git merge-base "$upstream" "$branch" 2>/dev/null) || die "no common ancestor between $branch and $upstream (unrelated histories)"
+
+# 1. Merge commit / fast-forward / fully reachable.
+if git merge-base --is-ancestor "$branch" "$upstream"; then
+  merged "merge commit or fast-forward"
+fi
+
+# 2. Rebase merge: every branch commit's patch-id already present upstream.
+#    `git cherry` marks commits already in <upstream> with "-", others with "+".
+cherry=$(git cherry "$upstream" "$branch")
+if [ -n "$cherry" ] && ! grep -q '^+' <<<"$cherry"; then
+  merged "rebase merge (all commits cherry-picked)"
+fi
+
+# 3. Squash merge: collapse the whole branch diff (vs merge base) into one
+#    dangling commit and patch-id-match it against the upstream.
+squash_commit=$(git commit-tree "$(git rev-parse "$branch^{tree}")" -p "$mb" -m _)
+if [[ $(git cherry "$upstream" "$squash_commit") == "-"* ]]; then
+  merged "squash merge"
+fi
+
+echo "${c_red}✗${c_reset} ${c_bold}${branch}${c_reset} is ${c_red}NOT merged${c_reset} into ${c_bold}${upstream}${c_reset}"
+exit 1
