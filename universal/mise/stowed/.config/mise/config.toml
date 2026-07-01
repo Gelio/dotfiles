@@ -11,7 +11,6 @@ pipx = "latest"
 jq = "latest"
 yq = "latest"
 python = "3.14"
-claude = "latest"
 "npm:tree-sitter-cli" = "latest"
 "npm:mcp-hub" = "latest"
 "npm:@github/copilot" = "latest"
@@ -19,6 +18,10 @@ claude = "latest"
 "npm:@zed-industries/claude-agent-acp" = "latest"
 "aqua:ankitpokhrel/jira-cli" = "latest"
 antigravity-cli = "latest"
+
+[tools.claude]
+version = "latest"
+minimum_release_age = "0s"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]
