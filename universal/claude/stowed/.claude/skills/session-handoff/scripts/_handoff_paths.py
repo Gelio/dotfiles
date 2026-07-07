@@ -20,7 +20,19 @@ Resolution order:
 
 import os
 import subprocess
+from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
+
+
+@dataclass
+class Handoff:
+    path: str
+    filename: str
+    title: str
+    date: datetime | None
+    status: str = ""
+    size: int = 0
 
 
 def git_toplevel(path: str) -> str | None:

@@ -20,7 +20,9 @@ from pathlib import Path
 
 # Allow importing the shared resolver whether run directly or via a symlink.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _handoff_paths import resolve_project_root, handoffs_dir as central_handoffs_dir
+from _handoff_paths import Handoff
+from _handoff_paths import handoffs_dir as central_handoffs_dir
+from _handoff_paths import resolve_project_root
 
 
 def extract_title(filepath: Path) -> str:
@@ -68,27 +70,29 @@ def parse_date_from_filename(filename: str) -> datetime | None:
     return None
 
 
-def list_handoffs(project_path: str) -> list[dict]:
+def list_handoffs(project_path: str) -> list[Handoff]:
     """List all handoff documents for a project (from the centralized store)."""
     handoffs_dir = central_handoffs_dir(project_path)
 
     if not handoffs_dir.exists():
         return []
 
-    handoffs = []
+    handoffs: list[Handoff] = []
     for filepath in handoffs_dir.glob("*.md"):
         parsed_date = parse_date_from_filename(filepath.name)
-        handoffs.append({
-            "path": str(filepath),
-            "filename": filepath.name,
-            "title": extract_title(filepath),
-            "status": check_completion_status(filepath),
-            "date": parsed_date,
-            "size": filepath.stat().st_size,
-        })
+        handoffs.append(
+            Handoff(
+                path=str(filepath),
+                filename=filepath.name,
+                title=extract_title(filepath),
+                status=check_completion_status(filepath),
+                date=parsed_date,
+                size=filepath.stat().st_size,
+            )
+        )
 
     # Sort by date, most recent first
-    handoffs.sort(key=lambda x: x["date"] or datetime.min, reverse=True)
+    handoffs.sort(key=lambda x: x.date or datetime.min, reverse=True)
 
     return handoffs
 
@@ -120,14 +124,17 @@ def main():
     print("-" * 80)
 
     for h in handoffs:
-        print(f"  Date: {format_date(h['date'])}")
-        print(f"  Title: {h['title']}")
-        print(f"  Status: {h['status']}")
-        print(f"  File: {h['filename']}")
+        print(f"  Date: {format_date(h.date)}")
+        print(f"  Title: {h.title}")
+        print(f"  Status: {h.status}")
+        print(f"  File: {h.filename}")
+        print(f"  Path: {h.path}")
         print("-" * 80)
 
-    print(f"\nTo resume from a handoff, read the document and follow the resume checklist.")
-    print(f"Most recent: {handoffs[0]['path']}")
+    print(
+        "\nTo resume from a handoff, read the document and follow the resume checklist."
+    )
+    print(f"Most recent: {handoffs[0].path}")
 
 
 if __name__ == "__main__":

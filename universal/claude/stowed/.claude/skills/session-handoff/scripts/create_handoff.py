@@ -27,6 +27,7 @@ from pathlib import Path
 
 # Allow importing the shared resolver whether run directly or via a symlink.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _handoff_paths import Handoff
 from _handoff_paths import resolve_project_root, handoffs_dir as central_handoffs_dir
 
 
@@ -94,7 +95,7 @@ def get_git_info(project_path: str) -> dict:
     return info
 
 
-def find_previous_handoffs(project_path: str) -> list[dict]:
+def find_previous_handoffs(project_path: str) -> list[Handoff]:
     """Find existing handoffs for the project (in the centralized store)."""
     handoffs_dir = central_handoffs_dir(project_path)
     if not handoffs_dir.exists():
@@ -123,15 +124,17 @@ def find_previous_handoffs(project_path: str) -> list[dict]:
         else:
             date = None
 
-        handoffs.append({
-            "filename": filepath.name,
-            "path": str(filepath),
-            "title": title,
-            "date": date,
-        })
+        handoffs.append(
+            Handoff(
+                path=str(filepath),
+                filename=filepath.name,
+                title=title,
+                date=date,
+            )
+        )
 
     # Sort by date, most recent first
-    handoffs.sort(key=lambda x: x["date"] or datetime.min, reverse=True)
+    handoffs.sort(key=lambda x: x.date or datetime.min, reverse=True)
     return handoffs
 
 
@@ -142,11 +145,11 @@ def get_previous_handoff_info(project_path: str, continues_from: str = None) -> 
     if continues_from:
         # Find specific handoff
         for h in handoffs:
-            if continues_from in h["filename"]:
+            if continues_from in h.filename:
                 return {
                     "exists": True,
-                    "filename": h["filename"],
-                    "title": h["title"],
+                    "filename": h.filename,
+                    "title": h.title,
                 }
         return {"exists": False, "filename": continues_from, "title": "Not found"}
 
@@ -155,8 +158,8 @@ def get_previous_handoff_info(project_path: str, continues_from: str = None) -> 
         most_recent = handoffs[0]
         return {
             "exists": True,
-            "filename": most_recent["filename"],
-            "title": most_recent["title"],
+            "filename": most_recent.filename,
+            "title": most_recent.title,
             "suggested": True,
         }
 
@@ -376,7 +379,7 @@ def main():
         prev_handoffs = find_previous_handoffs(project_path)
         if prev_handoffs:
             print(f"Found {len(prev_handoffs)} existing handoff(s).")
-            print(f"Most recent: {prev_handoffs[0]['filename']}")
+            print(f"Most recent: {prev_handoffs[0].filename}")
             print(f"Use --continues-from <filename> to link handoffs.\n")
 
     # Generate handoff
