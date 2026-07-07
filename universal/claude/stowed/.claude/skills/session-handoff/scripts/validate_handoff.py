@@ -30,14 +30,14 @@ SECRET_PATTERNS = [
     (r'["\']?[a-zA-Z_]*secret["\']?\s*[:=]\s*["\'][^"\']{10,}["\']', "Secret"),
     (r'["\']?[a-zA-Z_]*token["\']?\s*[:=]\s*["\'][^"\']{20,}["\']', "Token"),
     (r'["\']?[a-zA-Z_]*private[_-]?key["\']?\s*[:=]', "Private key"),
-    (r'-----BEGIN [A-Z]+ PRIVATE KEY-----', "PEM private key"),
-    (r'mongodb(\+srv)?://[^/\s]+:[^@\s]+@', "MongoDB connection string with password"),
-    (r'postgres://[^/\s]+:[^@\s]+@', "PostgreSQL connection string with password"),
-    (r'mysql://[^/\s]+:[^@\s]+@', "MySQL connection string with password"),
-    (r'Bearer\s+[a-zA-Z0-9_\-\.]+', "Bearer token"),
-    (r'ghp_[a-zA-Z0-9]{36}', "GitHub personal access token"),
-    (r'sk-[a-zA-Z0-9]{48}', "OpenAI API key"),
-    (r'xox[baprs]-[a-zA-Z0-9-]+', "Slack token"),
+    (r"-----BEGIN [A-Z]+ PRIVATE KEY-----", "PEM private key"),
+    (r"mongodb(\+srv)?://[^/\s]+:[^@\s]+@", "MongoDB connection string with password"),
+    (r"postgres://[^/\s]+:[^@\s]+@", "PostgreSQL connection string with password"),
+    (r"mysql://[^/\s]+:[^@\s]+@", "MySQL connection string with password"),
+    (r"Bearer\s+[a-zA-Z0-9_\-\.]+", "Bearer token"),
+    (r"ghp_[a-zA-Z0-9]{36}", "GitHub personal access token"),
+    (r"sk-[a-zA-Z0-9]{48}", "OpenAI API key"),
+    (r"xox[baprs]-[a-zA-Z0-9-]+", "Slack token"),
 ]
 
 # Required sections for a complete handoff
@@ -58,13 +58,13 @@ RECOMMENDED_SECTIONS = [
 ]
 
 # Accept any standard Markdown heading level (# through ######) for sections.
-SECTION_HEADING_PATTERN = r'(?:^|\n)#{1,6}\s*'
-NEXT_HEADING_PATTERN = r'\n#{1,6}\s+'
+SECTION_HEADING_PATTERN = r"(?:^|\n)#{1,6}\s*"
+NEXT_HEADING_PATTERN = r"\n#{1,6}\s+"
 
 
 def check_todos(content: str) -> tuple[bool, list[str]]:
     """Check for remaining TODO placeholders."""
-    todos = re.findall(r'\[TODO:[^\]]*\]', content)
+    todos = re.findall(r"\[TODO:[^\]]*\]", content)
     return len(todos) == 0, todos
 
 
@@ -73,7 +73,7 @@ def check_required_sections(content: str) -> tuple[bool, list[str]]:
     missing = []
     for section in REQUIRED_SECTIONS:
         # Look for section header at any heading depth
-        pattern = rf'{SECTION_HEADING_PATTERN}{re.escape(section)}'
+        pattern = rf"{SECTION_HEADING_PATTERN}{re.escape(section)}"
         match = re.search(pattern, content, re.IGNORECASE)
         if not match:
             missing.append(f"{section} (missing)")
@@ -81,11 +81,13 @@ def check_required_sections(content: str) -> tuple[bool, list[str]]:
             # Check if section has meaningful content (not just placeholder)
             section_start = match.end()
             next_section = re.search(NEXT_HEADING_PATTERN, content[section_start:])
-            section_end = section_start + next_section.start() if next_section else len(content)
+            section_end = (
+                section_start + next_section.start() if next_section else len(content)
+            )
             section_content = content[section_start:section_end].strip()
 
             # 50 chars minimum: roughly 1-2 sentences, enough to convey meaningful context
-            if len(section_content) < 50 or '[TODO' in section_content:
+            if len(section_content) < 50 or "[TODO" in section_content:
                 missing.append(f"{section} (incomplete)")
 
     return len(missing) == 0, missing
@@ -95,7 +97,7 @@ def check_recommended_sections(content: str) -> list[str]:
     """Check which recommended sections are missing."""
     missing = []
     for section in RECOMMENDED_SECTIONS:
-        pattern = rf'{SECTION_HEADING_PATTERN}{re.escape(section)}'
+        pattern = rf"{SECTION_HEADING_PATTERN}{re.escape(section)}"
         if not re.search(pattern, content, re.IGNORECASE):
             missing.append(section)
     return missing
@@ -119,8 +121,8 @@ def _coerce_root(raw_value: str) -> str | None:
     tried first (the path is almost always fenced), then the whole stripped
     value, then its first whitespace token. Returns None if nothing resolves.
     """
-    candidates: list[str] = re.findall(r'`([^`]+)`', raw_value)
-    plain = raw_value.replace('`', ' ').strip()
+    candidates: list[str] = re.findall(r"`([^`]+)`", raw_value)
+    plain = raw_value.replace("`", " ").strip()
     if plain:
         candidates.append(plain)
         candidates.append(plain.split()[0])
@@ -149,7 +151,7 @@ def extract_project_root(content: str, handoff_path: Path) -> str | None:
     """
     # `Project` optionally followed by a parenthetical, then the value to EOL.
     match = re.search(
-        r'^\s*[-*]?\s*Project\b[^:\n]*:\s*(.+?)\s*$', content, re.MULTILINE
+        r"^\s*[-*]?\s*Project\b[^:\n]*:\s*(.+?)\s*$", content, re.MULTILINE
     )
     if match:
         root = _coerce_root(match.group(1))
@@ -169,9 +171,18 @@ def repo_file_index(project_root: str) -> set[str]:
     working subdirectory still resolve, instead of false-positive warnings."""
     try:
         result = subprocess.run(
-            ["git", "-C", project_root, "ls-files",
-             "--cached", "--others", "--exclude-standard"],
-            capture_output=True, text=True, timeout=10,
+            [
+                "git",
+                "-C",
+                project_root,
+                "ls-files",
+                "--cached",
+                "--others",
+                "--exclude-standard",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         if result.returncode == 0:
             return {line for line in result.stdout.split("\n") if line}
@@ -222,7 +233,7 @@ def discover_candidate_roots(
         expanded = Path(ref).expanduser()
         if expanded.is_absolute():
             continue
-        segment = ref.lstrip('./').split('/')[0]
+        segment = ref.lstrip("./").split("/")[0]
         if not segment:
             continue
         sibling = parent / segment
@@ -235,7 +246,7 @@ def discover_candidate_roots(
     for raw in re.findall(r'/[^\s`\'"|)\]<>]+', content):
         if checked >= 40:
             break
-        candidate = Path(raw.rstrip('.,;:'))
+        candidate = Path(raw.rstrip(".,;:"))
         try:
             if candidate.is_file():
                 candidate = candidate.parent
@@ -270,9 +281,9 @@ def check_file_references(
     # Pattern 2: `path/to/file` in code
     # Pattern 3: path/to/file:123 with line numbers
     patterns = [
-        r'\|\s*([a-zA-Z0-9_\-./]+\.[a-zA-Z]+)\s*\|',  # Table cells
-        r'`([a-zA-Z0-9_\-./]+\.[a-zA-Z]+(?::\d+)?)`',  # Inline code
-        r'(?:^|\s)([a-zA-Z0-9_\-./]+\.[a-zA-Z]+:\d+)',  # With line numbers
+        r"\|\s*([a-zA-Z0-9_\-./]+\.[a-zA-Z]+)\s*\|",  # Table cells
+        r"`([a-zA-Z0-9_\-./]+\.[a-zA-Z]+(?::\d+)?)`",  # Inline code
+        r"(?:^|\s)([a-zA-Z0-9_\-./]+\.[a-zA-Z]+:\d+)",  # With line numbers
     ]
 
     found_files = set()
@@ -280,9 +291,9 @@ def check_file_references(
         matches = re.findall(pattern, content)
         for match in matches:
             # Remove line numbers
-            filepath = match.split(':')[0]
+            filepath = match.split(":")[0]
             # Skip obvious non-files
-            if filepath and not filepath.startswith('http') and '/' in filepath:
+            if filepath and not filepath.startswith("http") and "/" in filepath:
                 found_files.add(filepath)
 
     candidate_roots = discover_candidate_roots(project_root, found_files, content)
@@ -306,11 +317,11 @@ def check_file_references(
                 external.append(filepath)
             continue
 
-        rel = filepath.lstrip('./')
+        rel = filepath.lstrip("./")
         resolves = False
         for root in candidate_roots:
             if (Path(root) / rel).exists() or any(
-                f == rel or f.endswith('/' + rel) for f in indexes[root]
+                f == rel or f.endswith("/" + rel) for f in indexes[root]
             ):
                 resolves = True
                 break
@@ -329,7 +340,7 @@ def calculate_quality_score(
     missing_required: list,
     missing_recommended: list,
     secrets_found: list,
-    files_missing: list
+    files_missing: list,
 ) -> tuple[int, str]:
     """Calculate overall quality score (0-100).
 
@@ -408,8 +419,12 @@ def validate_handoff(filepath: str) -> dict:
 
     # Calculate score
     score, rating = calculate_quality_score(
-        todos_clear, required_complete, missing_required,
-        missing_recommended, secrets_found, missing_files
+        todos_clear,
+        required_complete,
+        missing_required,
+        missing_recommended,
+        secrets_found,
+        missing_files,
     )
 
     return {
@@ -439,70 +454,76 @@ def print_report(result: dict):
         print(f"Error: {result['error']}")
         return False
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Handoff Validation Report")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"File: {result['filepath']}")
     print(f"\nQuality Score: {result['score']}/100 - {result['rating']}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     # TODOs
-    if result['todos_clear']:
+    if result["todos_clear"]:
         print("\n[PASS] No TODO placeholders remaining")
     else:
         print(f"\n[FAIL] {result['todo_count']} TODO placeholders found:")
-        for todo in result['remaining_todos']:
+        for todo in result["remaining_todos"]:
             print(f"       - {todo[:50]}...")
 
     # Required sections
-    if result['required_complete']:
+    if result["required_complete"]:
         print("\n[PASS] All required sections complete")
     else:
         print("\n[FAIL] Missing/incomplete required sections:")
-        for section in result['missing_required']:
+        for section in result["missing_required"]:
             print(f"       - {section}")
 
     # Secrets
-    if not result['secrets_found']:
+    if not result["secrets_found"]:
         print("\n[PASS] No potential secrets detected")
     else:
         print("\n[WARN] Potential secrets detected:")
-        for secret_type, detail in result['secrets_found']:
+        for secret_type, detail in result["secrets_found"]:
             print(f"       - {secret_type}: {detail}")
 
     # File references
-    if result.get('root_undetermined'):
-        print("\n[INFO] Could not determine repo root from handoff metadata "
-              "— skipping file-reference check")
-    elif result['files_missing']:
-        print(f"\n[WARN] {result['files_missing_count']} referenced in-repo "
-              f"file(s) not found:")
+    if result.get("root_undetermined"):
+        print(
+            "\n[INFO] Could not determine repo root from handoff metadata "
+            "— skipping file-reference check"
+        )
+    elif result["files_missing"]:
+        print(
+            f"\n[WARN] {result['files_missing_count']} referenced in-repo "
+            f"file(s) not found:"
+        )
         print(f"       (resolved relative to repo root: {result['project_root']})")
-        for f in result['files_missing']:
+        for f in result["files_missing"]:
             print(f"       - {f}")
     else:
         print(f"\n[INFO] {result['files_verified']} file reference(s) verified")
 
     # References outside every known repo: expected, reported without alarm.
-    if result.get('external_count'):
-        print(f"\n[INFO] {result['external_count']} reference(s) outside known "
-              f"repos (not checked):")
-        for f in result['external_files']:
+    if result.get("external_count"):
+        print(
+            f"\n[INFO] {result['external_count']} reference(s) outside known "
+            f"repos (not checked):"
+        )
+        for f in result["external_files"]:
             print(f"       - {f}")
 
     # Recommended sections
-    if result['missing_recommended']:
+    if result["missing_recommended"]:
         print(f"\n[INFO] Consider adding these sections:")
-        for section in result['missing_recommended']:
+        for section in result["missing_recommended"]:
             print(f"       - {section}")
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
 
     # Final verdict
-    if result['score'] >= 70 and not result['secrets_found']:
+    if result["score"] >= 70 and not result["secrets_found"]:
         print("Verdict: READY for handoff")
         return True
-    elif result['secrets_found']:
+    elif result["secrets_found"]:
         print("Verdict: BLOCKED - Remove secrets before handoff")
         return False
     else:

@@ -30,7 +30,7 @@ def extract_title(filepath: Path) -> str:
     try:
         content = filepath.read_text()
         # Look for first H1 header
-        match = re.search(r'^#\s+(?:Handoff:\s*)?(.+)$', content, re.MULTILINE)
+        match = re.search(r"^#\s+(?:Handoff:\s*)?(.+)$", content, re.MULTILINE)
         if match:
             title = match.group(1).strip()
             # Clean up placeholder text
@@ -59,7 +59,7 @@ def check_completion_status(filepath: Path) -> str:
 
 def parse_date_from_filename(filename: str) -> datetime | None:
     """Extract date from filename like 2024-01-15-143022-slug.md"""
-    match = re.match(r'(\d{4}-\d{2}-\d{2})-(\d{6})', filename)
+    match = re.match(r"(\d{4}-\d{2}-\d{2})-(\d{6})", filename)
     if match:
         try:
             date_str = match.group(1)

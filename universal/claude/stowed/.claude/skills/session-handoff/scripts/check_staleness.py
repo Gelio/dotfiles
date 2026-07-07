@@ -26,11 +26,7 @@ def run_cmd(cmd: list[str], cwd: str = None) -> tuple[bool, str]:
     """Run a command and return (success, output)."""
     try:
         result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            cwd=cwd,
-            timeout=10
+            cmd, capture_output=True, text=True, cwd=cwd, timeout=10
         )
         return result.returncode == 0, result.stdout.strip()
     except (subprocess.TimeoutExpired, FileNotFoundError):
@@ -48,7 +44,7 @@ def parse_handoff_metadata(filepath: str) -> dict:
     }
 
     # Parse Created timestamp
-    match = re.search(r'Created:\s*(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})', content)
+    match = re.search(r"Created:\s*(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})", content)
     if match:
         try:
             metadata["created"] = datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S")
@@ -56,21 +52,21 @@ def parse_handoff_metadata(filepath: str) -> dict:
             pass
 
     # Parse Branch
-    match = re.search(r'Branch:\s*(\S+)', content)
+    match = re.search(r"Branch:\s*(\S+)", content)
     if match:
         branch = match.group(1)
-        if branch and not branch.startswith('['):
+        if branch and not branch.startswith("["):
             metadata["branch"] = branch
 
     # Parse Project path
-    match = re.search(r'Project:\s*(.+?)(?:\n|$)', content)
+    match = re.search(r"Project:\s*(.+?)(?:\n|$)", content)
     if match:
         metadata["project_path"] = match.group(1).strip()
 
     # Parse modified files from table
-    table_matches = re.findall(r'\|\s*([a-zA-Z0-9_\-./]+\.[a-zA-Z]+)\s*\|', content)
+    table_matches = re.findall(r"\|\s*([a-zA-Z0-9_\-./]+\.[a-zA-Z]+)\s*\|", content)
     for f in table_matches:
-        if '/' in f and not f.startswith('['):
+        if "/" in f and not f.startswith("["):
             metadata["modified_files"].append(f)
 
     return metadata
@@ -84,7 +80,7 @@ def get_commits_since(timestamp: datetime, project_path: str) -> list[str]:
     iso_time = timestamp.strftime("%Y-%m-%dT%H:%M:%S")
     success, output = run_cmd(
         ["git", "log", f"--since={iso_time}", "--oneline", "--no-decorate"],
-        cwd=project_path
+        cwd=project_path,
     )
 
     if success and output:
@@ -94,10 +90,7 @@ def get_commits_since(timestamp: datetime, project_path: str) -> list[str]:
 
 def get_current_branch(project_path: str) -> str | None:
     """Get current git branch."""
-    success, branch = run_cmd(
-        ["git", "branch", "--show-current"],
-        cwd=project_path
-    )
+    success, branch = run_cmd(["git", "branch", "--show-current"], cwd=project_path)
     return branch if success else None
 
 
@@ -108,15 +101,14 @@ def get_changed_files_since(timestamp: datetime, project_path: str) -> list[str]
 
     iso_time = timestamp.strftime("%Y-%m-%dT%H:%M:%S")
     success, output = run_cmd(
-        ["git", "diff", "--name-only", f"--since={iso_time}", "HEAD"],
-        cwd=project_path
+        ["git", "diff", "--name-only", f"--since={iso_time}", "HEAD"], cwd=project_path
     )
 
     # Fallback: get files changed in commits since timestamp
     if not output:
         success, output = run_cmd(
             ["git", "log", f"--since={iso_time}", "--name-only", "--pretty=format:"],
-            cwd=project_path
+            cwd=project_path,
         )
 
     if success and output:
@@ -125,7 +117,9 @@ def get_changed_files_since(timestamp: datetime, project_path: str) -> list[str]
     return []
 
 
-def check_files_exist(files: list[str], project_path: str) -> tuple[list[str], list[str]]:
+def check_files_exist(
+    files: list[str], project_path: str
+) -> tuple[list[str], list[str]]:
     """Check which files from handoff still exist."""
     existing = []
     missing = []
@@ -145,7 +139,7 @@ def calculate_staleness_level(
     commits_since: int,
     files_changed: int,
     branch_matches: bool,
-    files_missing: int
+    files_missing: int,
 ) -> tuple[str, str, list[str]]:
     """Calculate staleness level and provide recommendations.
 
@@ -214,7 +208,9 @@ def calculate_staleness_level(
         recommendation = "Proceed with caution - significant changes may affect context"
     else:
         level = "VERY_STALE"
-        recommendation = "Consider creating new handoff - too many changes since original"
+        recommendation = (
+            "Consider creating new handoff - too many changes since original"
+        )
 
     return level, recommendation, issues
 
@@ -261,7 +257,8 @@ def check_staleness(handoff_path: str) -> dict:
         result["current_branch"] = get_current_branch(project_path)
         result["branch_matches"] = (
             result["current_branch"] == metadata["branch"]
-            if metadata["branch"] else True
+            if metadata["branch"]
+            else True
         )
 
         commits = get_commits_since(metadata["created"], project_path)
@@ -283,7 +280,7 @@ def check_staleness(handoff_path: str) -> dict:
             result["commits_since"],
             result["files_changed_count"],
             result["branch_matches"],
-            len(missing)
+            len(missing),
         )
         result["staleness_level"] = level
         result["recommendation"] = recommendation
@@ -303,9 +300,9 @@ def print_report(result: dict):
         print(f"Error: {result['error']}")
         return
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Handoff Staleness Report")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"File: {result['handoff_file']}")
     print(f"Project: {result['project_path']}")
 
@@ -317,9 +314,9 @@ def print_report(result: dict):
             else:
                 print(f"Age: {result['days_old']:.1f} days")
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Staleness Level: {result['staleness_level']}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"\nRecommendation: {result['recommendation']}")
 
     if result.get("issues"):
@@ -345,7 +342,7 @@ def print_report(result: dict):
             for f in result["referenced_files_missing"][:5]:
                 print(f"  - {f}")
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
 
     # Color-coded verdict (using text indicators)
     level = result.get("staleness_level", "UNKNOWN")

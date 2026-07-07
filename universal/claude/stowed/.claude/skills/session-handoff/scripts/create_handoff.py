@@ -27,19 +27,15 @@ from pathlib import Path
 
 # Allow importing the shared resolver whether run directly or via a symlink.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _handoff_paths import Handoff
-from _handoff_paths import resolve_project_root, handoffs_dir as central_handoffs_dir
+from _handoff_paths import Handoff, resolve_project_root
+from _handoff_paths import handoffs_dir as central_handoffs_dir
 
 
 def run_cmd(cmd: list[str], cwd: str = None) -> tuple[bool, str]:
     """Run a command and return (success, output)."""
     try:
         result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            cwd=cwd,
-            timeout=10
+            cmd, capture_output=True, text=True, cwd=cwd, timeout=10
         )
         return result.returncode == 0, result.stdout.strip()
     except (subprocess.TimeoutExpired, FileNotFoundError):
@@ -70,24 +66,19 @@ def get_git_info(project_path: str) -> dict:
 
     # Get recent commits (last 5)
     success, log = run_cmd(
-        ["git", "log", "--oneline", "-5", "--no-decorate"],
-        cwd=project_path
+        ["git", "log", "--oneline", "-5", "--no-decorate"], cwd=project_path
     )
     if success and log:
         info["recent_commits"] = log.split("\n")
 
     # Get modified files (unstaged)
-    success, modified = run_cmd(
-        ["git", "diff", "--name-only"],
-        cwd=project_path
-    )
+    success, modified = run_cmd(["git", "diff", "--name-only"], cwd=project_path)
     if success and modified:
         info["modified_files"] = modified.split("\n")
 
     # Get staged files
     success, staged = run_cmd(
-        ["git", "diff", "--name-only", "--cached"],
-        cwd=project_path
+        ["git", "diff", "--name-only", "--cached"], cwd=project_path
     )
     if success and staged:
         info["staged_files"] = staged.split("\n")
@@ -106,18 +97,17 @@ def find_previous_handoffs(project_path: str) -> list[Handoff]:
         # Extract title from file
         try:
             content = filepath.read_text()
-            match = re.search(r'^#\s+(?:Handoff:\s*)?(.+)$', content, re.MULTILINE)
+            match = re.search(r"^#\s+(?:Handoff:\s*)?(.+)$", content, re.MULTILINE)
             title = match.group(1).strip() if match else filepath.stem
         except Exception:
             title = filepath.stem
 
         # Parse date from filename
-        date_match = re.match(r'(\d{4}-\d{2}-\d{2})-(\d{6})', filepath.name)
+        date_match = re.match(r"(\d{4}-\d{2}-\d{2})-(\d{6})", filepath.name)
         if date_match:
             try:
                 date = datetime.strptime(
-                    f"{date_match.group(1)} {date_match.group(2)}",
-                    "%Y-%m-%d %H%M%S"
+                    f"{date_match.group(1)} {date_match.group(2)}", "%Y-%m-%d %H%M%S"
                 )
             except ValueError:
                 date = None
@@ -167,9 +157,7 @@ def get_previous_handoff_info(project_path: str, continues_from: str = None) -> 
 
 
 def generate_handoff(
-    project_path: str,
-    slug: str = None,
-    continues_from: str = None
+    project_path: str, slug: str = None, continues_from: str = None
 ) -> str:
     """Generate a handoff document with pre-filled metadata."""
 
@@ -200,7 +188,11 @@ def generate_handoff(
     prev_handoff = get_previous_handoff_info(project_path, continues_from)
 
     # Build pre-filled sections
-    branch_line = git_info["branch"] if git_info["branch"] else "[not a git repo or detached HEAD]"
+    branch_line = (
+        git_info["branch"]
+        if git_info["branch"]
+        else "[not a git repo or detached HEAD]"
+    )
 
     # Recent commits section
     if git_info["recent_commits"]:
@@ -211,7 +203,9 @@ def generate_handoff(
     # Modified files section
     all_modified = list(set(git_info["modified_files"] + git_info["staged_files"]))
     if all_modified:
-        modified_section = "\n".join(f"| {f} | [describe changes] | [why changed] |" for f in all_modified[:10])
+        modified_section = "\n".join(
+            f"| {f} | [describe changes] | [why changed] |" for f in all_modified[:10]
+        )
         if len(all_modified) > 10:
             modified_section += f"\n| ... and {len(all_modified) - 10} more files | | |"
     else:
@@ -221,8 +215,8 @@ def generate_handoff(
     if prev_handoff.get("exists"):
         chain_section = f"""## Handoff Chain
 
-- **Continues from**: [{prev_handoff['filename']}](./{prev_handoff['filename']})
-  - Previous title: {prev_handoff.get('title', 'Unknown')}
+- **Continues from**: [{prev_handoff["filename"]}](./{prev_handoff["filename"]})
+  - Previous title: {prev_handoff.get("title", "Unknown")}
 - **Supersedes**: [list any older handoffs this replaces, or "None"]
 
 > Review the previous handoff for full context before filling this one."""
@@ -353,19 +347,19 @@ def main():
         "slug",
         nargs="?",
         default=None,
-        help="Short identifier for the handoff (e.g., 'implementing-auth')"
+        help="Short identifier for the handoff (e.g., 'implementing-auth')",
     )
     parser.add_argument(
         "--continues-from",
         dest="continues_from",
-        help="Filename of previous handoff this continues from"
+        help="Filename of previous handoff this continues from",
     )
     parser.add_argument(
         "--project-dir",
         dest="project_dir",
         default=None,
         help="Override the project root (otherwise resolved to the session's "
-             "origin git repository, independent of the current directory)"
+        "origin git repository, independent of the current directory)",
     )
 
     args = parser.parse_args()

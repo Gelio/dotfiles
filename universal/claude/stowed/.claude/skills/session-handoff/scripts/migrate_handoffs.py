@@ -25,7 +25,7 @@ from pathlib import Path
 
 # Allow importing the shared resolver whether run directly or via a symlink.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _handoff_paths import resolve_project_root, handoffs_dir, repo_key
+from _handoff_paths import handoffs_dir, repo_key, resolve_project_root
 
 
 def migrate_repo(repo_arg: str | None, dry_run: bool) -> tuple[int, int]:

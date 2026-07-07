@@ -40,7 +40,9 @@ def git_toplevel(path: str) -> str | None:
     try:
         result = subprocess.run(
             ["git", "-C", path, "rev-parse", "--show-toplevel"],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True,
+            text=True,
+            timeout=5,
         )
         if result.returncode == 0 and result.stdout.strip():
             return result.stdout.strip()
