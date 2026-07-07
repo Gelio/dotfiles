@@ -19,9 +19,34 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from typing import TypedDict
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ._handoff_paths import git_toplevel
+
+
+class ValidationError(TypedDict):
+    error: str
+
+
+class ValidationResult(TypedDict):
+    filepath: str
+    project_root: str
+    root_undetermined: bool
+    score: int
+    rating: str
+    todos_clear: bool
+    remaining_todos: list[str]
+    todo_count: int
+    required_complete: bool
+    missing_required: list[str]
+    missing_recommended: list[str]
+    secrets_found: list[tuple[str, str]]
+    files_verified: int
+    files_missing: list[str]
+    files_missing_count: int
+    external_files: list[str]
+    external_count: int
 
 # Secret detection patterns
 SECRET_PATTERNS = [
@@ -70,7 +95,7 @@ def check_todos(content: str) -> tuple[bool, list[str]]:
 
 def check_required_sections(content: str) -> tuple[bool, list[str]]:
     """Check that required sections exist and have content."""
-    missing = []
+    missing: list[str] = []
     for section in REQUIRED_SECTIONS:
         # Look for section header at any heading depth
         pattern = rf"{SECTION_HEADING_PATTERN}{re.escape(section)}"
@@ -95,7 +120,7 @@ def check_required_sections(content: str) -> tuple[bool, list[str]]:
 
 def check_recommended_sections(content: str) -> list[str]:
     """Check which recommended sections are missing."""
-    missing = []
+    missing: list[str] = []
     for section in RECOMMENDED_SECTIONS:
         pattern = rf"{SECTION_HEADING_PATTERN}{re.escape(section)}"
         if not re.search(pattern, content, re.IGNORECASE):
@@ -105,9 +130,9 @@ def check_recommended_sections(content: str) -> list[str]:
 
 def scan_for_secrets(content: str) -> list[tuple[str, str]]:
     """Scan content for potential secrets."""
-    findings = []
+    findings: list[tuple[str, str]] = []
     for pattern, description in SECRET_PATTERNS:
-        matches = re.findall(pattern, content, re.IGNORECASE)
+        matches: list[str] = re.findall(pattern, content, re.IGNORECASE)
         if matches:
             findings.append((description, f"Found {len(matches)} potential match(es)"))
     return findings
@@ -243,7 +268,8 @@ def discover_candidate_roots(
     # (3) Additional working dirs surfaced as absolute paths in the content.
     # Bounded so a handoff full of URLs/paths can't trigger unbounded git calls.
     checked = 0
-    for raw in re.findall(r'/[^\s`\'"|)\]<>]+', content):
+    raw_paths: list[str] = re.findall(r'/[^\s`\'"|)\]<>]+', content)
+    for raw in raw_paths:
         if checked >= 40:
             break
         candidate = Path(raw.rstrip(".,;:"))
@@ -286,9 +312,9 @@ def check_file_references(
         r"(?:^|\s)([a-zA-Z0-9_\-./]+\.[a-zA-Z]+:\d+)",  # With line numbers
     ]
 
-    found_files = set()
+    found_files: set[str] = set()
     for pattern in patterns:
-        matches = re.findall(pattern, content)
+        matches: list[str] = re.findall(pattern, content)
         for match in matches:
             # Remove line numbers
             filepath = match.split(":")[0]
@@ -337,10 +363,10 @@ def check_file_references(
 def calculate_quality_score(
     todos_clear: bool,
     required_complete: bool,
-    missing_required: list,
-    missing_recommended: list,
-    secrets_found: list,
-    files_missing: list,
+    missing_required: list[str],
+    missing_recommended: list[str],
+    secrets_found: list[tuple[str, str]],
+    files_missing: list[str],
 ) -> tuple[int, str]:
     """Calculate overall quality score (0-100).
 
@@ -390,7 +416,7 @@ def calculate_quality_score(
     return score, rating
 
 
-def validate_handoff(filepath: str) -> dict:
+def validate_handoff(filepath: str) -> ValidationResult | ValidationError:
     """Run all validations on a handoff file."""
     path = Path(filepath)
 
@@ -410,7 +436,10 @@ def validate_handoff(filepath: str) -> dict:
     # none could be determined, skip the check entirely rather than resolve
     # against cwd and emit false "not found" warnings.
     root_undetermined = project_root is None
-    if root_undetermined:
+    existing_files: list[str]
+    missing_files: list[str]
+    external_files: list[str]
+    if project_root is None:
         existing_files, missing_files, external_files = [], [], []
     else:
         existing_files, missing_files, external_files = check_file_references(
@@ -448,7 +477,7 @@ def validate_handoff(filepath: str) -> dict:
     }
 
 
-def print_report(result: dict):
+def print_report(result: ValidationResult | ValidationError) -> bool:
     """Print a formatted validation report."""
     if "error" in result:
         print(f"Error: {result['error']}")
@@ -486,15 +515,15 @@ def print_report(result: dict):
             print(f"       - {secret_type}: {detail}")
 
     # File references
-    if result.get("root_undetermined"):
+    if result["root_undetermined"]:
         print(
             "\n[INFO] Could not determine repo root from handoff metadata "
-            "— skipping file-reference check"
+            + "— skipping file-reference check"
         )
     elif result["files_missing"]:
         print(
             f"\n[WARN] {result['files_missing_count']} referenced in-repo "
-            f"file(s) not found:"
+            + "file(s) not found:"
         )
         print(f"       (resolved relative to repo root: {result['project_root']})")
         for f in result["files_missing"]:
@@ -503,10 +532,10 @@ def print_report(result: dict):
         print(f"\n[INFO] {result['files_verified']} file reference(s) verified")
 
     # References outside every known repo: expected, reported without alarm.
-    if result.get("external_count"):
+    if result["external_count"]:
         print(
             f"\n[INFO] {result['external_count']} reference(s) outside known "
-            f"repos (not checked):"
+            + "repos (not checked):"
         )
         for f in result["external_files"]:
             print(f"       - {f}")

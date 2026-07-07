@@ -23,6 +23,7 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import TypedDict
 
 # Allow importing the shared resolver whether run directly or via a symlink.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -30,7 +31,25 @@ from ._handoff_paths import Handoff, resolve_project_root
 from ._handoff_paths import handoffs_dir as central_handoffs_dir
 
 
-def run_cmd(cmd: list[str], cwd: str = None) -> tuple[bool, str]:
+class GitInfo(TypedDict):
+    is_git_repo: bool
+    branch: str | None
+    recent_commits: list[str]
+    modified_files: list[str]
+    staged_files: list[str]
+
+
+class PrevHandoffInfo(TypedDict):
+    exists: bool
+
+
+class PrevHandoffDetail(PrevHandoffInfo, total=False):
+    filename: str
+    title: str
+    suggested: bool
+
+
+def run_cmd(cmd: list[str], cwd: str | None = None) -> tuple[bool, str]:
     """Run a command and return (success, output)."""
     try:
         result = subprocess.run(
@@ -41,9 +60,9 @@ def run_cmd(cmd: list[str], cwd: str = None) -> tuple[bool, str]:
         return False, ""
 
 
-def get_git_info(project_path: str) -> dict:
+def get_git_info(project_path: str) -> GitInfo:
     """Gather git information from the project."""
-    info = {
+    info: GitInfo = {
         "is_git_repo": False,
         "branch": None,
         "recent_commits": [],
@@ -91,7 +110,7 @@ def find_previous_handoffs(project_path: str) -> list[Handoff]:
     if not handoffs_dir.exists():
         return []
 
-    handoffs = []
+    handoffs: list[Handoff] = []
     for filepath in handoffs_dir.glob("*.md"):
         # Extract title from file
         try:
@@ -127,7 +146,9 @@ def find_previous_handoffs(project_path: str) -> list[Handoff]:
     return handoffs
 
 
-def get_previous_handoff_info(project_path: str, continues_from: str = None) -> dict:
+def get_previous_handoff_info(
+    project_path: str, continues_from: str | None = None
+) -> PrevHandoffDetail:
     """Get information about the previous handoff for chaining."""
     handoffs = find_previous_handoffs(project_path)
 
@@ -156,7 +177,7 @@ def get_previous_handoff_info(project_path: str, continues_from: str = None) -> 
 
 
 def generate_handoff(
-    project_path: str, slug: str = None, continues_from: str = None
+    project_path: str, slug: str | None = None, continues_from: str | None = None
 ) -> str:
     """Generate a handoff document with pre-filled metadata."""
 
@@ -212,9 +233,10 @@ def generate_handoff(
 
     # Handoff chain section
     if prev_handoff.get("exists"):
+        prev_filename = prev_handoff.get("filename", "")
         chain_section = f"""## Handoff Chain
 
-- **Continues from**: [{prev_handoff["filename"]}](./{prev_handoff["filename"]})
+- **Continues from**: [{prev_filename}](./{prev_filename})
   - Previous title: {prev_handoff.get("title", "Unknown")}
 - **Supersedes**: [list any older handoffs this replaces, or "None"]
 
@@ -333,35 +355,41 @@ def generate_handoff(
 """
 
     # Write the file
-    filepath.write_text(content)
+    _ = filepath.write_text(content)
 
     return str(filepath)
 
 
-def main():
+class Args(argparse.Namespace):
+    slug: str | None = None
+    continues_from: str | None = None
+    project_dir: str | None = None
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Create a new handoff document with smart scaffolding"
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "slug",
         nargs="?",
         default=None,
         help="Short identifier for the handoff (e.g., 'implementing-auth')",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--continues-from",
         dest="continues_from",
         help="Filename of previous handoff this continues from",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--project-dir",
         dest="project_dir",
         default=None,
         help="Override the project root (otherwise resolved to the session's "
-        "origin git repository, independent of the current directory)",
+        + "origin git repository, independent of the current directory)",
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(namespace=Args())
 
     # Resolve the project root: always the git repo of the directory where this
     # session started, regardless of where the agent has since cd'd to.
@@ -385,8 +413,6 @@ def main():
     print(f"3. Focus especially on 'Important Context' and 'Immediate Next Steps'")
     print(f"4. Run: python validate_handoff.py {filepath}")
     print(f"   (Checks for completeness and accidental secrets)")
-
-    return filepath
 
 
 if __name__ == "__main__":

@@ -61,7 +61,7 @@ def migrate_repo(repo_arg: str | None, dry_run: bool) -> tuple[int, int]:
         if dry_run:
             print(f"       [would move] {f.name}")
         else:
-            shutil.move(str(f), str(target))
+            _ = shutil.move(str(f), str(target))
             print(f"       [moved] {f.name}")
         moved += 1
 
@@ -76,23 +76,28 @@ def migrate_repo(repo_arg: str | None, dry_run: bool) -> tuple[int, int]:
     return (moved, skipped)
 
 
-def main():
+class Args(argparse.Namespace):
+    repos: list[str] = []
+    dry_run: bool = False
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Migrate repo-local handoffs into the centralized store"
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "repos",
         nargs="*",
         help="Repo path(s) to migrate (default: the current session's repo)",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Show what would move without moving anything",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(namespace=Args())
 
-    targets = args.repos if args.repos else [None]
+    targets: list[str | None] = list(args.repos) if args.repos else [None]
 
     total_moved = total_skipped = 0
     for repo in targets:

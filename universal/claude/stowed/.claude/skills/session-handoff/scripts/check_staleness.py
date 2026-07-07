@@ -19,9 +19,47 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import TypedDict
 
 
-def run_cmd(cmd: list[str], cwd: str = None) -> tuple[bool, str]:
+class HandoffMetadata(TypedDict):
+    created: datetime | None
+    branch: str | None
+    project_path: str | None
+    modified_files: list[str]
+
+
+class StalenessError(TypedDict):
+    error: str
+
+
+class StalenessResultBase(TypedDict):
+    handoff_file: str
+    project_path: str
+    is_git_repo: bool
+    created: datetime | None
+    handoff_branch: str | None
+    days_old: float | None
+    hours_old: float | None
+    staleness_level: str
+    recommendation: str
+    issues: list[str]
+
+
+class StalenessResult(StalenessResultBase, total=False):
+    """Fields below are only populated when the project is a git repo."""
+
+    current_branch: str | None
+    branch_matches: bool
+    commits_since: int
+    recent_commits: list[str]
+    files_changed_count: int
+    files_changed: list[str]
+    referenced_files_exist: int
+    referenced_files_missing: list[str]
+
+
+def run_cmd(cmd: list[str], cwd: str | None = None) -> tuple[bool, str]:
     """Run a command and return (success, output)."""
     try:
         result = subprocess.run(
@@ -32,10 +70,10 @@ def run_cmd(cmd: list[str], cwd: str = None) -> tuple[bool, str]:
         return False, ""
 
 
-def parse_handoff_metadata(filepath: str) -> dict:
+def parse_handoff_metadata(filepath: str) -> HandoffMetadata:
     """Extract metadata from a handoff file."""
     content = Path(filepath).read_text()
-    metadata = {
+    metadata: HandoffMetadata = {
         "created": None,
         "branch": None,
         "project_path": None,
@@ -63,7 +101,9 @@ def parse_handoff_metadata(filepath: str) -> dict:
         metadata["project_path"] = match.group(1).strip()
 
     # Parse modified files from table
-    table_matches = re.findall(r"\|\s*([a-zA-Z0-9_\-./]+\.[a-zA-Z]+)\s*\|", content)
+    table_matches: list[str] = re.findall(
+        r"\|\s*([a-zA-Z0-9_\-./]+\.[a-zA-Z]+)\s*\|", content
+    )
     for f in table_matches:
         if "/" in f and not f.startswith("["):
             metadata["modified_files"].append(f)
@@ -71,7 +111,7 @@ def parse_handoff_metadata(filepath: str) -> dict:
     return metadata
 
 
-def get_commits_since(timestamp: datetime, project_path: str) -> list[str]:
+def get_commits_since(timestamp: datetime | None, project_path: str) -> list[str]:
     """Get list of commits since a given timestamp."""
     if not timestamp:
         return []
@@ -93,7 +133,7 @@ def get_current_branch(project_path: str) -> str | None:
     return branch if success else None
 
 
-def get_changed_files_since(timestamp: datetime, project_path: str) -> list[str]:
+def get_changed_files_since(timestamp: datetime | None, project_path: str) -> list[str]:
     """Get files that changed since timestamp."""
     if not timestamp:
         return []
@@ -120,8 +160,8 @@ def check_files_exist(
     files: list[str], project_path: str
 ) -> tuple[list[str], list[str]]:
     """Check which files from handoff still exist."""
-    existing = []
-    missing = []
+    existing: list[str] = []
+    missing: list[str] = []
 
     for f in files:
         full_path = Path(project_path) / f
@@ -150,7 +190,7 @@ def calculate_staleness_level(
       - Files: 5 (localized), 20 (widespread changes)
     - Final score: 0=FRESH, 1-2=SLIGHTLY_STALE, 3-4=STALE, 5+=VERY_STALE
     """
-    issues = []
+    issues: list[str] = []
 
     # Scoring
     staleness_score = 0
@@ -214,7 +254,7 @@ def calculate_staleness_level(
     return level, recommendation, issues
 
 
-def check_staleness(handoff_path: str) -> dict:
+def check_staleness(handoff_path: str) -> StalenessResult | StalenessError:
     """Run staleness check on a handoff file."""
     path = Path(handoff_path)
 
@@ -225,7 +265,7 @@ def check_staleness(handoff_path: str) -> dict:
     metadata = parse_handoff_metadata(handoff_path)
 
     # Determine project path
-    project_path = metadata.get("project_path")
+    project_path = metadata["project_path"]
     if not project_path or not Path(project_path).exists():
         # Fallback: assume handoff is in .claude/handoffs/ within project
         project_path = str(path.parent.parent.parent)
@@ -234,22 +274,26 @@ def check_staleness(handoff_path: str) -> dict:
     success, _ = run_cmd(["git", "rev-parse", "--git-dir"], cwd=project_path)
     is_git_repo = success
 
-    result = {
+    # Calculate age
+    if metadata["created"]:
+        age = datetime.now() - metadata["created"]
+        days_old: float | None = age.total_seconds() / 86400
+        hours_old: float | None = age.total_seconds() / 3600
+    else:
+        days_old, hours_old = None, None
+
+    result: StalenessResult = {
         "handoff_file": str(path),
         "project_path": project_path,
         "is_git_repo": is_git_repo,
         "created": metadata["created"],
         "handoff_branch": metadata["branch"],
+        "days_old": days_old,
+        "hours_old": hours_old,
+        "staleness_level": "UNKNOWN",
+        "recommendation": "Not a git repo - unable to detect changes",
+        "issues": ["Project is not a git repository"],
     }
-
-    # Calculate age
-    if metadata["created"]:
-        age = datetime.now() - metadata["created"]
-        result["days_old"] = age.total_seconds() / 86400
-        result["hours_old"] = age.total_seconds() / 3600
-    else:
-        result["days_old"] = None
-        result["hours_old"] = None
 
     if is_git_repo:
         # Git-based checks
@@ -284,16 +328,11 @@ def check_staleness(handoff_path: str) -> dict:
         result["staleness_level"] = level
         result["recommendation"] = recommendation
         result["issues"] = issues
-    else:
-        # Non-git checks (limited)
-        result["staleness_level"] = "UNKNOWN"
-        result["recommendation"] = "Not a git repo - unable to detect changes"
-        result["issues"] = ["Project is not a git repository"]
 
     return result
 
 
-def print_report(result: dict):
+def print_report(result: StalenessResult | StalenessError):
     """Print staleness report."""
     if "error" in result:
         print(f"Error: {result['error']}")
@@ -331,14 +370,16 @@ def print_report(result: dict):
         print(f"Commits since handoff: {result.get('commits_since', 0)}")
         print(f"Files changed: {result.get('files_changed_count', 0)}")
 
-        if result.get("recent_commits"):
+        recent_commits = result.get("recent_commits")
+        if recent_commits:
             print(f"\nRecent commits:")
-            for commit in result["recent_commits"][:5]:
+            for commit in recent_commits[:5]:
                 print(f"  {commit}")
 
-        if result.get("referenced_files_missing"):
+        referenced_files_missing = result.get("referenced_files_missing")
+        if referenced_files_missing:
             print(f"\nMissing referenced files:")
-            for f in result["referenced_files_missing"][:5]:
+            for f in referenced_files_missing[:5]:
                 print(f"  - {f}")
 
     print(f"\n{'=' * 60}")
@@ -367,8 +408,11 @@ def main():
     result = check_staleness(handoff_path)
     print_report(result)
 
+    if "error" in result:
+        sys.exit(2)
+
     # Exit code based on staleness
-    level = result.get("staleness_level", "UNKNOWN")
+    level = result["staleness_level"]
     if level in ["FRESH", "SLIGHTLY_STALE"]:
         sys.exit(0)
     elif level == "STALE":
