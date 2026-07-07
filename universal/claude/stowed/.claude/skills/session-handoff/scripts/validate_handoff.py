@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _handoff_paths import git_toplevel
+from ._handoff_paths import git_toplevel
 
 # Secret detection patterns
 SECRET_PATTERNS = [

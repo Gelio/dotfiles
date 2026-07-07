@@ -12,7 +12,6 @@ Usage:
     python list_handoffs.py /path     # List handoffs in specified path
 """
 
-import os
 import re
 import sys
 from datetime import datetime
@@ -20,9 +19,8 @@ from pathlib import Path
 
 # Allow importing the shared resolver whether run directly or via a symlink.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _handoff_paths import Handoff
-from _handoff_paths import handoffs_dir as central_handoffs_dir
-from _handoff_paths import resolve_project_root
+from ._handoff_paths import Handoff, resolve_project_root
+from ._handoff_paths import handoffs_dir as central_handoffs_dir
 
 
 def extract_title(filepath: Path) -> str:

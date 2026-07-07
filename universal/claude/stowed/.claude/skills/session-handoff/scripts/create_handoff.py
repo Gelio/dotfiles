@@ -18,7 +18,6 @@ Usage:
 """
 
 import argparse
-import os
 import re
 import subprocess
 import sys
@@ -27,8 +26,8 @@ from pathlib import Path
 
 # Allow importing the shared resolver whether run directly or via a symlink.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _handoff_paths import Handoff, resolve_project_root
-from _handoff_paths import handoffs_dir as central_handoffs_dir
+from ._handoff_paths import Handoff, resolve_project_root
+from ._handoff_paths import handoffs_dir as central_handoffs_dir
 
 
 def run_cmd(cmd: list[str], cwd: str = None) -> tuple[bool, str]:
