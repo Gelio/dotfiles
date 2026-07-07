@@ -39,6 +39,7 @@ Vendored skills, symlinked into `~/.claude/skills/` by `stow.sh`:
 - **todos** — orchestrate work through a todos.md task list
 - **enrich-todos** — annotate a TODO file with context for the next agent
 - **verify-branch-commits** — verify every branch commit passes checks
+- **diff-walkthrough** — plan a human's review of a local git diff for comprehension
 - **jira-preferences** — preferences for working with Jira via the Atlassian MCP
 - **session-handoff** — handoff documents for AI agent session transfers
 
