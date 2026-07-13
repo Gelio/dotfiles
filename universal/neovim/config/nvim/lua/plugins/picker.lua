@@ -74,6 +74,11 @@ return {
 				{ "<Leader>f", group = "Find (FzfLua)" },
 			})
 
+			-- NOTE: preset the RPC server on a short path. fzf-lua's default name
+			-- `fzf-lua.<os.time()>` expands under the long macOS $TMPDIR rundir past
+			-- the 104-byte unix-socket limit -> serverstart "invalid argument".
+			vim.g.fzf_lua_server = vim.fn.serverstart("/tmp/fzf-lua-" .. vim.uv.os_getpid())
+
 			-- NOTE: hand-written ui.select function instead of require("fzf-lua").register_ui_select()
 			-- This one keeps fzf-lua lazy-loadable.
 			vim.ui.select = function(...)
