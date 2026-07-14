@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+python3 ~/.claude/skills/session-handoff/scripts/list_handoffs.py "$@"
