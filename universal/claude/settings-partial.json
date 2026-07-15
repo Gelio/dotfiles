@@ -22,8 +22,7 @@
         "files.pythonhosted.org"
       ],
       "allowUnixSockets": [
-        "/var/run/com.apple.launchd.*/Listeners",
-        "/private/var/run/com.apple.launchd.*/Listeners"
+        "~/.ssh/agent.sock"
       ]
     },
     "excludedCommands": [

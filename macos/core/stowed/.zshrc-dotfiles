@@ -61,6 +61,24 @@ zstyle ':completion:*:local-directories' list-colors '=*=0;34;40'
 # lhttps://github.com/3rd/image.nvim
 export DYLD_FALLBACK_LIBRARY_PATH="$(brew --prefix)/lib:$DYLD_FALLBACK_LIBRARY_PATH"
 
+# Fixed-path ssh-agent so git SSH commit-signing works inside Claude Code's
+# sandbox. launchd's default agent socket lives at a per-boot randomized path
+# (/private/var/run/com.apple.launchd.*/Listeners) that the sandbox can't
+# allowlist by glob; a stable path can be. --apple-use-keychain pulls the
+# passphrase from Keychain so this stays non-interactive.
+export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
+# `ssh-add -l` exit codes drive the two cases; 0 (agent up, key loaded) = no-op.
+ssh-add -l >/dev/null 2>&1
+case $? in
+  # 2 = can't reach any agent (first shell after boot; stale socket). Start a
+  # fresh agent at the fixed path, then load the key.
+  2) rm -f "$SSH_AUTH_SOCK"; ssh-agent -a "$SSH_AUTH_SOCK" >/dev/null
+     ssh-add --apple-use-keychain "$HOME/.ssh/id_ed25519" </dev/null 2>/dev/null ;;
+  # 1 = agent running but holds no identities (agent outlived Keychain unlock,
+  # or key never added). Just load the key; don't spawn a duplicate agent.
+  1) ssh-add --apple-use-keychain "$HOME/.ssh/id_ed25519" </dev/null 2>/dev/null ;;
+esac
+
 for file in ~/.zshrc.d/*(-.); do
   source "$file"
 done
