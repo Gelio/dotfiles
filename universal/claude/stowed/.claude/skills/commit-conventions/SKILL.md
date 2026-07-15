@@ -3,7 +3,7 @@ name: commit-conventions
 description: >
   Use when creating git commits in any project. Covers mandatory commit body,
   Markdown formatting, staging discipline, the Write-tool + git-commit-F
-  pattern for reliable commits, GPG signing in sandbox, and post-commit
+  pattern for reliable commits, and post-commit
   verification. This skill should be used whenever Claude is about to create
   a git commit, even if another commit-related skill or plugin is also
   active — this one provides the universal authoring rules. Triggers on:
@@ -161,10 +161,7 @@ Write tool + `git commit -F` pattern instead:
    `/private/tmp/claude/commit-<id>.txt` using the Write tool
    (e.g. `commit-msg.txt`, `commit-fixup-upload.txt`). Use a
    descriptive `<id>` so parallel agents don't overwrite each other.
-2. Run: `git -c commit.gpgsign=false commit -F /private/tmp/claude/commit-<id>.txt`
-
-The `-c commit.gpgsign=false` flag prevents GPG/SSH signing hangs in
-sandboxed environments where `ssh-agent` is not available.
+2. Run: `git commit -F /private/tmp/claude/commit-<id>.txt`
 
 ## After Committing
 
@@ -211,7 +208,7 @@ to a hand-rolled blame loop.
 
    | Situation | Action |
    |-----------|--------|
-   | Clear single semantic match to a branch commit | Hand-author a fixup: `git -c commit.gpgsign=false commit --fixup=<sha>`. No message file — git auto-generates `fixup! <subject>` and ignores `-F`/`-m` with `--fixup`. The PostToolUse `verify-fixup-scope.py` hook runs as a file-scope safety net. |
+   | Clear single semantic match to a branch commit | Hand-author a fixup: `git commit --fixup=<sha>`. No message file — git auto-generates `fixup! <subject>` and ignores `-F`/`-m` with `--fixup`. The PostToolUse `verify-fixup-scope.py` hook runs as a file-scope safety net. |
    | Clearly net-new (new file, unrelated concern) | Normal commit using the standard rules above. |
    | Uncertain | Ask the user. Run `git log --oneline <merge-base>..HEAD` and present the candidate commits inline; don't default to a standalone commit. |
 

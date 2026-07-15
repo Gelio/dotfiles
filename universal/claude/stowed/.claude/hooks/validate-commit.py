@@ -216,13 +216,6 @@ def main():
     if has_flag(commit_cmd, "--no-edit"):
         approve()
 
-    # Require -c commit.gpgsign=false (SSH signing hangs in the sandbox)
-    if "commit.gpgsign=false" not in commit_cmd:
-        block(
-            "git commit must include `-c commit.gpgsign=false` to avoid hanging on SSH signing. "
-            "Use: `git -c commit.gpgsign=false commit -F <file>`."
-        )
-
     # --fixup and --squash auto-generate the commit message, so skip
     # -m/-F checks and message validation for them.
     if has_flag(commit_cmd, "--fixup", "--squash"):
@@ -234,7 +227,7 @@ def main():
             "Use `git commit -F <file>` instead of `-m`. "
             "Write the commit message to a unique temp file under `/tmp/claude/` "
             "(e.g., `commit-msg-<short-id>.txt`) using the Write tool first, then commit with "
-            "`git -c commit.gpgsign=false commit -F /tmp/claude/commit-msg-<short-id>.txt`."
+            "`git commit -F /tmp/claude/commit-msg-<short-id>.txt`."
         )
 
     # Require -F

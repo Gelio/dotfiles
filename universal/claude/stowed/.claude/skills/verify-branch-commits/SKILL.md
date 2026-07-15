@@ -27,12 +27,12 @@ passes the project's full check suite independently.
 3. **Start the verification rebase.** Mark every commit as `edit`:
    ```bash
    GIT_SEQUENCE_EDITOR="sed -i '' 's/^pick /edit /g'" \
-     git -c commit.gpgsign=false rebase -i <base-ref>
+     git rebase -i <base-ref>
    ```
 
 4. **At each stop**, run the full verification suite. If a check fails:
    - Fix the issue (e.g., format a file, fix a lint error).
-   - Stage and amend: `git add <files> && git -c commit.gpgsign=false commit --amend --no-edit`
+   - Stage and amend: `git add <files> && git commit --amend --no-edit`
    - Note: amending may cause merge conflicts in later commits.
      Resolve them as they arise during `rebase --continue`.
 
@@ -41,12 +41,12 @@ passes the project's full check suite independently.
    rebasing or amending, commit contents may have changed while the
    message stayed the same. If the message is stale or misleading:
    - Write the new message to `/private/tmp/claude/commit-reword.txt` using the Write tool
-   - Amend: `git -c commit.gpgsign=false commit --amend -F /private/tmp/claude/commit-reword.txt`
+   - Amend: `git commit --amend -F /private/tmp/claude/commit-reword.txt`
    - Note what was reworded for the final summary.
 
 6. **Continue** to the next commit:
    ```bash
-   git -c commit.gpgsign=false rebase --continue
+   git rebase --continue
    ```
 
 7. **Repeat** steps 4–6 for every commit until the rebase completes.
@@ -54,9 +54,6 @@ passes the project's full check suite independently.
 8. **Report results.** Show the final `git log --oneline <base>..HEAD`
    and summarize any commits that needed fixing. If any commit
    messages were reworded, show the old → new message for each.
-
-9. **Signing reminder** with the actual base commit SHA:
-   > Remember to sign the commits before pushing: `git rebase --gpg-sign <base-ref>`
 
 ## Non-negotiables
 
