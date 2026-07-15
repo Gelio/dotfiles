@@ -11,7 +11,8 @@
     "autoAllowBashIfSandboxed": true,
     "filesystem": {
       "allowWrite": [
-        "~/.local/claude-handoffs"
+        "~/.local/claude-handoffs",
+        "~/.cache/pre-commit"
       ]
     },
     "network": {
@@ -22,6 +23,7 @@
         "files.pythonhosted.org"
       ],
       "allowUnixSockets": [
+        "~/.docker/run/docker.sock",
         "~/.ssh/agent.sock"
       ]
     },
