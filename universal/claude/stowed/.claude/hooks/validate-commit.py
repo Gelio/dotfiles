@@ -12,6 +12,7 @@ Ensures:
 """
 
 import json
+import os
 import re
 import shlex
 import sys
@@ -21,7 +22,18 @@ def parse_input():
     data = json.load(sys.stdin)
     tool_name = data.get("tool_name", "")
     tool_input = data.get("tool_input", {})
-    return tool_name, tool_input
+    # cwd of the tool call; -F paths may be relative to it, not the hook's cwd.
+    cwd = data.get("cwd", "")
+    return tool_name, tool_input, cwd
+
+
+def resolve_path(filepath: str, cwd: str) -> str:
+    """Resolve a shell path the way the shell would: expand ~ and env vars,
+    then anchor relative paths to the command's cwd (not the hook's)."""
+    p = os.path.expanduser(os.path.expandvars(filepath))
+    if not os.path.isabs(p) and cwd:
+        p = os.path.join(cwd, p)
+    return p
 
 
 def block(reason: str):
@@ -201,7 +213,7 @@ def validate_commit_message(filepath: str) -> list[str]:
 
 
 def main():
-    tool_name, tool_input = parse_input()
+    tool_name, tool_input, cwd = parse_input()
 
     if tool_name != "Bash":
         approve()
@@ -240,7 +252,7 @@ def main():
         )
 
     # Validate the commit message file
-    issues = validate_commit_message(filepath)
+    issues = validate_commit_message(resolve_path(filepath, cwd))
     if issues:
         block(
             "Commit message validation failed:\n"
