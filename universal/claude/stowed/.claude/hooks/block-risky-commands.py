@@ -3,14 +3,14 @@
 
 Blocks commands that are hard to reverse or affect shared state:
 - git push (any variant)
-- git reset --hard
-- git checkout -- (discard changes)
-- git clean -f
-- git branch -D (force delete)
 - rm -rf
 - gh pr merge / close
 - gh issue close
 - gh release create / delete
+
+Git working-tree discards (reset --hard, checkout --, restore, clean -f,
+branch -D) are deliberately NOT blocked: reflog + frequent commits make them
+recoverable, and blocking them only forced messier workarounds.
 """
 
 import json
@@ -65,36 +65,6 @@ RISKY_PATTERNS = [
     {
         "check": lambda parts, sub_idx, sub: sub == "push",
         "msg": "git push is blocked. Push manually after reviewing changes.",
-    },
-    {
-        "check": lambda parts, sub_idx, sub: (
-            sub == "reset" and "--hard" in parts[sub_idx:]
-        ),
-        "msg": "git reset --hard is blocked — it discards uncommitted work.",
-    },
-    {
-        "check": lambda parts, sub_idx, sub: (
-            sub == "checkout" and "--" in parts[sub_idx:]
-        ),
-        "msg": "git checkout -- is blocked — it discards uncommitted changes to files.",
-    },
-    {
-        "check": lambda parts, sub_idx, sub: (
-            sub == "restore" and "--staged" not in parts[sub_idx:]
-        ),
-        "msg": "git restore (without --staged) is blocked — it discards uncommitted changes.",
-    },
-    {
-        "check": lambda parts, sub_idx, sub: (
-            sub == "clean" and any(f.startswith("-") and "f" in f for f in parts[sub_idx + 1:])
-        ),
-        "msg": "git clean -f is blocked — it deletes untracked files permanently.",
-    },
-    {
-        "check": lambda parts, sub_idx, sub: (
-            sub == "branch" and any(f in ("-D", "--delete-force") for f in parts[sub_idx + 1:])
-        ),
-        "msg": "git branch -D is blocked — use -d for safe deletion instead.",
     },
 ]
 
