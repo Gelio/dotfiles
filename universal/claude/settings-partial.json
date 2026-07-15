@@ -15,7 +15,16 @@
       ]
     },
     "network": {
-      "allowLocalBinding": true
+      "allowLocalBinding": true,
+      "allowedDomains": [
+        "registry.npmjs.org",
+        "pypi.org",
+        "files.pythonhosted.org"
+      ],
+      "allowUnixSockets": [
+        "/var/run/com.apple.launchd.*/Listeners",
+        "/private/var/run/com.apple.launchd.*/Listeners"
+      ]
     },
     "excludedCommands": [
       "gh",
@@ -93,7 +102,18 @@
       "mcp__playwright__browser_fill_form",
       "Read(//tmp/claude/**)",
       "Edit(//tmp/claude/**)",
-      "Write(//tmp/claude/**)"
+      "Write(//tmp/claude/**)",
+      "Bash(gh api /repos/*/*/actions/jobs/*)",
+      "Bash(gh api repos/*/*/actions/jobs/*)",
+      "Bash(gh api /repos/*/*/actions/runs/*/jobs*)",
+      "Bash(gh api repos/*/*/actions/runs/*/jobs*)",
+      "Bash(gh api /repos/*/*/actions/runs/*/artifacts*)",
+      "Bash(gh api repos/*/*/actions/runs/*/artifacts*)",
+      "Bash(gh api /repos/*/*/check-runs/*/annotations*)",
+      "Bash(gh api repos/*/*/check-runs/*/annotations*)",
+      "Bash(gh api /repos/*/*/releases/latest*)",
+      "Bash(gh api repos/*/*/releases/latest*)",
+      "Skill(update-config)"
     ]
   },
   "hooks": {
@@ -187,5 +207,7 @@
   },
   "env": {
     "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "0"
-  }
+  },
+  "cleanupPeriodDays": 700,
+  "tui": "fullscreen"
 }
