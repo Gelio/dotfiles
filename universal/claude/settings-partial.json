@@ -207,5 +207,9 @@
     "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "0"
   },
   "cleanupPeriodDays": 700,
-  "tui": "fullscreen"
+  "tui": "fullscreen",
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
 }
