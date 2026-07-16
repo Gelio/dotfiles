@@ -83,7 +83,7 @@ return {
 	{
 		"esmuellert/codediff.nvim",
 		dependencies = { "MunifTanjim/nui.nvim" },
-		cmd = "CodeDiff",
+		cmd = { "CodeDiff", "CodeDiffCommit" },
 		config = function()
 			require("codediff").setup({
 				diff = {
@@ -109,6 +109,12 @@ return {
 					vim.log.levels.INFO
 				)
 			end, { desc = "Toggle codediff ignore_trim_whitespace" })
+
+			vim.api.nvim_create_user_command("CodeDiffCommit", function(opts)
+				local ref = opts.args
+
+				vim.cmd.CodeDiff({ args = { string.format("%s~...%s", ref, ref) } })
+			end, { desc = "Show diff of the specified commit (like git show)", nargs = 1 })
 		end,
 	},
 }
