@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
-"""PreToolUse hook: validate git commit conventions.
+"""PreToolUse hook: enforce the Claude-specific parts of git commit hygiene.
 
-Ensures:
-1. git commit uses -F (not -m) for the commit message
-2. The commit message file exists and follows formatting rules:
-   - Subject line: <type>(<scope>): <subject>, max 72 chars, no trailing period
-   - Blank line after subject
-   - Body present, lines wrapped at 72 chars
-   - Co-Authored-By trailer present with correct format
-   - One idea per paragraph (no overly long paragraphs)
+Message *formatting* (subject length/format/type, blank line, body wrap) is
+enforced natively by the global git commit-msg hook `commit-msg-lint`
+(git config-based hook, see ~/.config/git.gitconfig) for every commit, so it
+is intentionally NOT duplicated here. This hook only covers what git cannot:
+
+1. git commit must use -F (not -m) — keeps Claude writing messages to a file.
+2. The message file must carry the Co-Authored-By: Claude trailer.
+
+Note: this hook does not fire on commits run with dangerouslyDisableSandbox
+(e.g. SSH-signed commits), so treat it as best-effort shaping of Claude's
+normal path — the git commit-msg hook is the reliable gate for message format.
 """
 
 import json
@@ -116,100 +119,35 @@ def has_flag(command: str, *flags: str) -> bool:
     return any(p in flags or p.startswith(prefixes) for p in parts)
 
 
-VALID_TYPES = {
-    "feat", "fix", "docs", "style", "refactor", "perf",
-    "test", "build", "ci", "chore", "revert",
-}
-
-SUBJECT_RE = re.compile(
-    r"^(?:fixup! )?(\w+)(?:\(([^)]+)\))?!?: .+$"
+CO_AUTHOR_RE = re.compile(
+    r"^Co-Authored-By: Claude [\w.]+ [\d.]+(?:\s+\([^)]+\))? <noreply@anthropic\.com>$"
 )
 
 
-def validate_commit_message(filepath: str) -> list[str]:
-    """Validate commit message file and return list of issues."""
+def validate_co_author(filepath: str) -> list[str]:
+    """Return issues if the Co-Authored-By: Claude trailer is missing/malformed.
+
+    Message formatting is enforced by the git commit-msg hook, not here.
+    """
     try:
         with open(filepath) as f:
-            content = f.read()
+            lines = f.read().split("\n")
     except FileNotFoundError:
         return [f"Commit message file not found: {filepath}"]
     except OSError as e:
         return [f"Cannot read commit message file: {e}"]
 
-    lines = content.rstrip("\n").split("\n")
-    issues = []
-
-    if not lines or not lines[0].strip():
-        return ["Commit message is empty"]
-
-    # --- Subject line ---
-    subject = lines[0]
-
-    if len(subject) > 72:
-        issues.append(
-            f"Subject line is {len(subject)} chars (max 72): {subject!r}"
-        )
-
-    if subject.endswith("."):
-        issues.append("Subject line should not end with a period")
-
-    match = SUBJECT_RE.match(subject)
-    if not match:
-        issues.append(
-            f"Subject doesn't match `<type>(<scope>): <subject>` format: {subject!r}"
-        )
-    else:
-        commit_type = match.group(1)
-        # For fixup! commits, the type is the one after the prefix
-        actual_type = subject.removeprefix("fixup! ").split("(")[0].split(":")[0].rstrip("!")
-        if actual_type not in VALID_TYPES:
-            issues.append(
-                f"Unknown commit type `{actual_type}`. "
-                f"Valid types: {', '.join(sorted(VALID_TYPES))}"
-            )
-
-    # --- Blank line after subject ---
-    if len(lines) > 1 and lines[1].strip():
-        issues.append("Missing blank line after subject line")
-
-    # --- Body ---
-    body_lines = lines[2:] if len(lines) > 2 else []
-
-    # Strip trailing empty lines for analysis
-    while body_lines and not body_lines[-1].strip():
-        body_lines.pop()
-
-    if not body_lines:
-        issues.append("Commit body is required (explain WHY the change was made)")
-    else:
-        # Check line length in body (allow some slack for URLs)
-        for i, line in enumerate(body_lines, start=3):
-            stripped = line.strip()
-            if len(line) > 72 and not stripped.startswith("http") and not re.match(r"^\[.+\]:\s*http", stripped):
-                issues.append(
-                    f"Body line {i} is {len(line)} chars (max 72): {line!r}"
-                )
-
-    # --- Co-Authored-By ---
-    co_author_re = re.compile(
-        r"^Co-Authored-By: Claude [\w.]+ [\d.]+(?:\s+\([^)]+\))? <noreply@anthropic\.com>$"
-    )
-    has_co_author = any(co_author_re.match(line.strip()) for line in lines)
-    if not has_co_author:
-        # Check for common mistakes
-        has_any_co_author = any("co-authored-by" in line.lower() for line in lines)
-        if has_any_co_author:
-            issues.append(
-                "Co-Authored-By line found but doesn't match expected format: "
-                "`Co-Authored-By: Claude <model-name> <noreply@anthropic.com>`"
-            )
-        else:
-            issues.append(
-                "Missing Co-Authored-By trailer. Add: "
-                "`Co-Authored-By: Claude <model-name> <noreply@anthropic.com>`"
-            )
-
-    return issues
+    if any(CO_AUTHOR_RE.match(line.strip()) for line in lines):
+        return []
+    if any("co-authored-by" in line.lower() for line in lines):
+        return [
+            "Co-Authored-By line found but doesn't match expected format: "
+            "`Co-Authored-By: Claude <model-name> <version> <noreply@anthropic.com>`"
+        ]
+    return [
+        "Missing Co-Authored-By trailer. Add: "
+        "`Co-Authored-By: Claude <model-name> <version> <noreply@anthropic.com>`"
+    ]
 
 
 def main():
@@ -251,8 +189,8 @@ def main():
             "(e.g., `commit-msg-<short-id>.txt` to avoid collisions with parallel agents)."
         )
 
-    # Validate the commit message file
-    issues = validate_commit_message(resolve_path(filepath, cwd))
+    # Only the Co-Author trailer is checked here; git enforces message format.
+    issues = validate_co_author(resolve_path(filepath, cwd))
     if issues:
         block(
             "Commit message validation failed:\n"
