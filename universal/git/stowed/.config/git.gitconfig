@@ -71,4 +71,10 @@
 [init]
 	defaultBranch = main
 
+# Config-based hook (git 2.54+): enforce Conventional-Commits subjects on every
+# commit. Runs alongside legacy .git/hooks/* so the pre-commit framework still works.
+[hook "commit-msg-lint"]
+  event = commit-msg
+  command = ~/.local/bin/commit-msg-lint
+
 # vi: filetype=gitconfig

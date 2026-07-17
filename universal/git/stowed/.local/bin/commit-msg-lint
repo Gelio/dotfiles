@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+"""git commit-msg hook: enforce Conventional-Commits subject conventions.
+
+Wired globally via a git 2.54+ config-based hook (see ~/.config/git.gitconfig):
+
+    [hook "commit-msg-lint"]
+      event = commit-msg
+      command = ~/.local/bin/commit-msg-lint
+
+git passes the commit-message file path as argv[1]. A non-zero exit aborts the
+commit. Config-based hooks run alongside any legacy .git/hooks/* (e.g. the
+pre-commit framework), so this coexists with per-repo hooks.
+
+Enforced:
+- Subject: <type>(<scope>): <desc>, max 72 chars, no trailing period, known type.
+- If a body is present: blank line after subject, and body lines wrapped at 72
+  (URL / link-reference lines exempt).
+
+Body is optional. fixup!/squash!/amend auto-messages and Merge/Revert commits
+are skipped (their subjects aren't authored by hand).
+"""
+
+import re
+import sys
+
+VALID_TYPES = {
+    "feat", "fix", "docs", "style", "refactor", "perf",
+    "test", "build", "ci", "chore", "revert",
+}
+
+SUBJECT_RE = re.compile(r"^(\w+)(?:\(([^)]+)\))?!?: .+$")
+
+
+def main() -> int:
+    if len(sys.argv) < 2:
+        return 0  # nothing to validate; let git proceed
+
+    try:
+        with open(sys.argv[1], encoding="utf-8") as f:
+            raw = f.read()
+    except OSError:
+        return 0  # can't read: don't block the commit on our account
+
+    # Drop git's comment lines (default '#') and blank-only trailing noise.
+    lines = [ln for ln in raw.split("\n") if not ln.lstrip().startswith("#")]
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    if not lines:
+        return 0  # empty message: git aborts on its own
+
+    subject = lines[0].rstrip()
+
+    # Auto-generated / non-authored subjects: not our business.
+    if re.match(r"^(fixup!|squash!|amend!|Merge |Revert )", subject):
+        return 0
+
+    issues: list[str] = []
+
+    if len(subject) > 72:
+        issues.append(f"Subject is {len(subject)} chars (max 72): {subject!r}")
+    if subject.endswith("."):
+        issues.append("Subject should not end with a period")
+
+    match = SUBJECT_RE.match(subject)
+    if not match:
+        issues.append(
+            f"Subject must match `<type>(<scope>): <desc>`: {subject!r}"
+        )
+    elif match.group(1) not in VALID_TYPES:
+        issues.append(
+            f"Unknown type `{match.group(1)}`. "
+            f"Valid: {', '.join(sorted(VALID_TYPES))}"
+        )
+
+    # Body checks only apply when a body actually exists.
+    body = lines[2:] if len(lines) > 2 else []
+    while body and not body[-1].strip():
+        body.pop()
+
+    if body:
+        if lines[1].strip():
+            issues.append("Missing blank line after subject")
+        for i, line in enumerate(body, start=3):
+            s = line.strip()
+            if len(line) > 72 and not s.startswith("http") and not re.match(r"^\[.+\]:\s*http", s):
+                issues.append(f"Body line {i} is {len(line)} chars (max 72): {line!r}")
+
+    if issues:
+        print("commit-msg-lint: rejected — fix and recommit:", file=sys.stderr)
+        for issue in issues:
+            print(f"  - {issue}", file=sys.stderr)
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
