@@ -8,10 +8,6 @@ is intentionally NOT duplicated here. This hook only covers what git cannot:
 
 1. git commit must use -F (not -m) — keeps Claude writing messages to a file.
 2. The message file must carry the Co-Authored-By: Claude trailer.
-
-Note: this hook does not fire on commits run with dangerouslyDisableSandbox
-(e.g. SSH-signed commits), so treat it as best-effort shaping of Claude's
-normal path — the git commit-msg hook is the reliable gate for message format.
 """
 
 import json
@@ -68,31 +64,37 @@ def _is_git_commit_parts(parts: list[str]) -> bool:
 def find_git_commit_command(command: str) -> str | None:
     """Find the git commit sub-command in a possibly chained command.
 
-    Handles shell operators (&&, ||, ;, |) so that e.g.
-    'git add file && git commit --fixup abc' correctly finds the commit.
+    Handles shell operators (&&, ||, ;, |) AND newline separators, so a commit
+    written as a heredoc followed by `git commit -F msg && git log` (its own
+    line) is still found. shlex collapses newlines into whitespace, hiding
+    segment boundaries, so split on physical lines first (after joining `\\`
+    line-continuations). A heredoc body line literally starting with
+    `git commit` could false-positive, causing only a spurious validation.
     Returns the sub-command string if found, None otherwise.
     """
-    try:
-        parts = shlex.split(command)
-    except ValueError:
-        parts = command.split()
+    normalized = command.replace("\\\n", " ")
+    for line in normalized.split("\n"):
+        try:
+            parts = shlex.split(line)
+        except ValueError:
+            parts = line.split()
 
-    # Split tokens into sub-commands at shell operators
-    subcommands: list[list[str]] = []
-    current: list[str] = []
-    for part in parts:
-        if part in ("&&", "||", ";", "|"):
-            if current:
-                subcommands.append(current)
-            current = []
-        else:
-            current.append(part)
-    if current:
-        subcommands.append(current)
+        # Split tokens into sub-commands at shell operators
+        subcommands: list[list[str]] = []
+        current: list[str] = []
+        for part in parts:
+            if part in ("&&", "||", ";", "|"):
+                if current:
+                    subcommands.append(current)
+                current = []
+            else:
+                current.append(part)
+        if current:
+            subcommands.append(current)
 
-    for subcmd in subcommands:
-        if _is_git_commit_parts(subcmd):
-            return shlex.join(subcmd)
+        for subcmd in subcommands:
+            if _is_git_commit_parts(subcmd):
+                return shlex.join(subcmd)
     return None
 
 
@@ -133,7 +135,12 @@ def validate_co_author(filepath: str) -> list[str]:
         with open(filepath) as f:
             lines = f.read().split("\n")
     except FileNotFoundError:
-        return [f"Commit message file not found: {filepath}"]
+        return [
+            f"Commit message file not found: {filepath}. Write the message to a "
+            "temp file under `/tmp/claude/` with the Write tool BEFORE committing "
+            "(don't create it inline with a heredoc in the same command — this "
+            "hook runs before the command, so the file doesn't exist yet)."
+        ]
     except OSError as e:
         return [f"Cannot read commit message file: {e}"]
 
