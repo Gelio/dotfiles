@@ -39,6 +39,10 @@
   subup = submodule update --init --recursive
   push-current-stack = !git push origin $(git stack --format list --stack current)
 
+  # Reopen the editor with the message a rejected commit-msg hook preserved
+  # (git saves it to COMMIT_EDITMSG before running the hook). Fix + save; no retyping.
+  recommit = "!git commit --edit --file \"$(git rev-parse --git-path COMMIT_EDITMSG)\""
+
   # difftastic
   dlog = -c diff.external=difft log --ext-diff
   dshow = -c diff.external=difft show --ext-diff
