@@ -32,6 +32,7 @@
 	"ideas": true,
 	"naturalBreaks": true,
 	"naturalBreaksInactivityResetTime": 300000,
+	"naturalBreaksCheckInterval": 2000,
 	"allScreens": true,
 	"useIdeasFromSettings": false,
 	"language": "en",
@@ -40,9 +41,10 @@
 	"posLatitude": 0,
 	"posLongitude": 0,
 	"useMonochromeTrayIcon": false,
-	"useMonochromeInvertedTrayIcon": false,
+	"trayIconThemeSource": "system",
 	"silentNotifications": false,
 	"monitorDnd": true,
+	"monitorDndCheckInterval": 2000,
 	"miniBreakStartSound": "silence",
 	"longBreakStartSound": "silence",
 	"themeSource": "system",
@@ -513,7 +515,7 @@
 			]
 		}
 	],
-	"appExclusionsCheckInterval": 1000,
+	"appExclusionsCheckInterval": 2000,
 	"pauseForSuspendOrLock": true,
 	"pauseBreaksToggleShortcut": "",
 	"pauseBreaksFor30MinutesShortcut": "",
@@ -522,6 +524,7 @@
 	"pauseBreaksFor5HoursShortcut": "",
 	"pauseBreaksUntilMorningShortcut": "",
 	"screen": "primary",
+	"breakContentScreen": "all",
 	"trayIconStyle": "default",
 	"currentTimeInBreaks": false,
 	"showTrayIcon": true,
@@ -541,7 +544,7 @@
 	"_migratedOpenAtLogin": true,
 	"__internal__": {
 		"migrations": {
-			"version": "1.21.0"
+			"version": "1.22.0"
 		}
 	}
 }
