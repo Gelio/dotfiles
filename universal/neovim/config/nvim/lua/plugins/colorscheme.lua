@@ -31,22 +31,7 @@ return {
 						}
 					end,
 				},
-				integrations = {
-					fidget = true,
-					fzf = true,
-					headlines = true,
-					treesitter_context = true,
-					ufo = true,
-					lightspeed = true,
-					rainbow_delimiters = true,
-					render_markdown = true,
-					dadbod_ui = true,
-					mason = true,
-					copilot_vim = true,
-					nvim_surround = true,
-					lsp_trouble = true,
-					which_key = true,
-				},
+				auto_integrations = true,
 			})
 
 			vim.cmd.colorscheme("catppuccin-nvim")
