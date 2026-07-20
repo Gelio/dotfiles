@@ -13,7 +13,7 @@ casks=(
   kap
   obs
   linearmouse
-  stretchly
+  hovancik/stretchly/stretchly
 )
 
 formulae=(
