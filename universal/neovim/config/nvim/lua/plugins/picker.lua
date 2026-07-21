@@ -40,6 +40,19 @@ return {
 					-- prompt too long for long directory names.
 					cwd_prompt = false,
 				},
+				grep = {
+					-- NOTE: allow passing arbitrary flags to rg after "--".
+					-- This is different from the default behavior of fzf-lua, which
+					-- passes the part after -- as globs (using `--iglob`).
+					-- This allows passing any flags like `--hidden` or `--no-ignore`.
+					rg_glob_fn = function(query)
+						local regex, flags = query:match("^(.-)%s%-%-(.*)$")
+						if not regex then
+							return query, ""
+						end
+						return regex, flags
+					end,
+				},
 			}
 		end,
 		cmd = { "FzfLua" },
