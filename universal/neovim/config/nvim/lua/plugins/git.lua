@@ -117,4 +117,15 @@ return {
 			end, { desc = "Show diff of the specified commit (like git show)", nargs = 1 })
 		end,
 	},
+	{
+		"barrettruth/diffs.nvim",
+		init = function()
+			vim.g.diffs = {
+				integrations = {
+					fugitive = true,
+					gitsigns = true,
+				},
+			}
+		end,
+	},
 }
