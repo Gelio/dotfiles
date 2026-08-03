@@ -1,0 +1,2 @@
+[tools]
+"npm:tree-sitter-cli" = { version = "latest", allow_builds = "tree-sitter-cli" }
