@@ -122,6 +122,7 @@ return {
 		init = function()
 			vim.g.diffs = {
 				integrations = {
+					difftastic = true,
 					fugitive = true,
 					gitsigns = true,
 				},
