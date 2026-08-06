@@ -28,6 +28,7 @@ while :; do
 done
 
 function main {
+  mkdir ~/.local
   pushd ~/.local >/dev/null
   if [[ -d neovim ]]; then
     cd neovim
