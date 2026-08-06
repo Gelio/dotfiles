@@ -8,9 +8,9 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Source to be able to run cargo in this script
 source "$HOME/.cargo/env"
-cargo binstall cargo-update
 # Install cargo-binstall first, so further commands can use it for faster installs
-cargo binstall cargo-binstall
+cargo install cargo-binstall
+cargo binstall cargo-update
 cargo binstall git-stack
 cargo binstall git-branch-stash-cli
 cargo binstall --locked git-branchless
