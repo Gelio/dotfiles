@@ -23,7 +23,13 @@
     ]
   },
   "remapShortcutsToText": {
-    "global": [],
+    "global": [
+      {
+        "originalKeys": "16;192",
+        "exactMatch": false,
+        "unicodeText": "~"
+      }
+    ],
     "appSpecific": []
   }
 }
