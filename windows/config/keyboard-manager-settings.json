@@ -1,0 +1,29 @@
+{
+  "remapKeys": {
+    "inProcess": [
+      {
+        "originalKeys": "20",
+        "newRemapKeys": "17"
+      }
+    ]
+  },
+  "remapKeysToText": {
+    "inProcess": []
+  },
+  "remapShortcuts": {
+    "global": [],
+    "appSpecific": [
+      {
+        "originalKeys": "17;8",
+        "exactMatch": false,
+        "operationType": 0,
+        "newRemapKeys": "18;8",
+        "targetApp": "windowsterminal.exe"
+      }
+    ]
+  },
+  "remapShortcutsToText": {
+    "global": [],
+    "appSpecific": []
+  }
+}
