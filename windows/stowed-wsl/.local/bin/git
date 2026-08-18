@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# WSL wrapper for git.
+# Use git.exe in Windows filesystem for better performance.
+
+git_path="/usr/bin/git"
+
+if [[ "$PWD" =~ /mnt/[cd]/.* ]]; then
+  git_exe_path=$(which git.exe || true)
+  if [[ -x "$git_exe_path" ]]; then
+    git_path="$git_exe_path"
+  else
+    echo "git.exe not installed, using WSL's git in Windows." \
+      "Performance will be degraded. Download Git for Windows" >&2
+  fi
+fi
+
+echo "git_path=$git_path" >&2
+
+"$git_path" "$@"
