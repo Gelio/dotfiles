@@ -16,6 +16,4 @@ if [[ "$PWD" =~ /mnt/[cd]/.* ]]; then
   fi
 fi
 
-echo "git_path=$git_path" >&2
-
 "$git_path" "$@"
