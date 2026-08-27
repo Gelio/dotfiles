@@ -11,8 +11,8 @@ gui:
     selectedRangeBgColor:
       - default
 git:
-  paging:
-    colorArg: always
-    pager: delta --dark --paging=never
+  diffRenderers:
+    - colorArg: always
+      command: delta --dark --paging=never
 os:
   open: "floaterm {{filename}}"
