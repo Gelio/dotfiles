@@ -19,6 +19,7 @@ SYNC_MAP=(
   "AppData/Local/Microsoft/PowerToys/Keyboard Manager/default.json|./config/keyboard-manager-settings.json"
   ".glzr/glazewm/config.yaml|./config/.glzr/glazewm/config.yaml"
   ".glzr/zebar/settings.json|./config/.glzr/zebar/settings.json"
+  "AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json|./config/windows-terminal-settings.json"
 )
 
 copy_file() {
