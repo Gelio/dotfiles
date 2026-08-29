@@ -25,7 +25,7 @@ general:
     # Trigger for cursor jump:
     # - 'monitor_focus': Jump when focus changes between monitors.
     # - 'window_focus': Jump when focus changes between windows.
-    trigger: "monitor_focus"
+    trigger: "window_focus"
 
   # How windows should be hidden when switching workspaces.
   # - 'cloak': (Windows-only) Recommended option for Windows.
@@ -45,14 +45,14 @@ gaps:
   scale_with_dpi: true
 
   # Gap between adjacent windows.
-  inner_gap: "20px"
+  inner_gap: "10px"
 
   # Gap between windows and the screen edge.
   outer_gap:
-    top: "60px"
-    right: "20px"
-    bottom: "20px"
-    left: "20px"
+    top: "50px"
+    right: "10px"
+    bottom: "10px"
+    left: "10px"
 
 window_effects:
   # Visual effects to apply to the focused window.
@@ -194,19 +194,6 @@ keybindings:
   - commands: ["move --direction down"]
     bindings: ["alt+shift+j", "alt+shift+down"]
 
-  # Resize focused window by a percentage or pixel amount.
-  - commands: ["resize --width -2%"]
-    bindings: ["alt+u"]
-  - commands: ["resize --width +2%"]
-    bindings: ["alt+p"]
-  - commands: ["resize --height +2%"]
-    bindings: ["alt+o"]
-  - commands: ["resize --height -2%"]
-    bindings: ["alt+i"]
-
-  # As an alternative to the resize keybindings above, resize mode enables
-  # resizing via arrow keys or HJKL. The binding mode is defined above with
-  # the name 'resize'.
   - commands: ["wm-enable-binding-mode --name resize"]
     bindings: ["alt+r"]
 
@@ -264,13 +251,9 @@ keybindings:
 
   # Focus the next/previous active workspace defined in `workspaces` config.
   - commands: ["focus --next-active-workspace"]
-    bindings: ["alt+s"]
+    bindings: ["alt+n"]
   - commands: ["focus --prev-active-workspace"]
-    bindings: ["alt+a"]
-
-  # Focus the workspace that last had focus.
-  - commands: ["focus --recent-workspace"]
-    bindings: ["alt+d"]
+    bindings: ["alt+p"]
 
   # Change focus to a workspace defined in `workspaces` config.
   - commands: ["focus --workspace 1"]
@@ -304,21 +287,21 @@ keybindings:
     bindings: ["alt+shift+s"]
 
   # Move focused window to a workspace defined in `workspaces` config.
-  - commands: ["move --workspace 1", "focus --workspace 1"]
+  - commands: ["move --workspace 1"]
     bindings: ["alt+shift+1"]
-  - commands: ["move --workspace 2", "focus --workspace 2"]
+  - commands: ["move --workspace 2"]
     bindings: ["alt+shift+2"]
-  - commands: ["move --workspace 3", "focus --workspace 3"]
+  - commands: ["move --workspace 3"]
     bindings: ["alt+shift+3"]
-  - commands: ["move --workspace 4", "focus --workspace 4"]
+  - commands: ["move --workspace 4"]
     bindings: ["alt+shift+4"]
-  - commands: ["move --workspace 5", "focus --workspace 5"]
+  - commands: ["move --workspace 5"]
     bindings: ["alt+shift+5"]
-  - commands: ["move --workspace 6", "focus --workspace 6"]
+  - commands: ["move --workspace 6"]
     bindings: ["alt+shift+6"]
-  - commands: ["move --workspace 7", "focus --workspace 7"]
+  - commands: ["move --workspace 7"]
     bindings: ["alt+shift+7"]
-  - commands: ["move --workspace 8", "focus --workspace 8"]
+  - commands: ["move --workspace 8"]
     bindings: ["alt+shift+8"]
-  - commands: ["move --workspace 9", "focus --workspace 9"]
+  - commands: ["move --workspace 9"]
     bindings: ["alt+shift+9"]
