@@ -277,6 +277,8 @@ keybindings:
 
   # Move the focused window's parent workspace to a monitor in a given
   # direction.
+  # NOTE: cannot use alt+ctrl because Windows with Polish Programmer keyboard interprets it as AltGR
+  # NOTE: cannot use alt+lwin or alt+rwin because Windows intercepts that earlier than GlazeWM
   - commands: ["move-workspace --direction left"]
     bindings: ["alt+shift+a"]
   - commands: ["move-workspace --direction right"]
