@@ -165,9 +165,9 @@ binding_modes:
         bindings: ["h", "left"]
       - commands: ["resize --width +2%"]
         bindings: ["l", "right"]
-      - commands: ["resize --height +2%"]
-        bindings: ["k", "up"]
       - commands: ["resize --height -2%"]
+        bindings: ["k", "up"]
+      - commands: ["resize --height +2%"]
         bindings: ["j", "down"]
       # Press enter/escape to return to default keybindings.
       - commands: ["wm-disable-binding-mode --name resize"]
