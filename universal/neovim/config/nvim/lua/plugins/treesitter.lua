@@ -22,6 +22,7 @@ return {
 				"graphql",
 				"hcl",
 				"hjson",
+				"html",
 				"http",
 				"ini",
 				"java",
