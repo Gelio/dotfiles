@@ -250,9 +250,9 @@ keybindings:
     bindings: ["alt+enter"]
 
   # Focus the next/previous active workspace defined in `workspaces` config.
-  - commands: ["focus --next-active-workspace"]
+  - commands: ["focus --next-active-workspace-on-monitor"]
     bindings: ["alt+n"]
-  - commands: ["focus --prev-active-workspace"]
+  - commands: ["focus --prev-active-workspace-on-monitor"]
     bindings: ["alt+p"]
 
   # Change focus to a workspace defined in `workspaces` config.
