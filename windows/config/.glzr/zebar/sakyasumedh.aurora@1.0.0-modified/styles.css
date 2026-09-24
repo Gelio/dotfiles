@@ -1,0 +1,403 @@
+/* Nerd Fonts icon webfont — https://www.nerdfonts.com/cheat-sheet */
+@import 'https://www.nerdfonts.com/assets/css/webfont.css';
+
+:root {
+  /* ─── Palette (Catppuccin Mocha, accent matched to GlazeWM's #8dbcff border) ─── */
+  --bg: rgba(17 17 27 / 0.86);
+  --bg-hover: rgba(255 255 255 / 0.07);
+  --bg-active: rgba(255 255 255 / 0.12);
+  --border: rgba(255 255 255 / 0.08);
+  --text: #cdd6f4;
+  --text-dim: #7f849c;
+  --text-on-accent: #11111b;
+
+  --accent: #8dbcff;
+  --accent-2: #b4befe;
+  --teal: #94e2d5;
+  --green: #a6e3a1;
+  --yellow: #f9e2af;
+  --peach: #fab387;
+  --red: #f38ba8;
+  --mauve: #cba6f7;
+  --pink: #f5c2e7;
+  --sky: #89dceb;
+
+  --radius: 10px;
+  --chip-radius: 7px;
+  --font-size: 12px;
+  --icon-size: 13px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: transparent;
+}
+
+body {
+  font-family: 'Segoe UI Variable Text', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  font-size: var(--font-size);
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+div,
+span,
+p,
+img {
+  cursor: default;
+  user-select: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+i.nf {
+  font-size: var(--icon-size);
+  line-height: 1;
+}
+
+/* ─── Layout: three floating islands ─── */
+.app {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 100%;
+  padding: 0 6px;
+  gap: 8px;
+}
+
+.left {
+  justify-self: start;
+  min-width: 0;
+}
+.center {
+  justify-self: center;
+}
+.right {
+  justify-self: end;
+}
+
+.island {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 5px;
+  gap: 3px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow:
+    0 6px 18px rgba(0 0 0 / 0.35),
+    inset 0 1px 0 rgba(255 255 255 / 0.04);
+  overflow: hidden;
+}
+
+/* Soft aurora glow on the top edge of every island */
+.island::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(141 188 255 / 0.55) 30%,
+    rgba(180 190 254 / 0.55) 70%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* ─── Generic chip ─── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--chip-radius);
+  white-space: nowrap;
+  position: relative;
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
+}
+
+.chip.clickable {
+  cursor: pointer;
+}
+.chip.clickable:hover {
+  background: var(--bg-hover);
+}
+.chip.clickable:active {
+  background: var(--bg-active);
+  transform: translateY(0.5px);
+}
+
+.chip .value {
+  min-width: 3ch;
+  text-align: right;
+}
+
+/* Thin usage meter drawn under the chip text */
+.meter {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 1px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255 255 255 / 0.08);
+  overflow: hidden;
+}
+.meter > span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: currentColor;
+  transition: width 600ms ease;
+}
+
+.sep {
+  width: 1px;
+  height: 14px;
+  margin: 0 3px;
+  background: var(--border);
+  flex: none;
+}
+
+/* ─── Left island ─── */
+.logo {
+  color: var(--accent);
+  font-size: 14px;
+  width: 26px;
+  justify-content: center;
+  padding: 0;
+}
+.logo:hover {
+  color: var(--accent-2);
+}
+
+.workspaces {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 2px;
+}
+
+.workspace {
+  height: 22px;
+  min-width: 22px;
+  padding: 0 7px;
+  border-radius: var(--chip-radius);
+  color: var(--text-dim);
+  font-weight: 600;
+  background: rgba(255 255 255 / 0.04);
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    min-width 160ms ease,
+    box-shadow 160ms ease;
+}
+.workspace:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+.workspace.displayed {
+  color: var(--text);
+  background: rgba(255 255 255 / 0.1);
+}
+.workspace.focused {
+  min-width: 30px;
+  color: var(--text-on-accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 10px rgba(141 188 255 / 0.35);
+}
+
+.window-title {
+  color: var(--text-dim);
+  max-width: 160px;
+  overflow: hidden;
+}
+.window-title .process {
+  color: var(--text);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.window-title i {
+  color: var(--accent);
+}
+
+/* ─── Center island ─── */
+.clock {
+  gap: 8px;
+  padding: 0 10px;
+}
+.clock .date {
+  color: var(--text-dim);
+}
+.clock .time {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.clock .dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.8;
+}
+
+/* ─── Right island ─── */
+.media {
+  max-width: 180px;
+  color: var(--pink);
+}
+.media .track {
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+.media .ctrl {
+  display: none;
+  color: var(--text-dim);
+  width: 16px;
+  text-align: center;
+}
+.media:hover .ctrl {
+  display: inline-block;
+}
+.media .ctrl:hover {
+  color: var(--text);
+}
+.media.playing i.status {
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.wm-btn {
+  color: var(--text-dim);
+  width: 26px;
+  padding: 0;
+  justify-content: center;
+}
+.wm-btn:hover {
+  color: var(--text);
+}
+.binding-mode,
+.paused {
+  color: var(--text-on-accent);
+  background: var(--yellow);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.paused {
+  background: var(--red);
+}
+
+.bluetooth {
+  color: var(--accent);
+}
+.bluetooth .value {
+  color: var(--text);
+  min-width: 1ch;
+}
+.bluetooth.off {
+  color: var(--text-dim);
+}
+
+.network {
+  color: var(--teal);
+}
+.network .ssid {
+  color: var(--text);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.network.offline {
+  color: var(--red);
+}
+
+.memory {
+  color: var(--mauve);
+}
+.cpu {
+  color: var(--peach);
+}
+.cpu.hot,
+.memory.hot {
+  color: var(--red);
+}
+.memory .value,
+.cpu .value,
+.battery .value,
+.volume .value {
+  color: var(--text);
+}
+
+.battery {
+  color: var(--green);
+}
+.battery.low {
+  color: var(--red);
+}
+.battery.charging i.bolt {
+  color: var(--yellow);
+  font-size: 10px;
+  margin-left: -4px;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.volume {
+  color: var(--sky);
+}
+.volume.muted {
+  color: var(--text-dim);
+}
+
+.weather {
+  color: var(--yellow);
+}
+.weather .value {
+  color: var(--text);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* Light-mode users: slightly lift the islands */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: rgba(24 24 37 / 0.9);
+  }
+}

@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" href="./styles.css" />
+
+    <!-- Buildless React via Babel standalone (same approach as the official starter). -->
+    <script
+      src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"
+      integrity="sha256-aS0B0wnsaDByLfE16h4MDCP1fQFccysd1YWOcV+gbBo="
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect } from 'https://esm.sh/react@18';
+      import { createRoot } from 'https://esm.sh/react-dom@18/client';
+      import * as zebar from 'https://esm.sh/zebar@3';
+
+      // Right-click is used for secondary actions, so kill the WebView context menu.
+      document.addEventListener('contextmenu', e => e.preventDefault());
+
+      const providers = zebar.createProviderGroup({
+        glazewm: { type: 'glazewm' },
+        date: { type: 'date', formatting: 'EEE d MMM' },
+        time: { type: 'date', formatting: 'h:mm a' },
+        network: { type: 'network' },
+        memory: { type: 'memory' },
+        cpu: { type: 'cpu' },
+        battery: { type: 'battery' },
+        audio: { type: 'audio' },
+        media: { type: 'media' },
+        weather: { type: 'weather' },
+      });
+
+      createRoot(document.getElementById('root')).render(<App />);
+
+      // ───────────────────────── helpers ─────────────────────────
+
+      // Every program/arg pair here must be allowed by `privileges.shellCommands` in zpack.json.
+      const open = {
+        start: () =>
+          zebar.shellExec('powershell', [
+            '-NoProfile',
+            '-WindowStyle',
+            'Hidden',
+            '-Command',
+            "(New-Object -ComObject WScript.Shell).SendKeys('^{ESC}')",
+          ]),
+        settings: () => zebar.shellExec('explorer', 'ms-settings:'),
+        calendar: () => zebar.shellExec('explorer', 'ms-actioncenter:'),
+        dateSettings: () => zebar.shellExec('explorer', 'ms-settings:dateandtime'),
+        networks: () => zebar.shellExec('explorer', 'ms-availablenetworks:'),
+        wifiSettings: () => zebar.shellExec('explorer', 'ms-settings:network-wifi'),
+        taskManager: () => zebar.shellExec('taskmgr'),
+        power: () => zebar.shellExec('explorer', 'ms-settings:batterysaver'),
+        mixer: () => zebar.shellExec('SndVol'),
+        soundSettings: () => zebar.shellExec('explorer', 'ms-settings:sound'),
+        weather: () => zebar.shellExec('explorer', 'https://www.msn.com/en-us/weather'),
+        bluetooth: () => zebar.shellExec('explorer', 'ms-settings:bluetooth'),
+        pairDevice: () => zebar.shellExec('explorer', 'ms-settings-connectabledevices:devicediscovery'),
+      };
+
+      // Zebar has no Bluetooth provider, so poll a tiny PowerShell query.
+      // Output: first line ON/OFF (radio present), then one connected device name per line.
+      const BT_ARGS = ["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-EncodedCommand", "JABFAHIAcgBvAHIAQQBjAHQAaQBvAG4AUAByAGUAZgBlAHIAZQBuAGMAZQA9ACcAUwBpAGwAZQBuAHQAbAB5AEMAbwBuAHQAaQBuAHUAZQAnAAoAQQBkAGQALQBUAHkAcABlACAALQBBAHMAcwBlAG0AYgBsAHkATgBhAG0AZQAgAFMAeQBzAHQAZQBtAC4AUgB1AG4AdABpAG0AZQAuAFcAaQBuAGQAbwB3AHMAUgB1AG4AdABpAG0AZQAKACQAYQBzAFQAYQBzAGsARwBlAG4AZQByAGkAYwA9ACgAWwBTAHkAcwB0AGUAbQAuAFcAaQBuAGQAbwB3AHMAUgB1AG4AdABpAG0AZQBTAHkAcwB0AGUAbQBFAHgAdABlAG4AcwBpAG8AbgBzAF0ALgBHAGUAdABNAGUAdABoAG8AZABzACgAKQB8AFcAaABlAHIAZQAtAE8AYgBqAGUAYwB0AHsAJABfAC4ATgBhAG0AZQAgAC0AZQBxACAAJwBBAHMAVABhAHMAawAnACAALQBhAG4AZAAgACQAXwAuAEcAZQB0AFAAYQByAGEAbQBlAHQAZQByAHMAKAApAC4AQwBvAHUAbgB0ACAALQBlAHEAIAAxACAALQBhAG4AZAAgACQAXwAuAEcAZQB0AFAAYQByAGEAbQBlAHQAZQByAHMAKAApAFsAMABdAC4AUABhAHIAYQBtAGUAdABlAHIAVAB5AHAAZQAuAE4AYQBtAGUAIAAtAGUAcQAgACcASQBBAHMAeQBuAGMATwBwAGUAcgBhAHQAaQBvAG4AYAAxACcAfQApAFsAMABdAAoAZgB1AG4AYwB0AGkAbwBuACAAQQB3AGEAaQB0ACgAJABvAHAALAAkAHQAKQB7ACQAbgA9ACQAYQBzAFQAYQBzAGsARwBlAG4AZQByAGkAYwAuAE0AYQBrAGUARwBlAG4AZQByAGkAYwBNAGUAdABoAG8AZAAoACQAdAApAC4ASQBuAHYAbwBrAGUAKAAkAG4AdQBsAGwALABAACgAJABvAHAAKQApADsAJABuAC4AVwBhAGkAdAAoAC0AMQApAHwATwB1AHQALQBOAHUAbABsADsAJABuAC4AUgBlAHMAdQBsAHQAfQAKAFsAVwBpAG4AZABvAHcAcwAuAEQAZQB2AGkAYwBlAHMALgBSAGEAZABpAG8AcwAuAFIAYQBkAGkAbwAsAFcAaQBuAGQAbwB3AHMALgBTAHkAcwB0AGUAbQAuAEQAZQB2AGkAYwBlAHMALABDAG8AbgB0AGUAbgB0AFQAeQBwAGUAPQBXAGkAbgBkAG8AdwBzAFIAdQBuAHQAaQBtAGUAXQB8AE8AdQB0AC0ATgB1AGwAbAAKACQAcgBhAGQAaQBvAHMAPQBBAHcAYQBpAHQAIAAoAFsAVwBpAG4AZABvAHcAcwAuAEQAZQB2AGkAYwBlAHMALgBSAGEAZABpAG8AcwAuAFIAYQBkAGkAbwBdADoAOgBHAGUAdABSAGEAZABpAG8AcwBBAHMAeQBuAGMAKAApACkAIAAoAFsAUwB5AHMAdABlAG0ALgBDAG8AbABsAGUAYwB0AGkAbwBuAHMALgBHAGUAbgBlAHIAaQBjAC4ASQBSAGUAYQBkAE8AbgBsAHkATABpAHMAdABbAFcAaQBuAGQAbwB3AHMALgBEAGUAdgBpAGMAZQBzAC4AUgBhAGQAaQBvAHMALgBSAGEAZABpAG8AXQBdACkACgAkAGIAdAA9ACQAcgBhAGQAaQBvAHMAfABXAGgAZQByAGUALQBPAGIAagBlAGMAdAB7ACQAXwAuAEsAaQBuAGQAIAAtAGUAcQAgACcAQgBsAHUAZQB0AG8AbwB0AGgAJwB9AHwAUwBlAGwAZQBjAHQALQBPAGIAagBlAGMAdAAgAC0ARgBpAHIAcwB0ACAAMQAKAGkAZgAoAC0AbgBvAHQAIAAkAGIAdAAgAC0AbwByACAAJABiAHQALgBTAHQAYQB0AGUAIAAtAG4AZQAgACcATwBuACcAKQB7ACcATwBGAEYAJwA7AGUAeABpAHQAfQAKACcATwBOACcACgBbAFcAaQBuAGQAbwB3AHMALgBEAGUAdgBpAGMAZQBzAC4AQgBsAHUAZQB0AG8AbwB0AGgALgBCAGwAdQBlAHQAbwBvAHQAaABEAGUAdgBpAGMAZQAsAFcAaQBuAGQAbwB3AHMALgBEAGUAdgBpAGMAZQBzAC4AQgBsAHUAZQB0AG8AbwB0AGgALABDAG8AbgB0AGUAbgB0AFQAeQBwAGUAPQBXAGkAbgBkAG8AdwBzAFIAdQBuAHQAaQBtAGUAXQB8AE8AdQB0AC0ATgB1AGwAbAAKAFsAVwBpAG4AZABvAHcAcwAuAEQAZQB2AGkAYwBlAHMALgBCAGwAdQBlAHQAbwBvAHQAaAAuAEIAbAB1AGUAdABvAG8AdABoAEwARQBEAGUAdgBpAGMAZQAsAFcAaQBuAGQAbwB3AHMALgBEAGUAdgBpAGMAZQBzAC4AQgBsAHUAZQB0AG8AbwB0AGgALABDAG8AbgB0AGUAbgB0AFQAeQBwAGUAPQBXAGkAbgBkAG8AdwBzAFIAdQBuAHQAaQBtAGUAXQB8AE8AdQB0AC0ATgB1AGwAbAAKAFsAVwBpAG4AZABvAHcAcwAuAEQAZQB2AGkAYwBlAHMALgBFAG4AdQBtAGUAcgBhAHQAaQBvAG4ALgBEAGUAdgBpAGMAZQBJAG4AZgBvAHIAbQBhAHQAaQBvAG4ALABXAGkAbgBkAG8AdwBzAC4ARABlAHYAaQBjAGUAcwAuAEUAbgB1AG0AZQByAGEAdABpAG8AbgAsAEMAbwBuAHQAZQBuAHQAVAB5AHAAZQA9AFcAaQBuAGQAbwB3AHMAUgB1AG4AdABpAG0AZQBdAHwATwB1AHQALQBOAHUAbABsAAoAJABzAGUAbABzAD0AQAAoAFsAVwBpAG4AZABvAHcAcwAuAEQAZQB2AGkAYwBlAHMALgBCAGwAdQBlAHQAbwBvAHQAaAAuAEIAbAB1AGUAdABvAG8AdABoAEQAZQB2AGkAYwBlAF0AOgA6AEcAZQB0AEQAZQB2AGkAYwBlAFMAZQBsAGUAYwB0AG8AcgBGAHIAbwBtAFAAYQBpAHIAaQBuAGcAUwB0AGEAdABlACgAJAB0AHIAdQBlACkALABbAFcAaQBuAGQAbwB3AHMALgBEAGUAdgBpAGMAZQBzAC4AQgBsAHUAZQB0AG8AbwB0AGgALgBCAGwAdQBlAHQAbwBvAHQAaABMAEUARABlAHYAaQBjAGUAXQA6ADoARwBlAHQARABlAHYAaQBjAGUAUwBlAGwAZQBjAHQAbwByAEYAcgBvAG0AUABhAGkAcgBpAG4AZwBTAHQAYQB0AGUAKAAkAHQAcgB1AGUAKQApAAoAJABpAD0AMAAKAGYAbwByAGUAYQBjAGgAKAAkAHMAZQBsACAAaQBuACAAJABzAGUAbABzACkAewAKACAAIAAkAGwAaQBzAHQAPQBBAHcAYQBpAHQAIAAoAFsAVwBpAG4AZABvAHcAcwAuAEQAZQB2AGkAYwBlAHMALgBFAG4AdQBtAGUAcgBhAHQAaQBvAG4ALgBEAGUAdgBpAGMAZQBJAG4AZgBvAHIAbQBhAHQAaQBvAG4AXQA6ADoARgBpAG4AZABBAGwAbABBAHMAeQBuAGMAKAAkAHMAZQBsACkAKQAgACgAWwBXAGkAbgBkAG8AdwBzAC4ARABlAHYAaQBjAGUAcwAuAEUAbgB1AG0AZQByAGEAdABpAG8AbgAuAEQAZQB2AGkAYwBlAEkAbgBmAG8AcgBtAGEAdABpAG8AbgBDAG8AbABsAGUAYwB0AGkAbwBuAF0AKQAKACAAIABmAG8AcgBlAGEAYwBoACgAJABkACAAaQBuACAAJABsAGkAcwB0ACkAewAKACAAIAAgACAAaQBmACgALQBuAG8AdAAgACQAZAAuAE4AYQBtAGUAKQB7AGMAbwBuAHQAaQBuAHUAZQB9AAoAIAAgACAAIABpAGYAKAAkAGkAIAAtAGUAcQAgADAAKQB7ACQAZABlAHYAPQBBAHcAYQBpAHQAIAAoAFsAVwBpAG4AZABvAHcAcwAuAEQAZQB2AGkAYwBlAHMALgBCAGwAdQBlAHQAbwBvAHQAaAAuAEIAbAB1AGUAdABvAG8AdABoAEQAZQB2AGkAYwBlAF0AOgA6AEYAcgBvAG0ASQBkAEEAcwB5AG4AYwAoACQAZAAuAEkAZAApACkAIAAoAFsAVwBpAG4AZABvAHcAcwAuAEQAZQB2AGkAYwBlAHMALgBCAGwAdQBlAHQAbwBvAHQAaAAuAEIAbAB1AGUAdABvAG8AdABoAEQAZQB2AGkAYwBlAF0AKQB9AAoAIAAgACAAIABlAGwAcwBlAHsAJABkAGUAdgA9AEEAdwBhAGkAdAAgACgAWwBXAGkAbgBkAG8AdwBzAC4ARABlAHYAaQBjAGUAcwAuAEIAbAB1AGUAdABvAG8AdABoAC4AQgBsAHUAZQB0AG8AbwB0AGgATABFAEQAZQB2AGkAYwBlAF0AOgA6AEYAcgBvAG0ASQBkAEEAcwB5AG4AYwAoACQAZAAuAEkAZAApACkAIAAoAFsAVwBpAG4AZABvAHcAcwAuAEQAZQB2AGkAYwBlAHMALgBCAGwAdQBlAHQAbwBvAHQAaAAuAEIAbAB1AGUAdABvAG8AdABoAEwARQBEAGUAdgBpAGMAZQBdACkAfQAKACAAIAAgACAAaQBmACgAJABkAGUAdgAgAC0AYQBuAGQAIAAiACQAKAAkAGQAZQB2AC4AQwBvAG4AbgBlAGMAdABpAG8AbgBTAHQAYQB0AHUAcwApACIAIAAtAGUAcQAgACcAQwBvAG4AbgBlAGMAdABlAGQAJwApAHsAJABkAC4ATgBhAG0AZQB9AAoAIAAgAH0ACgAgACAAJABpACsAKwAKAH0ACgA="];
+      const BT_POLL_MS = 30000;
+      async function readBluetooth() {
+        try {
+          const { stdout } = await zebar.shellExec('powershell', BT_ARGS);
+          const lines = stdout.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+          return { on: lines[0] === 'ON', devices: lines.slice(1) };
+        } catch (err) {
+          console.error('bluetooth poll failed', err);
+          return null;
+        }
+      }
+
+      function useBluetooth() {
+        const [bt, setBt] = useState(null);
+        const refresh = () => readBluetooth().then(r => r && setBt(r));
+        useEffect(() => {
+          refresh();
+          const id = setInterval(refresh, BT_POLL_MS);
+          return () => clearInterval(id);
+        }, []);
+        return [bt, refresh];
+      }
+
+      const run = fn => e => {
+        e.preventDefault();
+        fn?.()?.catch?.(err => console.error(err));
+      };
+
+      const gb = bytes => (bytes / 1024 ** 3).toFixed(1) + ' GB';
+      const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+      const cls = (...xs) => xs.filter(Boolean).join(' ');
+
+      function fmtDuration(ms) {
+        if (!ms || ms <= 0) return null;
+        const m = Math.round(ms / 60000);
+        return `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`;
+      }
+
+      function networkIcon(net) {
+        const t = net.defaultInterface?.type;
+        if (t === 'ethernet') return 'nf-md-ethernet_cable';
+        if (t === 'proprietary_virtual') return 'nf-md-shield_lock_outline';
+        if (t === 'wifi') {
+          const s = net.defaultGateway?.signalStrength ?? 0;
+          if (s >= 80) return 'nf-md-wifi_strength_4';
+          if (s >= 65) return 'nf-md-wifi_strength_3';
+          if (s >= 40) return 'nf-md-wifi_strength_2';
+          if (s >= 25) return 'nf-md-wifi_strength_1';
+          return 'nf-md-wifi_strength_outline';
+        }
+        return 'nf-md-wifi_strength_off_outline';
+      }
+
+      function batteryIcon(b) {
+        const p = b.chargePercent ?? 0;
+        if (p > 90) return 'nf-fa-battery_4';
+        if (p > 70) return 'nf-fa-battery_3';
+        if (p > 40) return 'nf-fa-battery_2';
+        if (p > 20) return 'nf-fa-battery_1';
+        return 'nf-fa-battery_0';
+      }
+
+      function volumeIcon(vol, muted) {
+        if (muted || vol === 0) return 'nf-md-volume_off';
+        if (vol < 34) return 'nf-md-volume_low';
+        if (vol < 67) return 'nf-md-volume_medium';
+        return 'nf-md-volume_high';
+      }
+
+      const WEATHER_ICONS = {
+        clear_day: 'nf-weather-day_sunny',
+        clear_night: 'nf-weather-night_clear',
+        cloudy_day: 'nf-weather-day_cloudy',
+        cloudy_night: 'nf-weather-night_alt_cloudy',
+        light_rain_day: 'nf-weather-day_sprinkle',
+        light_rain_night: 'nf-weather-night_alt_sprinkle',
+        heavy_rain_day: 'nf-weather-day_rain',
+        heavy_rain_night: 'nf-weather-night_alt_rain',
+        snow_day: 'nf-weather-day_snow',
+        snow_night: 'nf-weather-night_alt_snow',
+        thunder_day: 'nf-weather-day_lightning',
+        thunder_night: 'nf-weather-night_alt_lightning',
+      };
+
+      // ───────────────────────── app ─────────────────────────
+
+      function App() {
+        const [o, setOutput] = useState(providers.outputMap);
+        const [bt, refreshBt] = useBluetooth();
+
+        useEffect(() => {
+          providers.onOutput(() => setOutput(providers.outputMap));
+        }, []);
+
+        const wm = o.glazewm;
+        const focused = wm?.focusedContainer;
+        const focusedWindow = focused?.type === 'window' ? focused : null;
+
+        return (
+          <div className="app">
+            {/* ═══════════ LEFT ═══════════ */}
+            <div className="left island">
+              <button
+                className="chip clickable logo"
+                title="Start menu · right-click: Settings"
+                onClick={run(open.start)}
+                onContextMenu={run(open.settings)}
+              >
+                <i className="nf nf-fa-windows"></i>
+              </button>
+
+              {wm && (
+                <div
+                  className="workspaces"
+                  title="Click to focus · scroll to cycle workspaces"
+                  onWheel={e =>
+                    wm.runCommand(
+                      e.deltaY > 0
+                        ? 'focus --next-active-workspace'
+                        : 'focus --prev-active-workspace',
+                    )
+                  }
+                >
+                  {wm.currentWorkspaces.map(ws => (
+                    <button
+                      key={ws.name}
+                      className={cls(
+                        'workspace',
+                        ws.hasFocus && 'focused',
+                        ws.isDisplayed && 'displayed',
+                      )}
+                      onClick={() => wm.runCommand(`focus --workspace ${ws.name}`)}
+                    >
+                      {ws.displayName ?? ws.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {focusedWindow && (
+                <>
+                  <span className="sep" />
+                  <button
+                    className="chip clickable window-title"
+                    title={`${focusedWindow.title ?? ''}\nClick: toggle floating`}
+                    onClick={() => wm.runCommand('toggle-floating --centered')}
+                  >
+                    <i className="nf nf-md-application_outline"></i>
+                    <span className="process">{focusedWindow.processName}</span>
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* ═══════════ CENTER ═══════════ */}
+            <div className="center island">
+              <button
+                className="chip clickable clock"
+                title="Calendar & notifications · right-click: date settings"
+                onClick={run(open.calendar)}
+                onContextMenu={run(open.dateSettings)}
+              >
+                <span className="date">{o.date?.formatted}</span>
+                <span className="dot" />
+                <span className="time">{o.time?.formatted}</span>
+              </button>
+            </div>
+
+            {/* ═══════════ RIGHT ═══════════ */}
+            <div className="right island">
+              {o.media?.currentSession && (
+                <>
+                  <div
+                    className={cls('chip clickable media', o.media.currentSession.isPlaying && 'playing')}
+                    title={`${o.media.currentSession.title ?? ''}\n${o.media.currentSession.artist ?? ''}\nClick: play/pause`}
+                  >
+                    <button className="ctrl" onClick={() => o.media.previous()} title="Previous">
+                      <i className="nf nf-md-skip_previous"></i>
+                    </button>
+                    <button
+                      className="chip"
+                      style={{ padding: 0, gap: 6, maxWidth: 180 }}
+                      onClick={() => o.media.togglePlayPause()}
+                    >
+                      <i
+                        className={cls(
+                          'nf status',
+                          o.media.currentSession.isPlaying ? 'nf-md-music_note' : 'nf-md-pause',
+                        )}
+                      ></i>
+                      <span className="track">
+                        {o.media.currentSession.title}
+                        {o.media.currentSession.artist && ` · ${o.media.currentSession.artist}`}
+                      </span>
+                    </button>
+                    <button className="ctrl" onClick={() => o.media.next()} title="Next">
+                      <i className="nf nf-md-skip_next"></i>
+                    </button>
+                  </div>
+                  <span className="sep" />
+                </>
+              )}
+
+              {wm && (
+                <>
+                  {wm.isPaused && (
+                    <button
+                      className="chip clickable paused"
+                      title="GlazeWM is paused · click to resume"
+                      onClick={() => wm.runCommand('wm-toggle-pause')}
+                    >
+                      paused
+                    </button>
+                  )}
+                  {wm.bindingModes.map(mode => (
+                    <button
+                      key={mode.name}
+                      className="chip clickable binding-mode"
+                      title="Click to exit binding mode"
+                      onClick={() =>
+                        wm.runCommand(`wm-disable-binding-mode --name ${mode.name}`)
+                      }
+                    >
+                      {mode.displayName ?? mode.name}
+                    </button>
+                  ))}
+                  <button
+                    className="chip clickable wm-btn"
+                    title={`Tiling: ${wm.tilingDirection} · click to toggle`}
+                    onClick={() => wm.runCommand('toggle-tiling-direction')}
+                  >
+                    <i
+                      className={cls(
+                        'nf',
+                        wm.tilingDirection === 'horizontal'
+                          ? 'nf-md-arrow_split_vertical'
+                          : 'nf-md-arrow_split_horizontal',
+                      )}
+                    ></i>
+                  </button>
+                </>
+              )}
+
+              <span className="sep" />
+
+              {bt && (
+                <button
+                  className={cls('chip clickable bluetooth', !bt.on && 'off', bt.devices.length > 0 && 'connected')}
+                  title={[
+                    !bt.on ? 'Bluetooth off' : bt.devices.length ? bt.devices.join('\n') : 'Bluetooth on · nothing connected',
+                    'Click: Bluetooth settings · right-click: pair a device',
+                  ].join('\n')}
+                  onClick={run(() => { refreshBt(); return open.bluetooth(); })}
+                  onContextMenu={run(open.pairDevice)}
+                >
+                  <i className={cls('nf', !bt.on ? 'nf-md-bluetooth_off' : bt.devices.length ? 'nf-md-bluetooth_connect' : 'nf-md-bluetooth')}></i>
+                  {bt.devices.length > 0 && <span className="value">{bt.devices.length}</span>}
+                </button>
+              )}
+
+              {o.network && (
+                <button
+                  className={cls('chip clickable network', !o.network.defaultInterface && 'offline')}
+                  title={[
+                    o.network.defaultInterface?.friendlyName,
+                    o.network.defaultGateway?.signalStrength != null &&
+                      `Signal ${o.network.defaultGateway.signalStrength}%`,
+                    o.network.defaultInterface?.ipv4Addresses?.[0],
+                    o.network.traffic &&
+                      `↓ ${o.network.traffic.received?.siValue?.toFixed?.(1)} ${o.network.traffic.received?.siUnit}  ↑ ${o.network.traffic.transmitted?.siValue?.toFixed?.(1)} ${o.network.traffic.transmitted?.siUnit}`,
+                    'Click: networks · right-click: Wi-Fi settings',
+                  ]
+                    .filter(Boolean)
+                    .join('\n')}
+                  onClick={run(open.networks)}
+                  onContextMenu={run(open.wifiSettings)}
+                >
+                  <i className={cls('nf', networkIcon(o.network))}></i>
+                  <span className="ssid">
+                    {o.network.defaultGateway?.ssid ??
+                      (o.network.defaultInterface?.type === 'ethernet' ? 'Ethernet' : 'Offline')}
+                  </span>
+                </button>
+              )}
+
+              {o.memory && (
+                <button
+                  className={cls('chip clickable memory', o.memory.usage > 85 && 'hot')}
+                  title={`RAM ${gb(o.memory.usedMemory)} / ${gb(o.memory.totalMemory)}\nClick: Task Manager`}
+                  onClick={run(open.taskManager)}
+                >
+                  <i className="nf nf-fae-chip"></i>
+                  <span className="value">{Math.round(o.memory.usage)}%</span>
+                  <span className="meter">
+                    <span style={{ width: `${o.memory.usage}%` }} />
+                  </span>
+                </button>
+              )}
+
+              {o.cpu && (
+                <button
+                  className={cls('chip clickable cpu', o.cpu.usage > 85 && 'hot')}
+                  title={`CPU ${o.cpu.usage.toFixed(0)}% · ${o.cpu.logicalCoreCount} threads · ${(o.cpu.frequency / 1000).toFixed(2)} GHz\nClick: Task Manager`}
+                  onClick={run(open.taskManager)}
+                >
+                  <i className="nf nf-oct-cpu"></i>
+                  <span className="value">{Math.round(o.cpu.usage)}%</span>
+                  <span className="meter">
+                    <span style={{ width: `${o.cpu.usage}%` }} />
+                  </span>
+                </button>
+              )}
+
+              {o.battery && (
+                <button
+                  className={cls(
+                    'chip clickable battery',
+                    o.battery.isCharging && 'charging',
+                    !o.battery.isCharging && o.battery.chargePercent <= 20 && 'low',
+                  )}
+                  title={[
+                    o.battery.isCharging
+                      ? `Charging${fmtDuration(o.battery.timeTillFull) ? ` · ${fmtDuration(o.battery.timeTillFull)} to full` : ''}`
+                      : fmtDuration(o.battery.timeTillEmpty) && `${fmtDuration(o.battery.timeTillEmpty)} remaining`,
+                    o.battery.healthPercent != null && `Health ${Math.round(o.battery.healthPercent)}%`,
+                    'Click: power settings',
+                  ]
+                    .filter(Boolean)
+                    .join('\n')}
+                  onClick={run(open.power)}
+                >
+                  <i className={cls('nf', batteryIcon(o.battery))}></i>
+                  {o.battery.isCharging && <i className="nf nf-md-flash bolt"></i>}
+                  <span className="value">{Math.round(o.battery.chargePercent)}%</span>
+                </button>
+              )}
+
+              {o.audio?.defaultPlaybackDevice && (
+                <button
+                  className={cls('chip clickable volume', o.audio.defaultPlaybackDevice.isMuted && 'muted')}
+                  title={`${o.audio.defaultPlaybackDevice.name}\nClick: mute · scroll: volume · right-click: mixer`}
+                  onClick={() => o.audio.setMute(!o.audio.defaultPlaybackDevice.isMuted)}
+                  onContextMenu={run(open.mixer)}
+                  onWheel={e =>
+                    o.audio.setVolume(
+                      clamp(o.audio.defaultPlaybackDevice.volume + (e.deltaY < 0 ? 2 : -2), 0, 100),
+                    )
+                  }
+                >
+                  <i
+                    className={cls(
+                      'nf',
+                      volumeIcon(o.audio.defaultPlaybackDevice.volume, o.audio.defaultPlaybackDevice.isMuted),
+                    )}
+                  ></i>
+                  <span className="value">{o.audio.defaultPlaybackDevice.volume}%</span>
+                </button>
+              )}
+
+              {o.weather && (
+                <button
+                  className="chip clickable weather"
+                  title={`${o.weather.status?.replaceAll('_', ' ')} · ${Math.round(o.weather.fahrenheitTemp)}°F\nClick: forecast`}
+                  onClick={run(open.weather)}
+                >
+                  <i className={cls('nf', WEATHER_ICONS[o.weather.status] ?? 'nf-weather-na')}></i>
+                  <span className="value">{Math.round(o.weather.celsiusTemp)}°C</span>
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      }
+    </script>
+  </body>
+</html>
