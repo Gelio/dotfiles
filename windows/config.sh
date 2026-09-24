@@ -93,6 +93,19 @@ push() {
   done
 }
 
+list() {
+  echo "Entries to sync:"
+
+  for entry in "${SYNC_MAP[@]}"; do
+    IFS='|' read -r win_rel local_path <<<"$entry"
+    local suffix=""
+    if [[ -d "$local_path" ]]; then
+      suffix=" ${Green}(directory)${NC}"
+    fi
+    echo -e "${Yellow}${win_rel}${NC}\n  ${local_path}${suffix}"
+  done
+}
+
 # Subcommand Router
 case "${1:-}" in
 pull)
@@ -101,11 +114,17 @@ pull)
 push)
   push "${2:-}"
   ;;
+list)
+  list
+  ;;
 *)
-  echo "Usage: $0 {push|pull} [filter]"
+  echo "Usage: $0 {push|pull|list} [filter]"
   echo "Examples:"
   echo "  $0 push glzr"
   echo "  $0 pull keyboard"
+  echo "  $0 list"
+  echo ""
+  list
   exit 1
   ;;
 esac
