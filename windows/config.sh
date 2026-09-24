@@ -22,18 +22,39 @@ SYNC_MAP=(
   "AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json|./config/windows-terminal-settings.json"
 )
 
-copy_file() {
-  local src="$1"
-  local dest="$2"
+copy_entry() {
+  local force="$1"
+  local src="$2"
+  local dest="$3"
 
-  if [[ ! -f "$src" ]]; then
+  if [[ ! -e "$src" ]]; then
     echo -e "${Red}Source missing: $src${NC}"
     return 1
   fi
 
-  mkdir -p "$(dirname "$dest")"
-  cp "$src" "$dest"
-  echo -e "Copied: ${Green}$src${NC} -> ${Green}$dest${NC}"
+  if [[ -d "$src" ]]; then
+    mkdir -p "$dest"
+
+    # Check if files would be deleted and bail if force flag is missing
+    if [[ "$force" != "-f" ]]; then
+      local deletions
+      deletions=$(rsync -a --delete --dry-run -v "$src/" "$dest/" 2>/dev/null | grep '^deleting ' || true)
+
+      if [[ -n "$deletions" ]]; then
+        echo -e "${Red}Error${NC}: Sync would delete destination files in ${Yellow}$dest${NC}. Use ${Yellow}-f${NC} or ${Yellow}--force${NC} to proceed."
+        echo "${deletions//deleting/-}"
+        return 1
+      fi
+    fi
+
+    rsync -a --delete "$src/" "$dest/"
+    echo -e "Synced directory: ${Green}$src${NC} ->${Green}$dest${NC}"
+  elif [[ -f "$src" ]]; then
+    mkdir -p "$(dirname "$dest")"
+    cp "$src" "$dest"
+    echo -e "Copied: ${Green}$src${NC} -> ${Green}$dest${NC}"
+  fi
+
 }
 
 should_sync() {
@@ -57,7 +78,8 @@ should_sync() {
 }
 
 pull() {
-  local filter="${1:-}"
+  local force="$1"
+  local filter="$2"
   [[ -n "$filter" ]] && echo -e "Pulling settings matching '${Yellow}$filter${NC}'..." || echo "Pulling all settings..."
 
   for entry in "${SYNC_MAP[@]}"; do
@@ -73,13 +95,14 @@ pull() {
       jq . <"$win_full" >"$local_path"
       echo -e "Formatted & Copied: ${Green}$win_full${NC} -> ${Green}$local_path${NC}"
     else
-      copy_file "$win_full" "$local_path"
+      copy_entry "$force" "$win_full" "$local_path"
     fi
   done
 }
 
 push() {
-  local filter="${1:-}"
+  local force="$1"
+  local filter="$2"
   [[ -n "$filter" ]] && echo -e "Pushing settings matching '${Yellow}$filter${NC}'..." || echo "Pushing all settings..."
 
   for entry in "${SYNC_MAP[@]}"; do
@@ -89,7 +112,7 @@ push() {
 
     IFS='|' read -r win_rel local_path <<<"$entry"
     win_full="$userprofile_path/$win_rel"
-    copy_file "$local_path" "$win_full"
+    copy_entry "$force" "$local_path" "$win_full"
   done
 }
 
@@ -106,13 +129,33 @@ list() {
   done
 }
 
+# Global flag parsing
+FORCE_FLAG=""
+ARGS=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  -f | --force)
+    FORCE_FLAG="-f"
+    shift
+    ;;
+  *)
+    ARGS+=("$1")
+    shift
+    ;;
+  esac
+done
+
+# Re-set positional parameters without the flags
+set -- "${ARGS[@]}"
+
 # Subcommand Router
 case "${1:-}" in
 pull)
-  pull "${2:-}"
+  pull "${FORCE_FLAG}" "${2:-}"
   ;;
 push)
-  push "${2:-}"
+  push "${FORCE_FLAG}" "${2:-}"
   ;;
 list)
   list
