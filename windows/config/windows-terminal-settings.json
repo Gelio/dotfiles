@@ -25,7 +25,9 @@
       "colorScheme": "GruvboxDark",
       "font": {
         "face": "JetBrainsMono Nerd Font"
-      }
+      },
+      "opacity": 85,
+      "useAcrylic": true
     },
     "list": [
       {
@@ -158,5 +160,6 @@
       "yellow": "#D79921"
     }
   ],
-  "themes": []
+  "themes": [],
+  "useAcrylicInTabRow": false
 }
