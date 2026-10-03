@@ -40,8 +40,8 @@ passes the project's full check suite independently.
    accurately reflects the current contents of the commit. After
    rebasing or amending, commit contents may have changed while the
    message stayed the same. If the message is stale or misleading:
-   - Write the new message to `/tmp/claude/commit-reword.txt` using the Write tool
-   - Amend: `git commit --amend -F /tmp/claude/commit-reword.txt`
+   - Write the new message to `/tmp/agent-work/commit-reword.txt` using the agent's file-edit tool (create the scratch directory first)
+   - Amend: `git commit --amend -F /tmp/agent-work/commit-reword.txt`
    - Note what was reworded for the final summary.
 
 6. **Continue** to the next commit:

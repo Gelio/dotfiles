@@ -110,7 +110,11 @@
       "Bash(gh api repos/*/*/check-runs/*/annotations*)",
       "Bash(gh api /repos/*/*/releases/latest*)",
       "Bash(gh api repos/*/*/releases/latest*)",
-      "Skill(update-config)"
+      "Skill(update-config)",
+      "Read(//tmp/agent-work/**)",
+      "Edit(//tmp/agent-work/**)",
+      "Read(//private/tmp/agent-work/**)",
+      "Edit(//private/tmp/agent-work/**)"
     ]
   },
   "hooks": {
@@ -158,6 +162,10 @@
           {
             "type": "command",
             "command": "mkdir -p /tmp/claude"
+          },
+          {
+            "type": "command",
+            "command": "mkdir -p /tmp/agent-work"
           }
         ]
       }

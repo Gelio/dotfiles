@@ -1,9 +1,15 @@
 ---
 name: jira-preferences
-description: User preferences for working with Jira via the Atlassian MCP. Use whenever interacting with Jira tickets — creating, editing, reading, searching, linking, commenting on, or transitioning issues, adding worklogs, or running JQL. Applies to all Jira operations regardless of project. Triggers on any use of mcp__atlassian__ tools, references to ticket keys (e.g. MIG-1234, PROJ-567), or when the user mentions Jira tickets, issues, epics, sprints, or comments.
+description: User preferences for working with Jira via the Atlassian MCP. Use whenever interacting with Jira tickets — creating, editing, reading, searching, linking, commenting on, or transitioning issues, adding worklogs, or running JQL. Applies to all Jira operations regardless of project. Triggers on use of an Atlassian/Jira integration, references to ticket keys (e.g. MIG-1234, PROJ-567), or when the user mentions Jira tickets, issues, epics, sprints, or comments.
 ---
 
 # Jira Workflow Preferences
+
+The tool names and `contentFormat` options below describe the Atlassian MCP
+integration used in Claude. In Codex, discover the connected Jira tools and
+map the operations to their actual names and schemas. Do not assume a tool
+prefix or that a differently configured connector has the same read/write
+limitations; verify its schema while preserving the content and preview rules.
 
 ## Mandatory rules — every Jira write operation
 

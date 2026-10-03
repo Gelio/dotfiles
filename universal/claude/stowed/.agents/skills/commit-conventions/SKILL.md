@@ -2,9 +2,9 @@
 name: commit-conventions
 description: >
   Use when creating git commits in any project. Covers mandatory commit body,
-  Markdown formatting, staging discipline, the Write-tool + git-commit-F
+  Markdown formatting, staging discipline, the file-edit + git-commit-F
   pattern for reliable commits, and post-commit
-  verification. This skill should be used whenever Claude is about to create
+  verification. This skill should be used whenever the agent is about to create
   a git commit, even if another commit-related skill or plugin is also
   active — this one provides the universal authoring rules. Triggers on:
   "commit", "git commit", "create a commit", "stage and commit", "fixup",
@@ -32,8 +32,11 @@ Format:
 
 <body>
 
-Co-Authored-By: Claude <model> <noreply@anthropic.com>
+<agent attribution trailer; see references/attribution.md>
 ```
+
+Read [references/attribution.md](references/attribution.md) when writing a
+commit message. Attribute the agent actually used; never invent a model.
 
 ### Subject Line
 - Max 72 characters
@@ -155,13 +158,13 @@ unintended files. Explicit staging is always safer.
 
 Shell escaping is fragile for multi-line commit messages, especially
 with backticks and special characters like `!` in `fixup!`. Use the
-Write tool + `git commit -F` pattern instead:
+file-edit + `git commit -F` pattern instead:
 
-1. Write the commit message to a unique file matching
-   `/tmp/claude/commit-<id>.txt` using the Write tool
+1. Create `/tmp/agent-work/` if needed. Write the commit message to a unique file matching
+   `/tmp/agent-work/commit-<id>.txt` using the agent's file-edit tool (Claude: Write; Codex: apply_patch)
    (e.g. `commit-msg.txt`, `commit-fixup-upload.txt`). Use a
    descriptive `<id>` so parallel agents don't overwrite each other.
-2. Run: `git commit -F /tmp/claude/commit-<id>.txt`
+2. Run: `git commit -F /tmp/agent-work/commit-<id>.txt`
 
 ## After Committing
 
@@ -249,11 +252,11 @@ absorbed a fixup.
 When the user approves a reword:
 
 1. Write the new full commit message to
-   `/tmp/claude/reword-msg-<id>.txt` using the Write tool.
+   `/tmp/agent-work/reword-msg-<id>.txt` using the agent's file-edit tool (Claude: Write; Codex: apply_patch).
    Include subject, body, and `Co-Authored-By` trailer.
 2. Run:
    ```
-   GIT_EDITOR='cp /tmp/claude/reword-msg-<id>.txt' git branchless reword <sha>
+   GIT_EDITOR='cp /tmp/agent-work/reword-msg-<id>.txt' git branchless reword <sha>
    ```
    **Always spell out `git branchless reword`** — `git reword` may be
    aliased to `git stack reword` (a different tool), which would silently

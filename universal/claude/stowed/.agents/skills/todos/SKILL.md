@@ -1,7 +1,6 @@
 ---
 name: todos
 description: Work through a todos.md task list with subagent delegation, TODO tracking, and commit strategy. Use when the user says "work on todos", "pick up todos", "/todos <path>", "work through the remaining tasks", or references a todos.md file they want worked through. Also use when a user says "pick up where you left off" and a todos.md exists in the working directory. Triggers on any mention of working through a checklist file or task list file.
-argument-hint: '<path-to-todos.md>'
 ---
 
 # Working Through todos.md Files
@@ -10,34 +9,37 @@ You are the orchestrator. You read the task list, delegate code changes to subag
 
 ## Non-negotiables
 
-1. **Delegate all code changes to subagents.** Do not write code yourself. Your context is for orchestration — subagents are disposable and keep your window clean for managing remaining tasks.
+1. **Delegate code changes when subagents are available and authorized.**
+   Otherwise work through the tasks directly; keep the same verification and
+   tracking workflow.
 2. **Do not rebase until the user explicitly approves.** Present the commit plan first. Only run the rebase after the user confirms they don't need more changes.
-3. **Use `/commit-conventions`** for every commit. It handles message format, staging, and the Write-tool + `git commit -F` pattern.
-4. **Mark tasks done immediately.** Edit `$0` to change `- [ ]` to `- [x]` right after each task completes — do not batch.
+3. **Use the `commit-conventions` skill** for every commit. It handles message format, staging, and the Write-tool + `git commit -F` pattern.
+4. **Mark tasks done immediately.** Edit the selected TODO file to change `- [ ]` to `- [x]` right after each task completes — do not batch.
 
 ## Startup
 
-1. Read the file at `$0`. If not provided, look for a `todos.md` in the current directory or ask the user.
+1. Read the file at the selected TODO file. If not provided, look for a `todos.md` in the current directory or ask the user.
 2. Parse all `- [ ]` items.
 3. Skip items under headings that fuzzy-match these patterns (match loosely — "Stuff I'll handle myself" counts as "For me"):
    - "For me" / "My tasks" / "Things for me to do"
    - "For later" / "Later" / "Deferred"
    - "Known issues" / "Known problems"
    - "Won't fix" / "Out of scope"
-4. Create a Claude Code TODO entry for each actionable unchecked item.
+4. Treat the selected TODO file as the source of truth. Mirror actionable
+   items into the agent's native task tracker when one is available.
 
 ## Working Through Tasks
 
 Process tasks in order, top to bottom. For each task:
 
 1. Read the task description. Gather context (file paths, conventions, references) needed for a clear subagent brief.
-2. Spawn a subagent with:
+2. If delegating, brief the subagent with:
    - What to change and why
    - Relevant file paths
    - Conventions or patterns to follow
    - Expected result
-3. Verify the subagent's result.
-4. Mark `- [x]` in `$0` and update the TODO entry.
+3. Verify the result, whether implemented directly or by a subagent.
+4. Mark `- [x]` in the selected TODO file and update any native task entry.
 5. Report briefly, then move on.
 
 Run independent tasks (no overlapping files) in parallel via concurrent subagents.
@@ -60,7 +62,7 @@ For fixup commits, follow the workflow in `/commit-conventions`. It covers
 target attribution via `git absorb`, the semantic-fallback path for hunks
 absorb can't attribute, and how to handle the "ask the user" branch.
 
-A PostToolUse hook (`~/.claude/hooks/verify-fixup-scope.py`) runs as an
+A shared fixup-scope check, registered by each agent's PostToolUse adapter, runs as an
 advisory file-scope safety net. Absorb-created fixups are file-scope-correct
 by construction and won't trip it; warnings come from the hand-authored
 fallback path. Heed those warnings unless the extra files are genuinely
@@ -114,7 +116,7 @@ Only after the user explicitly approves — do not proceed on your own.
 1. Run `git rebase --autosquash -i <base-commit>` using `GIT_SEQUENCE_EDITOR` to apply the planned order non-interactively. The sequence editor script must reorder picks to match the planned final order and let `--autosquash` handle fixup placement.
 2. If there are no reordering needs (only fixups to squash), a plain `git rebase --autosquash <base-commit>` suffices.
 3. After the rebase, show the final `git log --oneline` so the user can verify.
-4. Run the **post-autosquash message review** from `/commit-conventions` —
+4. Run the **post-autosquash message review** from the `commit-conventions` skill —
    for each commit that absorbed a fixup, verify the subject and body still
    describe what the commit now does. Report findings; reword only on user
    approval (via `git branchless reword`, per the same skill).
