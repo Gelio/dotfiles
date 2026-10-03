@@ -21,10 +21,7 @@ tmux = "latest"
 go = "latest"
 fzf = "latest"
 codex = "latest"
-
-[tools.claude]
-version = "latest"
-minimum_release_age = "0s"
+claude = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]
