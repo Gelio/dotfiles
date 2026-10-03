@@ -100,6 +100,15 @@ def describe_session(cwd: str) -> tuple[str, str]:
     return title, subtitle
 
 
+def notification_group(kind: str, cwd: str) -> str:
+    """Group id for a session's notifications of `kind` ("permission"/"stop").
+
+    Keyed by tmux pane so sessions sharing a cwd don't replace or dismiss each
+    other's notifications; falls back to cwd outside tmux.
+    """
+    return f"claude-{kind}-{os.environ.get('TMUX_PANE') or cwd}"
+
+
 def _pending_marker(group: str) -> Path:
     return STATE_DIR / hashlib.sha1(group.encode()).hexdigest()
 

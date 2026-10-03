@@ -6,7 +6,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from notify_utils import describe_session, notify, shorten_path
+from notify_utils import describe_session, notification_group, notify, shorten_path
 
 
 def main():
@@ -36,7 +36,7 @@ def main():
         message += f" — {detail}"
 
     notify(title, subtitle, message, kind="permission",
-           group=f"claude-permission-{cwd}", dismiss_after=10)
+           group=notification_group("permission", cwd), dismiss_after=10)
 
 
 if __name__ == "__main__":

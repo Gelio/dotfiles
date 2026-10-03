@@ -6,7 +6,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from notify_utils import describe_session, notify, remove
+from notify_utils import describe_session, notification_group, notify, remove
 
 
 def main():
@@ -14,13 +14,13 @@ def main():
     cwd = data.get("cwd", "")
 
     # Dismiss any lingering permission notification (e.g. after denial)
-    remove(f"claude-permission-{cwd}")
+    remove(notification_group("permission", cwd))
 
     title, subtitle = describe_session(cwd)
     message = "Ready for input"
 
     notify(title, subtitle, message, kind="stop",
-           group=f"claude-stop-{cwd}", dismiss_after=5)
+           group=notification_group("stop", cwd), dismiss_after=5)
 
 
 if __name__ == "__main__":
