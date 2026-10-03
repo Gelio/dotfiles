@@ -11,7 +11,7 @@
     "autoAllowBashIfSandboxed": true,
     "filesystem": {
       "allowWrite": [
-        "~/.local/claude-handoffs",
+        "~/.local/agent-handoffs",
         "~/.cache/pre-commit"
       ]
     },
@@ -52,8 +52,8 @@
       "Read(~/projects/dotfiles/universal/claude/**)",
       "Read(//private/tmp/claude/**)",
       "Edit(//private/tmp/claude/**)",
-      "Read(~/.local/claude-handoffs/**)",
-      "Edit(~/.local/claude-handoffs/**)",
+      "Read(~/.local/agent-handoffs/**)",
+      "Edit(~/.local/agent-handoffs/**)",
       "Bash(command -v *)",
       "Bash(echo *)",
       "Bash(gh auth status*)",

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Install shared resources and merge only the selected agents' settings."""
 import argparse
-import os
 from pathlib import Path
 import subprocess
 import sys
@@ -26,7 +25,10 @@ def main():
     # Detect unmanaged conflicts before changing any links or settings.
     subprocess.run([*stow, '--simulate'], check=True)
     agents = ['claude', 'codex'] if args.agent == 'both' else [args.agent]
+    migration = ['python3', str(ROOT / 'migrate-handoff-storage.py'), '--target-home', str(home)]
+    subprocess.run([*migration, '--dry-run'], check=True)
     if not args.dry_run:
+        subprocess.run(migration, check=True)
         subprocess.run(stow, check=True)
         for agent in agents:
             subprocess.run(['node', '--experimental-strip-types', str(ROOT / 'setup-settings.ts'),

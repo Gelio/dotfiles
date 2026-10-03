@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+mkdir -p "$HOME/.local/agent-handoffs" /tmp/agent-work
+exec codex --add-dir "$HOME/.local/agent-handoffs" "$@"

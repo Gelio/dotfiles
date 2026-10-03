@@ -129,7 +129,7 @@ class FileReferenceResolutionTests(unittest.TestCase):
     """References resolve against the repo root from `Project:` metadata, and
     tolerate paths written relative to a working subdirectory.
 
-    Handoffs are stored centrally (~/.local/claude-handoffs/<repo-key>/...), so
+    Handoffs are stored centrally (~/.local/agent-handoffs/<repo-key>/...), so
     the old `parent.parent.parent` base no longer points at the repo; the
     validator now reads `Project:` and also matches files by path-suffix.
     """

@@ -165,7 +165,7 @@ def extract_project_root(content: str, handoff_path: Path) -> str | None:
     """Determine the repo root that referenced paths are relative to.
 
     Uses the handoff's `Project:` metadata (the origin repo root). Handoffs are
-    stored centrally (`~/.local/claude-handoffs/<repo-key>/...`), so the old
+    stored centrally (`~/.local/agent-handoffs/<repo-key>/...`), so the old
     parent.parent.parent heuristic no longer points at the repo.
 
     The label is matched tolerantly: a leading list marker, an optional

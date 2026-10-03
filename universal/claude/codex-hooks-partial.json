@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "mkdir -p /tmp/agent-work"
+            "command": "python3 ~/.codex/hooks/session-start.py"
           }
         ]
       }

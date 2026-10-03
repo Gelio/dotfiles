@@ -2,14 +2,14 @@
 """Shared helper: resolve the project root for handoff storage.
 
 Handoffs must always live in the git repository of the directory where the
-Claude session was STARTED, regardless of any `cd` the agent performs during
+agent session was STARTED, regardless of any `cd` the agent performs during
 the session (multi-repo / multi-agent work). Run-time cwd is therefore NOT
 trusted as the primary source.
 
 Resolution order:
   1. An explicit directory passed by the caller (e.g. --project-dir).
   2. The session-origin file captured at SessionStart by
-     capture-handoff-origin.py (~/.local/claude-handoffs/.origins/<session_id>).
+     capture_origin() (~/.local/agent-handoffs/.origins/<agent>/<session_id>).
      This already holds the resolved git toplevel of the launch directory and
      is immune to any later `cd`.
   3. $CLAUDE_PROJECT_DIR (the launch dir, when present), resolved to its git
@@ -56,7 +56,9 @@ def session_origin() -> str | None:
     session_id = os.environ.get("CLAUDE_CODE_SESSION_ID")
     if not session_id:
         return None
-    origin_file = origins_dir() / session_id
+    if not _is_safe_name(session_id):
+        return None
+    origin_file = origins_dir() / "claude" / session_id
     try:
         if origin_file.is_file():
             value = origin_file.read_text().strip()
@@ -100,7 +102,7 @@ def handoffs_root() -> Path:
     as a potential settings edit and raises an "allow Claude to edit its own
     settings" prompt that no permission rule can suppress. `~/.local/` avoids it.
     """
-    return Path.home() / ".local" / "claude-handoffs"
+    return Path.home() / ".local" / "agent-handoffs"
 
 
 def origins_dir() -> Path:
@@ -123,3 +125,24 @@ def repo_key(project_root: str) -> str:
 def handoffs_dir(project_root: str) -> Path:
     """The centralized handoffs directory for a given repo root."""
     return handoffs_root() / repo_key(project_root)
+
+
+def _is_safe_name(session_id: str) -> bool:
+    return "/" not in session_id and session_id not in (".", "..")
+
+
+def capture_origin(data: dict, agent: str) -> str | None:
+    """Record the launch repo once per agent/session; keep it across resume."""
+    session_id = data.get("session_id")
+    if not session_id or not _is_safe_name(session_id):
+        return None
+    cwd = data.get("cwd") or os.getcwd()
+    origin = git_toplevel(cwd) or cwd
+    path = origins_dir() / agent / session_id
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with path.open("x") as stream:
+            stream.write(origin + "\n")
+    except FileExistsError:
+        origin = path.read_text().strip() or origin
+    return origin

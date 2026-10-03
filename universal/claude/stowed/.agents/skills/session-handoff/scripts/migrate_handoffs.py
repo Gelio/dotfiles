@@ -2,7 +2,7 @@
 """Migrate repo-local handoffs into the centralized store.
 
 Older handoffs lived inside each repository at `<repo>/.claude/handoffs/`.
-Handoffs are now stored centrally at `~/.local/claude-handoffs/<repo-key>/` (see
+Handoffs are now stored centrally at `~/.local/agent-handoffs/<repo-key>/` (see
 _handoff_paths.py for why). This script moves any repo-local handoffs into the
 centralized location for one or more repositories.
 
@@ -13,7 +13,7 @@ Usage:
     python migrate_handoffs.py --dry-run [...]  # preview without moving
 
 For each repo, source files at `<repo-root>/.claude/handoffs/*.md` are moved to
-`~/.local/claude-handoffs/<repo-key>/`. A file whose name already exists at the
+`~/.local/agent-handoffs/<repo-key>/`. A file whose name already exists at the
 destination is left in place and reported (never overwritten). An emptied
 source directory is removed.
 """

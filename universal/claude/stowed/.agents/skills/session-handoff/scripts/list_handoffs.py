@@ -2,7 +2,7 @@
 """
 List available handoff documents in the current project.
 
-Searches the centralized store (~/.local/claude-handoffs/<repo-key>/) and displays:
+Searches the centralized store (~/.local/agent-handoffs/<repo-key>/) and displays:
 - Filename with date
 - Title extracted from document
 - Status (if marked complete)

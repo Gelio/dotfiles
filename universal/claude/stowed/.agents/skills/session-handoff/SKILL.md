@@ -24,6 +24,17 @@ Determine which mode applies:
 
 ### Step 1: Generate Scaffold
 
+Run bundled scripts relative to this skill's directory. In Codex, use the
+launch repository supplied by the SessionStart hook as `--project-dir` for
+creation and as the positional project argument for listing. Pass the same
+root to repo-local migration. This preserves the origin after changing cwd.
+Claude retains its session-origin environment fallback. When no origin is
+available, resolve and pass the intended repository explicitly.
+
+For Codex sandbox writes outside the workspace, launch with
+`codex-agent` or `codex --add-dir ~/.local/agent-handoffs`.
+
+
 Run the smart scaffold script to create a pre-filled handoff document:
 
 ```bash
@@ -38,7 +49,7 @@ python scripts/create_handoff.py "auth-part-2" --continues-from 2024-01-15-auth.
 ```
 
 The script will:
-- Create the centralized handoffs directory (`~/.local/claude-handoffs/<repo-key>/`) if needed
+- Create the centralized handoffs directory (`~/.local/agent-handoffs/<repo-key>/`) if needed
 - Generate timestamped filename
 - Pre-fill: timestamp, project path, git branch, recent commits, modified files
 - Add handoff chain links if continuing from previous
@@ -194,7 +205,7 @@ When resuming from a chain, read the most recent handoff first, then reference p
 Handoffs are stored in a **single centralized location**, keyed by repository:
 
 ```
-~/.local/claude-handoffs/<repo-key>/YYYY-MM-DD-HHMMSS-[slug].md
+~/.local/agent-handoffs/<repo-key>/YYYY-MM-DD-HHMMSS-[slug].md
 ```
 
 `<repo-key>` is the origin repo's path with separators replaced by `-`
@@ -205,7 +216,7 @@ metadata, which `check_staleness.py` uses for git comparisons.
 Why centralized rather than inside each repo: a repo-local `.claude/handoffs/`
 can sit *above* the session's launch directory, and the OS command sandbox only
 grants writes to concrete paths (not globs), so writing up to a parent repo root
-gets blocked. One fixed root (`~/.local/claude-handoffs`, added once to
+gets blocked. One fixed root (`~/.local/agent-handoffs`, added once to
 `sandbox.filesystem.allowWrite`) is writable from any working directory, immune
 to `cd`, subdirectory launches, and multi-agent work.
 
@@ -218,7 +229,7 @@ The **repo** a handoff belongs to is resolved as follows (see
 
 1. An explicit `--project-dir` passed to `create_handoff.py`.
 2. The origin captured at SessionStart by `hooks/capture-handoff-origin.py`
-   (`~/.local/claude-handoffs/.origins/<session_id>`) — the git toplevel of the
+   (`~/.local/agent-handoffs/.origins/<agent>/<session_id>`) — the git toplevel of the
    launch directory, immune to any later `cd`.
 3. `$CLAUDE_PROJECT_DIR` resolved to its git toplevel.
 4. The current directory's git toplevel, then the current directory itself.
