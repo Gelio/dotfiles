@@ -52,9 +52,6 @@ class SetupTests(unittest.TestCase):
             path.write_text('refactor: share agent setup\n')
             self.assertEqual(self.hook('validate-commit.py', 'git commit -F message', cwd=tmp)['decision'], 'block')
 
-if __name__ == '__main__':
-    unittest.main()
-
 class SkillLayoutTests(unittest.TestCase):
     def test_stow_links_shared_skills_without_owning_third_party(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -107,3 +104,35 @@ class CodexTests(unittest.TestCase):
                 result = subprocess.run(['python3', str(home / '.claude/hooks/block-risky-commands.py')], input=json.dumps({'tool_name': 'Bash', 'tool_input': {'command': 'git push'}}), text=True, capture_output=True, check=True)
                 self.assertEqual(json.loads(result.stdout)['decision'], 'block')
             self.assertEqual(len(list((home / '.codex').glob('hooks.json.backup-*'))), 1)
+
+class InstallerSafetyTests(unittest.TestCase):
+    def test_unmanaged_skill_conflict_preserves_settings_and_handoffs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            conflict = home / '.agents/skills/commit-conventions/SKILL.md'
+            conflict.parent.mkdir(parents=True)
+            conflict.write_text('personal skill')
+            settings = home / '.claude/settings.json'
+            settings.parent.mkdir()
+            settings.write_text('{"keep": true}')
+            legacy = home / '.local/claude-handoffs/a.md'
+            legacy.parent.mkdir(parents=True)
+            legacy.write_text('keep handoff')
+            result = subprocess.run(['python3', str(ROOT / 'install.py'), '--agent', 'both', '--target-home', tmp], capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(settings.read_text(), '{"keep": true}')
+            self.assertEqual(legacy.read_text(), 'keep handoff')
+            self.assertEqual(conflict.read_text(), 'personal skill')
+
+    def test_existing_python_caches_do_not_conflict_with_installation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cache = Path(tmp) / '.claude/__pycache__/notify_utils.cpython-314.pyc'
+            cache.parent.mkdir(parents=True)
+            cache.write_bytes(b'personal cache')
+            subprocess.run(['python3', str(ROOT / 'install.py'), '--agent', 'both', '--target-home', tmp], check=True, capture_output=True)
+            self.assertEqual(cache.read_bytes(), b'personal cache')
+            subprocess.run(['python3', str(ROOT / 'check-setup.py'), '--target-home', tmp], check=True, capture_output=True)
+
+
+if __name__ == '__main__':
+    unittest.main()

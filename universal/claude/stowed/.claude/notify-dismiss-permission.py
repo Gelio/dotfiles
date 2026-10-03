@@ -1,18 +1,10 @@
 #!/usr/bin/env python3
-"""Claude Code PostToolUse hook — dismiss permission notification after tool executes."""
-
+"""Claude PostToolUse notification adapter."""
 import json
-import os
 import sys
-
-sys.path.insert(0, os.path.dirname(__file__))
-from notify_utils import notification_group, remove
-
-
-def main():
-    data = json.load(sys.stdin)
-    remove(notification_group("permission", data.get("cwd", "")))
-
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / ".agents/lib"))
+from agent_setup.notifications import handle_event
 
 if __name__ == "__main__":
-    main()
+    handle_event(json.load(sys.stdin), "PostToolUse")

@@ -26,7 +26,7 @@ HOME = os.path.expanduser("~")
 AGENT = os.environ.get("AGENT_SETUP_AGENT", "claude")
 AGENT_LABEL = "Codex" if AGENT == "codex" else "Claude Code"
 
-STATE_DIR = Path(tempfile.gettempdir()) / "claude-notify"
+STATE_DIR = Path(tempfile.gettempdir()) / f"{AGENT}-notify"
 
 
 def _is_wsl() -> bool:
@@ -171,7 +171,7 @@ def _auto_dismiss_macos(group: str, delay_seconds: int):
     """Remove a terminal-notifier group after a delay, unless a newer notification replaced it."""
     token = str(time.time())
     safe_group = group.replace("/", "_")
-    token_file = f"/tmp/claude-notify-{safe_group}.token"
+    token_file = f"/tmp/{AGENT}-notify-{safe_group}.token"
     with open(token_file, "w") as f:
         f.write(token)
     subprocess.Popen(
@@ -280,7 +280,7 @@ def _ps_str(value: str) -> str:
 
 def _toast_ids(group: str) -> tuple[str, str]:
     """Map a group name to a toast (tag, group); Windows caps both at 64 chars."""
-    return hashlib.sha1(group.encode()).hexdigest()[:32], "claude-code"
+    return hashlib.sha1(group.encode()).hexdigest()[:32], f"{AGENT}-code"
 
 
 def _run_powershell_detached(script: str):
@@ -336,3 +336,28 @@ def _toast_wsl(title: str, subtitle: str, message: str, *, kind: str,
         f"$toast.ExpirationTime = [DateTimeOffset]::Now.AddSeconds({int(dismiss_after)})\n"
         f"[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier({_ps_str(_WSL_APP_ID)}).Show($toast)\n"
     )
+
+
+def handle_event(data: dict, event: str) -> None:
+    """Present the same notification behavior through either agent's hooks."""
+    cwd = data.get('cwd', '')
+    if event == 'PostToolUse':
+        remove(notification_group('permission', cwd))
+        return
+    title, subtitle = describe_session(cwd)
+    if event == 'Stop':
+        remove(notification_group('permission', cwd))
+        notify(title, subtitle, 'Ready for input', kind='stop',
+               group=notification_group('stop', cwd), dismiss_after=5)
+    elif event == 'PermissionRequest':
+        tool = data.get('tool_name', 'unknown')
+        args = data.get('tool_input', {})
+        detail = ''
+        if tool in {'Bash', 'apply_patch'}:
+            detail = shorten_path(args.get('command', '')[:100])
+        elif tool in {'Edit', 'Write', 'Read'}:
+            path = args.get('file_path', '')
+            detail = path[len(cwd) + 1:] if cwd and path.startswith(cwd + '/') else shorten_path(path)
+        message = f'Permission needed: {tool}' + (f' — {detail}' if detail else '')
+        notify(title, subtitle, message, kind='permission',
+               group=notification_group('permission', cwd), dismiss_after=10)

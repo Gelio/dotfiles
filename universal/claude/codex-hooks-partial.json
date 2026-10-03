@@ -20,6 +20,14 @@
             "command": "python3 ~/.codex/hooks/agent-policy.py"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.codex/hooks/notify.py"
+          }
+        ]
       }
     ],
     "SessionStart": [
@@ -28,6 +36,26 @@
           {
             "type": "command",
             "command": "python3 ~/.codex/hooks/session-start.py"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.codex/hooks/notify.py"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.codex/hooks/notify.py"
           }
         ]
       }

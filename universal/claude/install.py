@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Install shared resources and merge only the selected agents' settings."""
 import argparse
+import json
 from pathlib import Path
 import subprocess
 import sys
@@ -21,10 +22,15 @@ def main():
             (home / directory).mkdir(parents=True, exist_ok=True)
     if not home.is_dir():
         parser.error('target home must exist for a dry run')
-    stow = ['stow', '--no-folding', '-R', '-d', str(ROOT), '-t', str(home), 'stowed']
+    stow = ['stow', '-R', '-d', str(ROOT), '-t', str(home), 'stowed']
     # Detect unmanaged conflicts before changing any links or settings.
     subprocess.run([*stow, '--simulate'], check=True)
     agents = ['claude', 'codex'] if args.agent == 'both' else [args.agent]
+    for agent in agents:
+        settings = home / f'.{agent}' / ('settings.json' if agent == 'claude' else 'hooks.json')
+        if settings.exists():
+            if not isinstance(json.loads(settings.read_text()), dict):
+                parser.error(f'Settings must contain a JSON object: {settings}')
     migration = ['python3', str(ROOT / 'migrate-handoff-storage.py'), '--target-home', str(home)]
     subprocess.run([*migration, '--dry-run'], check=True)
     if not args.dry_run:
