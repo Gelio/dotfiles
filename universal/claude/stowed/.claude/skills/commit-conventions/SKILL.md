@@ -158,10 +158,10 @@ with backticks and special characters like `!` in `fixup!`. Use the
 Write tool + `git commit -F` pattern instead:
 
 1. Write the commit message to a unique file matching
-   `/private/tmp/claude/commit-<id>.txt` using the Write tool
+   `/tmp/claude/commit-<id>.txt` using the Write tool
    (e.g. `commit-msg.txt`, `commit-fixup-upload.txt`). Use a
    descriptive `<id>` so parallel agents don't overwrite each other.
-2. Run: `git commit -F /private/tmp/claude/commit-<id>.txt`
+2. Run: `git commit -F /tmp/claude/commit-<id>.txt`
 
 ## After Committing
 
@@ -249,11 +249,11 @@ absorbed a fixup.
 When the user approves a reword:
 
 1. Write the new full commit message to
-   `/private/tmp/claude/reword-msg-<id>.txt` using the Write tool.
+   `/tmp/claude/reword-msg-<id>.txt` using the Write tool.
    Include subject, body, and `Co-Authored-By` trailer.
 2. Run:
    ```
-   GIT_EDITOR='cp /private/tmp/claude/reword-msg-<id>.txt' git branchless reword <sha>
+   GIT_EDITOR='cp /tmp/claude/reword-msg-<id>.txt' git branchless reword <sha>
    ```
    **Always spell out `git branchless reword`** — `git reword` may be
    aliased to `git stack reword` (a different tool), which would silently

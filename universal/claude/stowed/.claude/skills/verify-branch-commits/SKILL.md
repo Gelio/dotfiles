@@ -26,7 +26,7 @@ passes the project's full check suite independently.
 
 3. **Start the verification rebase.** Mark every commit as `edit`:
    ```bash
-   GIT_SEQUENCE_EDITOR="sed -i '' 's/^pick /edit /g'" \
+   GIT_SEQUENCE_EDITOR="sed -i.bak 's/^pick /edit /g'" \
      git rebase -i <base-ref>
    ```
 
@@ -40,8 +40,8 @@ passes the project's full check suite independently.
    accurately reflects the current contents of the commit. After
    rebasing or amending, commit contents may have changed while the
    message stayed the same. If the message is stale or misleading:
-   - Write the new message to `/private/tmp/claude/commit-reword.txt` using the Write tool
-   - Amend: `git commit --amend -F /private/tmp/claude/commit-reword.txt`
+   - Write the new message to `/tmp/claude/commit-reword.txt` using the Write tool
+   - Amend: `git commit --amend -F /tmp/claude/commit-reword.txt`
    - Note what was reworded for the final summary.
 
 6. **Continue** to the next commit:
