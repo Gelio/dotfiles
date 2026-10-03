@@ -32,6 +32,16 @@ return {
 					end,
 				},
 				auto_integrations = true,
+				lsp_styles = {
+					-- NOTE: catppuccin defaults to a straight underline for diagnostics
+					underlines = {
+						errors = { "undercurl" },
+						hints = { "undercurl" },
+						warnings = { "undercurl" },
+						information = { "undercurl" },
+						ok = { "undercurl" },
+					},
+				},
 			})
 
 			vim.cmd.colorscheme("catppuccin-nvim")
