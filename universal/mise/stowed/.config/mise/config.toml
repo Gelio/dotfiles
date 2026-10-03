@@ -20,6 +20,7 @@ antigravity-cli = "latest"
 tmux = "latest"
 go = "latest"
 fzf = "latest"
+codex = "latest"
 
 [tools.claude]
 version = "latest"
