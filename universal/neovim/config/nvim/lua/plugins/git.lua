@@ -123,7 +123,7 @@ return {
 			vim.g.diffs = {
 				integrations = {
 					difftastic = true,
-					fugitive = true,
+					fugitive = false,
 					gitsigns = true,
 				},
 			}
