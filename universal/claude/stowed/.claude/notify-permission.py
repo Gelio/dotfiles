@@ -1,22 +1,17 @@
 #!/usr/bin/env python3
-"""Claude Code PermissionRequest hook — macOS notification with sound."""
+"""Claude Code PermissionRequest hook — desktop notification with sound (macOS/WSL)."""
 
 import json
 import os
-import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from notify_utils import auto_dismiss, is_session_visible, shorten_path
+from notify_utils import describe_session, notify, shorten_path
 
 
 def main():
     data = json.load(sys.stdin)
-
-    if is_session_visible():
-        return
     cwd = data.get("cwd", "")
-    project = cwd.split("/")[-1] if cwd else "unknown"
     tool = data.get("tool_name", "unknown")
     tool_input = data.get("tool_input", {})
 
@@ -35,24 +30,13 @@ def main():
             else:
                 detail = shorten_path(path)
 
-    title = f"Claude Code — {project}"
-    subtitle = shorten_path(cwd)
+    title, subtitle = describe_session(cwd)
     message = f"Permission needed: {tool}"
     if detail:
         message += f" — {detail}"
 
-    group = f"claude-permission-{cwd}"
-    subprocess.run(
-        [
-            "terminal-notifier",
-            "-title", title,
-            "-subtitle", subtitle,
-            "-message", message,
-            "-sound", "Funk",
-            "-group", group,
-        ]
-    )
-    auto_dismiss(group, delay_seconds=10)
+    notify(title, subtitle, message, kind="permission",
+           group=f"claude-permission-{cwd}", dismiss_after=10)
 
 
 if __name__ == "__main__":

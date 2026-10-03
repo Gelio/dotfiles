@@ -23,11 +23,13 @@ enabled plugins, permission allowlist, and preferences (`model`,
 
 ### Notification scripts (`stowed/.claude/`)
 
-- **notify-permission.py** — macOS notification when Claude needs tool
-  permission
+- **notify-permission.py** — notification when Claude needs tool permission
 - **notify-stop.py** — notification when Claude is ready for input
 - **notify-dismiss-permission.py** — dismisses permission notifications
 - Skips notifications when the terminal is focused (tmux-aware)
+- Backends (`notify_utils.py`): macOS uses `terminal-notifier`; WSL shows
+  native Windows toasts via `powershell.exe` (run detached, so hooks stay
+  fast). On any other platform the scripts are silent no-ops.
 
 ### Skills (`stowed/.claude/skills/`)
 
@@ -48,8 +50,10 @@ are managed separately via `npx skills` and live in `~/.agents/skills/`.
 
 ## Prerequisites
 
-- `terminal-notifier` (`brew install terminal-notifier`)
-- Python 3
+- macOS: `terminal-notifier` (`brew install terminal-notifier`)
+- WSL: nothing extra for notifications; the sandbox needs `bubblewrap` and
+  `socat` (`sudo apt install bubblewrap socat`)
+- Python 3, `jq`, GNU `stow`
 - Node.js 24+
 
 ## Install
