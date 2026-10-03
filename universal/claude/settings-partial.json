@@ -20,7 +20,8 @@
       "allowedDomains": [
         "registry.npmjs.org",
         "pypi.org",
-        "files.pythonhosted.org"
+        "files.pythonhosted.org",
+        "github.com"
       ],
       "allowUnixSockets": [
         "~/.docker/run/docker.sock",
@@ -48,6 +49,7 @@
       "Read(~/.agents/**)",
       "Read(~/.claude/**)",
       "Read(~/ubuntu-dotfiles/universal/claude/**)",
+      "Read(~/projects/dotfiles/universal/claude/**)",
       "Read(//private/tmp/claude/**)",
       "Edit(//private/tmp/claude/**)",
       "Read(~/.local/claude-handoffs/**)",
@@ -152,6 +154,10 @@
           {
             "type": "command",
             "command": "python3 ~/.claude/hooks/capture-handoff-origin.py"
+          },
+          {
+            "type": "command",
+            "command": "mkdir -p /tmp/claude"
           }
         ]
       }
