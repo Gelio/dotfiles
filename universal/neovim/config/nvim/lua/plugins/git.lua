@@ -120,11 +120,34 @@ return {
 	{
 		"barrettruth/diffs.nvim",
 		init = function()
+			-- NOTE: diffs.nvim derives its line backgrounds by blending catppuccin's
+			-- `DiffAdd`/`DiffDelete` (already only 18% green/red) further toward
+			-- `Normal`, which leaves added and removed lines as near-identical greys.
+			-- Tint them directly from the palette instead, so they read as green/red.
+			local colors = require("catppuccin.palettes").get_palette()
+			local blend = require("catppuccin.utils.colors").blend
+
+			local add_line = blend(colors.green, colors.base, 0.22)
+			local delete_line = blend(colors.red, colors.base, 0.22)
+
 			vim.g.diffs = {
 				integrations = {
 					difftastic = true,
 					fugitive = true,
 					gitsigns = true,
+				},
+				highlights = {
+					overrides = {
+						DiffsAdd = { bg = add_line },
+						DiffsDelete = { bg = delete_line },
+						-- NOTE: changed characters must stay stronger than the line background
+						DiffsAddText = { bg = blend(colors.green, colors.base, 0.4) },
+						DiffsDeleteText = { bg = blend(colors.red, colors.base, 0.4) },
+						DiffsAddBar = { fg = colors.green, bg = add_line },
+						DiffsDeleteBar = { fg = colors.red, bg = delete_line },
+						DiffsAddRailNr = { fg = colors.green, bg = add_line, nocombine = true },
+						DiffsDeleteRailNr = { fg = colors.red, bg = delete_line, nocombine = true },
+					},
 				},
 			}
 		end,
