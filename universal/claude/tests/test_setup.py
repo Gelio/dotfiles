@@ -54,3 +54,19 @@ class SetupTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+class SkillLayoutTests(unittest.TestCase):
+    def test_stow_links_shared_skills_without_owning_third_party(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            for directory in ['.agents/skills', '.claude/skills', '.claude/hooks']:
+                (home / directory).mkdir(parents=True, exist_ok=True)
+            third_party = home / '.agents/skills/external/SKILL.md'
+            third_party.parent.mkdir()
+            third_party.write_text('external')
+            for _ in range(2):
+                subprocess.run(['stow', '-R', '-d', str(ROOT), '-t', tmp, 'stowed'], check=True, capture_output=True)
+                for source in (ROOT / 'stowed/.agents/skills').iterdir():
+                    self.assertEqual((home / '.agents/skills' / source.name).resolve(), source.resolve())
+                    self.assertEqual((home / '.claude/skills' / source.name).resolve(), source.resolve())
+                self.assertEqual(third_party.read_text(), 'external')

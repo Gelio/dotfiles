@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Create directories so stow does not fold them
-mkdir -p "$HOME/.agents/"
+mkdir -p "$HOME/.agents/skills/"
 mkdir -p "$HOME/.claude/skills/"
 mkdir -p "$HOME/.claude/hooks/"
 

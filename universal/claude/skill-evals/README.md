@@ -112,7 +112,7 @@ One JSON file per skill in `evals/<skill-name>.json`:
 ```json
 {
   "skill": "pr-conventions",
-  "skill_path": "../../stowed/.claude/skills/pr-conventions/SKILL.md",
+  "skill_path": "../../stowed/.agents/skills/pr-conventions/SKILL.md",
   "scenarios": [
     {
       "id": 1,

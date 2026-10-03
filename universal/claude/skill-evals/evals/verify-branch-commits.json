@@ -1,6 +1,6 @@
 {
   "skill": "verify-branch-commits",
-  "skill_path": "../../stowed/.claude/skills/verify-branch-commits/SKILL.md",
+  "skill_path": "../../stowed/.agents/skills/verify-branch-commits/SKILL.md",
   "scenarios": [
     {
       "id": 1,

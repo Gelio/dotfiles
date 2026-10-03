@@ -31,9 +31,11 @@ enabled plugins, permission allowlist, and preferences (`model`,
   native Windows toasts via `powershell.exe` (run detached, so hooks stay
   fast). On any other platform the scripts are silent no-ops.
 
-### Skills (`stowed/.claude/skills/`)
+### Skills (`stowed/.agents/skills/`)
 
-Vendored skills, symlinked into `~/.claude/skills/` by `stow.sh`:
+Authored skills, installed into `~/.agents/skills/` by `stow.sh`. Claude
+compatibility links preserve `~/.claude/skills/<name>`; Codex discovers the
+shared location directly:
 
 - **commit-conventions** — universal commit authoring rules
 - **pr-conventions** — PR description style guide
