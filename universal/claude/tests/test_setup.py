@@ -70,3 +70,40 @@ class SkillLayoutTests(unittest.TestCase):
                     self.assertEqual((home / '.agents/skills' / source.name).resolve(), source.resolve())
                     self.assertEqual((home / '.claude/skills' / source.name).resolve(), source.resolve())
                 self.assertEqual(third_party.read_text(), 'external')
+
+class CodexTests(unittest.TestCase):
+    def codex_hook(self, command, cwd=''):
+        payload = {'hook_event_name': 'PreToolUse', 'tool_name': 'Bash',
+                   'tool_input': {'command': command}, 'cwd': cwd}
+        result = subprocess.run(['python3', str(ROOT / 'stowed/.codex/hooks/agent-policy.py')], input=json.dumps(payload), text=True, capture_output=True, check=True)
+        return json.loads(result.stdout) if result.stdout else None
+
+    def test_codex_uses_own_attribution_and_no_claude_sandbox_flag(self):
+        self.assertEqual(self.codex_hook('git push')['hookSpecificOutput']['permissionDecision'], 'deny')
+        self.assertIsNone(self.codex_hook('npx playwright test'))
+        with tempfile.TemporaryDirectory() as tmp:
+            message = Path(tmp) / 'message'
+            message.write_text('refactor: share setup\n\nReason.\n\nCo-Authored-By: Codex <noreply@openai.com>\n')
+            self.assertIsNone(self.codex_hook('git commit -F message', tmp))
+            message.write_text('refactor: share setup\n\nReason.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\n')
+            self.assertEqual(self.codex_hook('git commit -F message', tmp)['hookSpecificOutput']['permissionDecision'], 'deny')
+
+    def test_both_installer_preserves_codex_config_and_personal_hooks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            (home / '.codex').mkdir()
+            config = home / '.codex/config.toml'
+            config.write_text('model = "personal-model"\n')
+            hooks = home / '.codex/hooks.json'
+            hooks.write_text(json.dumps({'hooks': {'SessionStart': [{'hooks': [{'type': 'command', 'command': 'echo personal'}]}]}}))
+            for _ in range(2):
+                subprocess.run(['python3', str(ROOT / 'install.py'), '--agent', 'both', '--target-home', tmp], check=True, capture_output=True)
+                result = json.loads(hooks.read_text())
+                commands = [h['command'] for m in result['hooks']['SessionStart'] for h in m['hooks']]
+                self.assertIn('echo personal', commands)
+                self.assertEqual(len(commands), len(set(commands)))
+                self.assertEqual(config.read_text(), 'model = "personal-model"\n')
+                # Test the installed entry point, not only its repository source.
+                result = subprocess.run(['python3', str(home / '.claude/hooks/block-risky-commands.py')], input=json.dumps({'tool_name': 'Bash', 'tool_input': {'command': 'git push'}}), text=True, capture_output=True, check=True)
+                self.assertEqual(json.loads(result.stdout)['decision'], 'block')
+            self.assertEqual(len(list((home / '.codex').glob('hooks.json.backup-*'))), 1)

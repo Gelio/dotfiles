@@ -15,7 +15,7 @@
 // Safe to run repeatedly. Keys absent from the partial file are never touched.
 // Requires: Node.js 24+ (native type-stripping).
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, renameSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -72,7 +72,7 @@ function mergeHooks(target: HooksConfig, source: HooksConfig): HooksConfig {
   const result: HooksConfig = { ...target };
   for (const [event, sourceMatchers] of Object.entries(source)) {
     const merged: HookMatcher[] = (result[event] ?? []).map((m) => ({
-      matcher: m.matcher,
+      ...m,
       hooks: [...m.hooks],
     }));
     for (const sourceMatcher of sourceMatchers) {
@@ -97,8 +97,21 @@ function mergeHooks(target: HooksConfig, source: HooksConfig): HooksConfig {
 }
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
-const settingsPath = join(homedir(), ".claude", "settings.json");
-const partialPath = join(scriptDir, "settings-partial.json");
+const args = process.argv.slice(2);
+const option = (name: string, fallback: string): string => {
+  const index = args.indexOf(name);
+  if (index < 0) return fallback;
+  if (!args[index + 1] || args[index + 1].startsWith("--")) {
+    throw new Error(`Missing value for ${name}`);
+  }
+  return args[index + 1];
+};
+const agent = option("--agent", "claude");
+if (!["claude", "codex"].includes(agent)) throw new Error(`Unknown agent: ${agent}`);
+const targetHome = option("--target-home", homedir());
+const configDir = option("--config-dir", join(targetHome, `.${agent}`));
+const settingsPath = join(configDir, agent === "claude" ? "settings.json" : "hooks.json");
+const partialPath = join(scriptDir, agent === "claude" ? "settings-partial.json" : "codex-hooks-partial.json");
 
 if (!existsSync(partialPath)) {
   console.error(`Error: ${partialPath} not found.`);
@@ -122,5 +135,14 @@ if (partialHooks) {
 
 const merged = deepMerge(settings, partialRest) as JsonObject;
 
-writeFileSync(settingsPath, JSON.stringify(merged, null, 2) + "\n");
+const serialized = JSON.stringify(merged, null, 2) + "\n";
+mkdirSync(configDir, { recursive: true });
+if (!existsSync(settingsPath) || readFileSync(settingsPath, "utf-8") !== serialized) {
+  if (existsSync(settingsPath)) {
+    copyFileSync(settingsPath, `${settingsPath}.backup-${Date.now()}`);
+  }
+  const temporary = `${settingsPath}.tmp-${process.pid}`;
+  writeFileSync(temporary, serialized, { mode: 0o600 });
+  renameSync(temporary, settingsPath);
+}
 console.log(`Merged ${partialPath} into ${settingsPath}`);
