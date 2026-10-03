@@ -1,132 +1,12 @@
 #!/usr/bin/env python3
-"""PreToolUse hook: block risky/destructive commands.
-
-Blocks commands that are hard to reverse or affect shared state:
-- git push (any variant)
-- rm -rf
-- gh pr merge / close
-- gh issue close
-- gh release create / delete
-
-Git working-tree discards (reset --hard, checkout --, restore, clean -f,
-branch -D) are deliberately NOT blocked: reflog + frequent commits make them
-recoverable, and blocking them only forced messier workarounds.
-"""
-
+"""Claude adapter; retain the existing hook path and sandbox exception."""
 import json
+import re
 import shlex
+from pathlib import Path
 import sys
-
-
-def parse_input():
-    data = json.load(sys.stdin)
-    tool_name = data.get("tool_name", "")
-    tool_input = data.get("tool_input", {})
-    return tool_name, tool_input
-
-
-def block(reason: str):
-    print(json.dumps({"decision": "block", "reason": reason}))
-    sys.exit(0)
-
-
-def approve():
-    sys.exit(0)
-
-
-def get_parts(command: str) -> list[str]:
-    try:
-        return shlex.split(command)
-    except ValueError:
-        return command.split()
-
-
-def find_git_subcommand(parts: list[str]) -> tuple[int, str | None]:
-    """Find the git subcommand, skipping git-level flags like -c key=value."""
-    i = 0
-    while i < len(parts) and parts[i] != "git":
-        i += 1
-    if i >= len(parts):
-        return -1, None
-    i += 1  # skip 'git'
-    while i < len(parts):
-        if parts[i] in ("-c", "--config", "-C"):
-            i += 2
-        elif parts[i].startswith("-"):
-            i += 1
-        else:
-            break
-    if i >= len(parts):
-        return -1, None
-    return i, parts[i]
-
-
-RISKY_PATTERNS = [
-    {
-        "check": lambda parts, sub_idx, sub: sub == "push",
-        "msg": "git push is blocked. Push manually after reviewing changes.",
-    },
-]
-
-
-def check_risky_git(command: str) -> str | None:
-    parts = get_parts(command)
-    sub_idx, sub = find_git_subcommand(parts)
-    if sub is None:
-        return None
-    for pattern in RISKY_PATTERNS:
-        if pattern["check"](parts, sub_idx, sub):
-            return pattern["msg"]
-    return None
-
-
-RISKY_GH_PATTERNS = [
-    {
-        "check": lambda parts: "pr" in parts and "merge" in parts,
-        "msg": "gh pr merge is blocked — merge PRs manually after review.",
-    },
-    {
-        "check": lambda parts: "pr" in parts and "close" in parts,
-        "msg": "gh pr close is blocked — close PRs manually.",
-    },
-    {
-        "check": lambda parts: "issue" in parts and "close" in parts,
-        "msg": "gh issue close is blocked — close issues manually.",
-    },
-    {
-        "check": lambda parts: "release" in parts and "create" in parts,
-        "msg": "gh release create is blocked — create releases manually.",
-    },
-    {
-        "check": lambda parts: "release" in parts and "delete" in parts,
-        "msg": "gh release delete is blocked — delete releases manually.",
-    },
-]
-
-
-def check_risky_gh(command: str) -> str | None:
-    parts = get_parts(command)
-    if not parts or parts[0] != "gh":
-        return None
-    for pattern in RISKY_GH_PATTERNS:
-        if pattern["check"](parts):
-            return pattern["msg"]
-    return None
-
-
-def check_rm_rf(command: str) -> str | None:
-    parts = get_parts(command)
-    for i, p in enumerate(parts):
-        if p == "rm":
-            flags_after = parts[i + 1:]
-            for f in flags_after:
-                if f.startswith("-") and "r" in f and "f" in f:
-                    return "rm -rf is blocked — too risky for automated execution."
-                if f == "--":
-                    break
-            break
-    return None
-
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / ".agents/lib"))
+from agent_setup.commands import check_command, get_parts
 
 def check_playwright_sandbox(command: str, tool_input: dict) -> str | None:
     """Playwright e2e tests need sandbox disabled to launch Chromium."""
@@ -150,41 +30,19 @@ def check_playwright_sandbox(command: str, tool_input: dict) -> str | None:
 
 
 def main():
-    tool_name, tool_input = parse_input()
-
-    if tool_name != "Bash":
-        approve()
-
-    command = tool_input.get("command", "")
-
-    # Check for chained commands — split on &&, ||, ;, |
-    # Simple split: check each segment
-    import re
-    segments = re.split(r'\s*(?:&&|\|\||;)\s*', command)
-
-    for segment in segments:
-        segment = segment.strip()
-        if not segment:
-            continue
-
-        reason = check_risky_git(segment)
-        if reason:
-            block(reason)
-
-        reason = check_risky_gh(segment)
-        if reason:
-            block(reason)
-
-        reason = check_rm_rf(segment)
-        if reason:
-            block(reason)
-
-        reason = check_playwright_sandbox(segment, tool_input)
-        if reason:
-            block(reason)
-
-    approve()
-
+    data = json.load(sys.stdin)
+    if data.get("tool_name") != "Bash":
+        return
+    args = data.get("tool_input", {})
+    command = args.get("command", "")
+    reason = check_command(command)
+    if not reason:
+        for segment in re.split(r'\s*(?:&&|\|\||;)\s*', command):
+            reason = check_playwright_sandbox(segment, args)
+            if reason:
+                break
+    if reason:
+        print(json.dumps({"decision": "block", "reason": reason}))
 
 if __name__ == "__main__":
     main()
