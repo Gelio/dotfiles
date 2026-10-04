@@ -170,16 +170,19 @@ def remove(group: str):
 def _auto_dismiss_macos(group: str, delay_seconds: int):
     """Remove a terminal-notifier group after a delay, unless a newer notification replaced it."""
     token = str(time.time())
-    safe_group = group.replace("/", "_")
-    token_file = f"/tmp/{AGENT}-notify-{safe_group}.token"
-    with open(token_file, "w") as f:
-        f.write(token)
+    # Hash the group (it contains the cwd) and pass values as argv, never
+    # through a shell string.
+    token_file = Path(tempfile.gettempdir()) / f"{AGENT}-notify-{hashlib.sha1(group.encode()).hexdigest()}.token"
+    token_file.write_text(token)
     subprocess.Popen(
         [
-            "bash", "-c",
-            f"sleep {delay_seconds} && "
-            f"[ \"$(cat '{token_file}' 2>/dev/null)\" = '{token}' ] && "
-            f"terminal-notifier -remove '{group}'"
+            sys.executable, "-c",
+            "import pathlib, subprocess, sys, time\n"
+            "time.sleep(int(sys.argv[1]))\n"
+            "path = pathlib.Path(sys.argv[2])\n"
+            "if path.exists() and path.read_text() == sys.argv[3]:\n"
+            "    subprocess.run(['terminal-notifier', '-remove', sys.argv[4]])\n",
+            str(delay_seconds), str(token_file), token, group,
         ],
         start_new_session=True,
         stdout=subprocess.DEVNULL,
