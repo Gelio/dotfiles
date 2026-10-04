@@ -11,7 +11,6 @@ Requires Python 3 and GNU Stow (`jq` for the Claude handoff hook).
 python3 install.py                     # Claude settings (default)
 python3 install.py --agent both        # Claude + Codex
 python3 install.py --agent both --dry-run
-python3 check-setup.py                 # verify links and hook registrations
 ```
 
 The installer stows `stowed/` into `~` (refusing unmanaged conflicts), then
@@ -78,7 +77,6 @@ and asks whether to adopt or permanently ignore each
 ```bash
 python3 -m unittest discover -s tests
 python3 -m unittest discover -s stowed/.agents/skills/session-handoff/evals -p 'test_*.py'
-python3 tests/check_codex_runtime.py   # Codex discovers skills and hooks in a temp home
 ```
 
 `skill-evals/` benchmarks skill bodies through Claude; see its README.

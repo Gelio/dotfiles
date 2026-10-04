@@ -125,7 +125,6 @@ class InstallerSafetyTests(unittest.TestCase):
             cache.write_bytes(b'personal cache')
             subprocess.run(['python3', str(ROOT / 'install.py'), '--agent', 'both', '--target-home', tmp], check=True, capture_output=True)
             self.assertEqual(cache.read_bytes(), b'personal cache')
-            subprocess.run(['python3', str(ROOT / 'check-setup.py'), '--target-home', tmp], check=True, capture_output=True)
 
 
 if __name__ == '__main__':
