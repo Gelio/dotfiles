@@ -211,7 +211,6 @@
   "cleanupPeriodDays": 700,
   "tui": "fullscreen",
   "attribution": {
-    "commit": "",
     "pr": ""
   }
 }
