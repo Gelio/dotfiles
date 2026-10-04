@@ -48,8 +48,8 @@
     "allow": [
       "Read(~/.agents/**)",
       "Read(~/.claude/**)",
-      "Read(~/ubuntu-dotfiles/universal/claude/**)",
-      "Read(~/projects/dotfiles/universal/claude/**)",
+      "Read(~/ubuntu-dotfiles/universal/agents/**)",
+      "Read(~/projects/dotfiles/universal/agents/**)",
       "Read(//private/tmp/claude/**)",
       "Edit(//private/tmp/claude/**)",
       "Read(~/.local/agent-handoffs/**)",

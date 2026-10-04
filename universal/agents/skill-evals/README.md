@@ -46,7 +46,7 @@ sandbox, **and** the harness writes under `runs/` — so run it with the sandbox
 disabled (in Claude Code, approve the unsandboxed Bash call).
 
 ```bash
-cd universal/claude/skill-evals
+cd universal/agents/skill-evals
 
 # One skill, quick + cheap (1 run each, haiku) — pipeline check, not a real measurement
 python3 run_behavior_eval.py pr-conventions --runs 1 --gen-model haiku --judge-model haiku
