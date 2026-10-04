@@ -2,11 +2,73 @@
 """Install shared resources and merge only the selected agents' settings."""
 import argparse
 import json
+import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
+import time
 
 ROOT = Path(__file__).resolve().parent
+SETTINGS = {
+    'claude': ('.claude/settings.json', 'settings-partial.json'),
+    'codex': ('.codex/hooks.json', 'codex-hooks-partial.json'),
+}
+
+
+def same_hook(a: dict, b: dict) -> bool:
+    return (a.get('type'), a.get('command'), a.get('if')) == (b.get('type'), b.get('command'), b.get('if'))
+
+
+def deep_merge(target, source):
+    """Objects merge recursively, arrays union by value, scalars from `source` win."""
+    if isinstance(target, list) and isinstance(source, list):
+        return target + [item for item in source if item not in target]
+    if isinstance(target, dict) and isinstance(source, dict):
+        result = dict(target)
+        for key, value in source.items():
+            result[key] = deep_merge(result[key], value) if key in result else value
+        return result
+    return source
+
+
+def merge_hooks(target: dict, source: dict) -> dict:
+    """Append missing hook commands per matcher; never remove existing ones."""
+    result = dict(target)
+    for event, source_matchers in source.items():
+        merged = [{**m, 'hooks': list(m.get('hooks', []))} for m in result.get(event, [])]
+        for source_matcher in source_matchers:
+            existing = next((m for m in merged if m.get('matcher') == source_matcher.get('matcher')), None)
+            if existing is None:
+                merged.append(source_matcher)
+                continue
+            for hook in source_matcher['hooks']:
+                if not any(same_hook(h, hook) for h in existing['hooks']):
+                    existing['hooks'].append(hook)
+        result[event] = merged
+    return result
+
+
+def merge_settings(home: Path, agent: str) -> None:
+    """Additively merge the agent's partial into its settings; back up changes."""
+    relative, partial_name = SETTINGS[agent]
+    path = home / relative
+    settings = json.loads(path.read_text()) if path.exists() else {}
+    partial = json.loads((ROOT / partial_name).read_text())
+    if 'hooks' in partial:
+        settings['hooks'] = merge_hooks(settings.get('hooks', {}), partial.pop('hooks'))
+    serialized = json.dumps(deep_merge(settings, partial), indent=2, ensure_ascii=False) + '\n'
+    if path.exists() and path.read_text() == serialized:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        shutil.copy2(path, f'{path}.backup-{int(time.time() * 1000)}')
+    temporary = path.with_name(f'{path.name}.tmp-{os.getpid()}')
+    # Create private from the start; settings can hold credentials in `env`.
+    with os.fdopen(os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), 'w') as stream:
+        stream.write(serialized)
+    temporary.replace(path)
+    print(f'Merged {partial_name} into {path}')
 
 
 def main():
@@ -27,18 +89,16 @@ def main():
     subprocess.run([*stow, '--simulate'], check=True)
     agents = ['claude', 'codex'] if args.agent == 'both' else [args.agent]
     for agent in agents:
-        settings = home / f'.{agent}' / ('settings.json' if agent == 'claude' else 'hooks.json')
-        if settings.exists():
-            if not isinstance(json.loads(settings.read_text()), dict):
-                parser.error(f'Settings must contain a JSON object: {settings}')
+        settings = home / SETTINGS[agent][0]
+        if settings.exists() and not isinstance(json.loads(settings.read_text()), dict):
+            parser.error(f'Settings must contain a JSON object: {settings}')
     migration = ['python3', str(ROOT / 'migrate-handoff-storage.py'), '--target-home', str(home)]
     subprocess.run([*migration, '--dry-run'], check=True)
     if not args.dry_run:
         subprocess.run(migration, check=True)
         subprocess.run(stow, check=True)
         for agent in agents:
-            subprocess.run(['node', '--experimental-strip-types', str(ROOT / 'setup-settings.ts'),
-                            '--agent', agent, '--target-home', str(home)], check=True)
+            merge_settings(home, agent)
     print(f'{"Would install" if args.dry_run else "Installed"}: shared resources + {", ".join(agents)} settings in {home}')
     if 'codex' in agents:
         print('Restart Codex and review/trust the hook definitions when prompted.')

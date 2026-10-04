@@ -1,12 +1,14 @@
 """Installation and hook regressions; never mutate the user's home."""
 import json
-import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+import install
 
 class SetupTests(unittest.TestCase):
     def test_settings_merge_is_additive_and_idempotent(self):
@@ -18,9 +20,8 @@ class SetupTests(unittest.TestCase):
                         'hooks': {'SessionStart': [{'matcher': '', 'hooks': [
                             {'type': 'command', 'command': 'echo personal'}]}]}}
             path.write_text(json.dumps(existing))
-            env = {**os.environ, 'HOME': tmp}
             for _ in range(2):
-                subprocess.run(['node', '--experimental-strip-types', str(ROOT / 'setup-settings.ts')], env=env, check=True, capture_output=True)
+                install.merge_settings(home, 'claude')
                 result = json.loads(path.read_text())
                 self.assertTrue(result['custom']['keep'])
                 self.assertTrue(result['enabledPlugins']['personal@test'])
