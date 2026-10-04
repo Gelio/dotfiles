@@ -32,7 +32,39 @@ config.keys = {
 	{ key = "Backspace", mods = "CTRL|SHIFT", action = act.ResetFontSize },
 	{ key = "r", mods = "CTRL|SHIFT", action = act.ReloadConfiguration },
 	{ key = "l", mods = "CTRL|SHIFT", action = act.ShowDebugOverlay },
-	{ key = "p", mods = "CTRL|SHIFT", action = act.ActivateCommandPalette },
+	-- Like kitty's ctrl+shift+p hints prefix, see config.key_tables.hints
+	{ key = "p", mods = "CTRL|SHIFT", action = act.ActivateKeyTable({ name = "hints", one_shot = true }) },
+	-- Like kitty's default URL hints (ctrl+shift+e): pick a URL and open it in the browser
+	{
+		key = "e",
+		mods = "CTRL|SHIFT",
+		action = act.QuickSelectArgs({
+			label = "open url",
+			patterns = { "https?://\\S+" },
+			skip_action_on_paste = true,
+			action = wezterm.action_callback(function(window, pane)
+				wezterm.open_with(window:get_selection_text_for_pane(pane))
+			end),
+		}),
+	},
+}
+
+-- Quick Select labels matches on screen. Type a label to copy it (uppercase label also pastes)
+config.key_tables = {
+	hints = {
+		-- Paths, URLs, hashes and the other default patterns
+		{ key = "f", action = act.QuickSelect },
+		-- Words, using kitty's default word characters and minimum length
+		{
+			key = "w",
+			action = act.QuickSelectArgs({
+				label = "copy word",
+				patterns = { "[\\w@./~?&=%+#-]{3,}" },
+			}),
+		},
+		-- ctrl+shift+p was the command palette before it became the hints prefix
+		{ key = "p", action = act.ActivateCommandPalette },
+	},
 }
 
 if is_windows then
