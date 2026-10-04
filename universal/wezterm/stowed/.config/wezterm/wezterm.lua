@@ -34,6 +34,8 @@ config.keys = {
 	{ key = "l", mods = "CTRL|SHIFT", action = act.ShowDebugOverlay },
 	-- Like kitty's ctrl+shift+p hints prefix, see config.key_tables.hints
 	{ key = "p", mods = "CTRL|SHIFT", action = act.ActivateKeyTable({ name = "hints", one_shot = true }) },
+	-- Searchable emoji and Unicode picker
+	{ key = "u", mods = "CTRL|SHIFT", action = act.CharSelect },
 	-- Like kitty's default URL hints (ctrl+shift+e): pick a URL and open it in the browser
 	{
 		key = "e",
