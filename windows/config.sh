@@ -17,6 +17,8 @@ userprofile_path=$(wslpath "$windows_userprofile_path")
 # File Mappings: "Windows_Relative_Path|Local_Path"
 SYNC_MAP=(
   "AppData/Local/Microsoft/PowerToys/Keyboard Manager/default.json|./config/keyboard-manager-settings.json"
+  # The new Keyboard Manager editor keeps its own list of mappings, separate from default.json
+  "AppData/Local/Microsoft/PowerToys/Keyboard Manager/editorSettings.json|./config/keyboard-manager-editor-settings.json"
   ".glzr/glazewm/config.yaml|./config/.glzr/glazewm/config.yaml"
   ".glzr/zebar/settings.json|./config/.glzr/zebar/settings.json"
   ".glzr/zebar/sakyasumedh.aurora@1.0.0-modified/|./config/.glzr/zebar/sakyasumedh.aurora@1.0.0-modified/"

@@ -1,0 +1,112 @@
+{
+  "ShortcutSettingsDictionary": {
+    "892b1849-851a-43f9-8812-77563a43295b": {
+      "Id": "892b1849-851a-43f9-8812-77563a43295b",
+      "Shortcut": {
+        "OriginalKeys": "20",
+        "TargetKeys": "17",
+        "TargetApp": "",
+        "OperationType": 0,
+        "TargetText": "",
+        "ProgramPath": "",
+        "ProgramArgs": "",
+        "StartInDirectory": "",
+        "Elevation": 0,
+        "IfRunningAction": 0,
+        "Visibility": 0,
+        "UriToOpen": ""
+      },
+      "Profiles": [],
+      "IsActive": true
+    },
+    "e39f2e54-f842-4216-acf1-32c0ec7c46f4": {
+      "Id": "e39f2e54-f842-4216-acf1-32c0ec7c46f4",
+      "Shortcut": {
+        "OriginalKeys": "17;8",
+        "TargetKeys": "18;8",
+        "TargetApp": "WindowsTerminal.exe",
+        "OperationType": 0,
+        "TargetText": "",
+        "ProgramPath": "",
+        "ProgramArgs": "",
+        "StartInDirectory": "",
+        "Elevation": 0,
+        "IfRunningAction": 0,
+        "Visibility": 0,
+        "UriToOpen": ""
+      },
+      "Profiles": [],
+      "IsActive": true
+    },
+    "3780fbaa-1a7d-4adc-ab33-52e27b50df67": {
+      "Id": "3780fbaa-1a7d-4adc-ab33-52e27b50df67",
+      "Shortcut": {
+        "OriginalKeys": "16;192",
+        "TargetKeys": "~",
+        "TargetApp": "",
+        "OperationType": 3,
+        "TargetText": "~",
+        "ProgramPath": "",
+        "ProgramArgs": "",
+        "StartInDirectory": "",
+        "Elevation": 0,
+        "IfRunningAction": 0,
+        "Visibility": 0,
+        "UriToOpen": ""
+      },
+      "Profiles": [],
+      "IsActive": true
+    },
+    "747da36c-8c58-4584-85f6-d6467e909086": {
+      "Id": "747da36c-8c58-4584-85f6-d6467e909086",
+      "Shortcut": {
+        "OriginalKeys": "17;8",
+        "TargetKeys": "18;8",
+        "TargetApp": "Terminal.exe",
+        "OperationType": 0,
+        "TargetText": "",
+        "ProgramPath": "",
+        "ProgramArgs": "",
+        "StartInDirectory": "",
+        "Elevation": 0,
+        "IfRunningAction": 0,
+        "Visibility": 0,
+        "UriToOpen": ""
+      },
+      "Profiles": [],
+      "IsActive": true
+    },
+    "b101525e-db44-4ae6-828b-8e60f31c427c": {
+      "Id": "b101525e-db44-4ae6-828b-8e60f31c427c",
+      "Shortcut": {
+        "OriginalKeys": "17;8",
+        "TargetKeys": "18;8",
+        "TargetApp": "wezterm-gui.exe",
+        "OperationType": 0,
+        "TargetText": "",
+        "ProgramPath": "",
+        "ProgramArgs": "",
+        "StartInDirectory": "",
+        "Elevation": 0,
+        "IfRunningAction": 0,
+        "Visibility": 0,
+        "UriToOpen": ""
+      },
+      "Profiles": [],
+      "IsActive": true
+    }
+  },
+  "ProfileDictionary": {},
+  "ShortcutsByOperationType": {
+    "RemapShortcut": [
+      "e39f2e54-f842-4216-acf1-32c0ec7c46f4",
+      "892b1849-851a-43f9-8812-77563a43295b",
+      "747da36c-8c58-4584-85f6-d6467e909086",
+      "b101525e-db44-4ae6-828b-8e60f31c427c"
+    ],
+    "RemapText": [
+      "3780fbaa-1a7d-4adc-ab33-52e27b50df67"
+    ]
+  },
+  "ActiveProfile": ""
+}
