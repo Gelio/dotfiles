@@ -44,13 +44,10 @@ class SetupTests(unittest.TestCase):
 
     def test_claude_commit_policy(self):
         self.assertEqual(self.hook('validate-commit.py', 'git commit -m hello')['decision'], 'block')
+        self.assertEqual(self.hook('validate-commit.py', 'git commit')['decision'], 'block')
         self.assertIsNone(self.hook('validate-commit.py', 'git commit --fixup=abc123'))
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / 'message'
-            path.write_text('refactor: share agent setup\n\nReason.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\n')
-            self.assertIsNone(self.hook('validate-commit.py', 'git commit -F message', cwd=tmp))
-            path.write_text('refactor: share agent setup\n')
-            self.assertEqual(self.hook('validate-commit.py', 'git commit -F message', cwd=tmp)['decision'], 'block')
+        # Attribution is left to the agent; any -F message passes.
+        self.assertIsNone(self.hook('validate-commit.py', 'git commit -F message'))
 
 class SkillLayoutTests(unittest.TestCase):
     def test_stow_links_shared_skills_without_owning_third_party(self):
@@ -75,15 +72,11 @@ class CodexTests(unittest.TestCase):
         result = subprocess.run(['python3', str(ROOT / 'stowed/.codex/hooks/agent-policy.py')], input=json.dumps(payload), text=True, capture_output=True, check=True)
         return json.loads(result.stdout) if result.stdout else None
 
-    def test_codex_uses_own_attribution_and_no_claude_sandbox_flag(self):
+    def test_codex_shares_command_policy_without_claude_sandbox_flag(self):
         self.assertEqual(self.codex_hook('git push')['hookSpecificOutput']['permissionDecision'], 'deny')
+        self.assertEqual(self.codex_hook('git commit -m hello')['hookSpecificOutput']['permissionDecision'], 'deny')
+        self.assertIsNone(self.codex_hook('git commit -F message'))
         self.assertIsNone(self.codex_hook('npx playwright test'))
-        with tempfile.TemporaryDirectory() as tmp:
-            message = Path(tmp) / 'message'
-            message.write_text('refactor: share setup\n\nReason.\n\nCo-Authored-By: Codex <noreply@openai.com>\n')
-            self.assertIsNone(self.codex_hook('git commit -F message', tmp))
-            message.write_text('refactor: share setup\n\nReason.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\n')
-            self.assertEqual(self.codex_hook('git commit -F message', tmp)['hookSpecificOutput']['permissionDecision'], 'deny')
 
     def test_both_installer_preserves_codex_config_and_personal_hooks(self):
         with tempfile.TemporaryDirectory() as tmp:

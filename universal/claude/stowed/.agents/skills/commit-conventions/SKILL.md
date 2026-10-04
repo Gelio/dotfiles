@@ -31,12 +31,10 @@ Format:
 <type>(<scope>): <subject>
 
 <body>
-
-<agent attribution trailer; see references/attribution.md>
 ```
 
-Read [references/attribution.md](references/attribution.md) when writing a
-commit message. Attribute the agent actually used; never invent a model.
+An agent attribution trailer (e.g. `Co-Authored-By:`) is optional: keep
+one if your harness adds it, but don't invent one.
 
 ### Subject Line
 - Max 72 characters
@@ -140,8 +138,6 @@ Add the `FileAssessmentsTable` component to the Application Details
 page, backed by the `useFileAssessments` hook. The table shows
 assessment results per file so users can see which files need attention
 without navigating to a separate view.
-
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
 ```
 
 ## Staging
@@ -253,7 +249,7 @@ When the user approves a reword:
 
 1. Write the new full commit message to
    `/tmp/agent-work/reword-msg-<id>.txt` using the agent's file-edit tool (Claude: Write; Codex: apply_patch).
-   Include subject, body, and `Co-Authored-By` trailer.
+   Include the subject, body, and any trailers the original had.
 2. Run:
    ```
    GIT_EDITOR='cp /tmp/agent-work/reword-msg-<id>.txt' git branchless reword <sha>

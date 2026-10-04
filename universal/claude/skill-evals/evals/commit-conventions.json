@@ -19,11 +19,6 @@
           "pattern": "\\A(?:```[a-zA-Z]*\\n)?[a-z]+(?:\\([^)]+\\))?: [^\\n]*\\.\\s*$"
         },
         {
-          "text": "There is a Co-Authored-By: Claude trailer",
-          "type": "regex",
-          "pattern": "Co-Authored-By: Claude"
-        },
-        {
           "text": "The message has a body (more than just a subject line)",
           "type": "judge"
         },
@@ -53,11 +48,6 @@
           "pattern": "^[a-z]+(\\([^)]+\\))?: .+"
         },
         {
-          "text": "There is a Co-Authored-By: Claude trailer even though the request was terse",
-          "type": "regex",
-          "pattern": "Co-Authored-By: Claude"
-        },
-        {
           "text": "There is a body explaining the change, not only a subject line",
           "type": "judge"
         }
@@ -73,11 +63,6 @@
           "text": "The subject follows the 'type(scope): subject' format",
           "type": "regex",
           "pattern": "^[a-z]+(\\([^)]+\\))?: .+"
-        },
-        {
-          "text": "There is a Co-Authored-By: Claude trailer",
-          "type": "regex",
-          "pattern": "Co-Authored-By: Claude"
         },
         {
           "text": "The body explains why (guarding against the empty/null API response), not the unrelated debugging-log chatter",

@@ -15,16 +15,15 @@ def main():
     if data.get('tool_name') != 'Bash':
         return
     command = data.get('tool_input', {}).get('command', '')
-    cwd = data.get('cwd', '')
     event = data.get('hook_event_name', '')
     if event == 'PreToolUse':
-        reason = check_command(command) or check_commit(command, cwd, 'codex')
+        reason = check_command(command) or check_commit(command)
         if reason:
             print(json.dumps({'hookSpecificOutput': {
                 'hookEventName': event, 'permissionDecision': 'deny',
                 'permissionDecisionReason': reason}}))
     elif event == 'PostToolUse':
-        warning = check_fixup(command, cwd)
+        warning = check_fixup(command, data.get('cwd', ''))
         if warning:
             print(json.dumps({'hookSpecificOutput': {
                 'hookEventName': event, 'additionalContext': warning}}))

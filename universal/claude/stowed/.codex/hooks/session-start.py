@@ -17,9 +17,7 @@ def main():
                    'When using session-handoff, pass that path explicitly: '
                    'create_handoff.py --project-dir <launch-repository>, or '
                    'list_handoffs.py <launch-repository>. Preserve it after changing cwd. '
-                   'Shared handoffs live in ~/.local/agent-handoffs. '
-                   'Use the commit-conventions skill for every commit; Codex attribution is '
-                   'Co-Authored-By: Codex <noreply@openai.com>.')
+                   'Shared handoffs live in ~/.local/agent-handoffs.')
         print(json.dumps({'hookSpecificOutput': {
             'hookEventName': 'SessionStart', 'additionalContext': context}}))
 

@@ -1,16 +1,5 @@
 """Commit-file policy; Git commit-msg hooks enforce message formatting."""
-import os
-import re
 import shlex
-
-def resolve_path(filepath: str, cwd: str) -> str:
-    """Resolve a shell path the way the shell would: expand ~ and env vars,
-    then anchor relative paths to the command's cwd (not the hook's)."""
-    p = os.path.expanduser(os.path.expandvars(filepath))
-    if not os.path.isabs(p) and cwd:
-        p = os.path.join(cwd, p)
-    return p
-
 
 def _is_git_commit_parts(parts: list[str]) -> bool:
     """Check if a list of tokens represents a git commit command."""
@@ -65,20 +54,6 @@ def find_git_commit_command(command: str) -> str | None:
     return None
 
 
-def extract_flag_value(command: str, flag: str) -> str | None:
-    """Extract value for a flag like -F or --file from command."""
-    try:
-        parts = shlex.split(command)
-    except ValueError:
-        parts = command.split()
-    for i, p in enumerate(parts):
-        if p == flag and i + 1 < len(parts):
-            return parts[i + 1]
-        if p.startswith(f"{flag}="):
-            return p.split("=", 1)[1]
-    return None
-
-
 def has_flag(command: str, *flags: str) -> bool:
     try:
         parts = shlex.split(command)
@@ -88,46 +63,7 @@ def has_flag(command: str, *flags: str) -> bool:
     return any(p in flags or p.startswith(prefixes) for p in parts)
 
 
-CO_AUTHOR_RE = re.compile(
-    r"^Co-Authored-By: Claude [\w.]+ [\d.]+(?:\s+\([^)]+\))? <noreply@anthropic\.com>$"
-)
-
-
-def validate_co_author(filepath: str, agent: str = "claude") -> list[str]:
-    """Return issues if the Co-Authored-By: Claude trailer is missing/malformed.
-
-    Message formatting is enforced by the git commit-msg hook, not here.
-    """
-    try:
-        with open(filepath) as f:
-            lines = f.read().split("\n")
-    except FileNotFoundError:
-        return [
-            f"Commit message file not found: {filepath}. Write the message to a "
-            "temp file under `/tmp/agent-work/` with the agent's file-edit tool BEFORE committing "
-            "(don't create it inline with a heredoc in the same command — this "
-            "hook runs before the command, so the file doesn't exist yet)."
-        ]
-    except OSError as e:
-        return [f"Cannot read commit message file: {e}"]
-
-    pattern = CO_AUTHOR_RE if agent == "claude" else re.compile(r"^Co-Authored-By: Codex <noreply@openai\.com>$")
-    if any(pattern.match(line.strip()) for line in lines):
-        return []
-    expected = ("Co-Authored-By: Claude <model-name> <version> <noreply@anthropic.com>"
-                if agent == "claude" else "Co-Authored-By: Codex <noreply@openai.com>")
-    if any("co-authored-by" in line.lower() for line in lines):
-        return [
-            "Co-Authored-By line found but doesn't match expected format: "
-            f"`{expected}`"
-        ]
-    return [
-        "Missing Co-Authored-By trailer. Add: "
-        f"`{expected}`"
-    ]
-
-
-def check_commit(command: str, cwd: str, agent: str = "claude") -> str | None:
+def check_commit(command: str) -> str | None:
     commit_cmd = find_git_commit_command(command)
     if not commit_cmd:
         return None
@@ -137,7 +73,7 @@ def check_commit(command: str, cwd: str, agent: str = "claude") -> str | None:
         return None
 
     # --fixup and --squash auto-generate the commit message, so skip
-    # -m/-F checks and message validation for them.
+    # the -m/-F checks for them.
     if has_flag(commit_cmd, "--fixup", "--squash"):
         return None
 
@@ -150,21 +86,12 @@ def check_commit(command: str, cwd: str, agent: str = "claude") -> str | None:
             "`git commit -F /tmp/agent-work/commit-msg-<short-id>.txt`."
         )
 
-    # Require -F
-    filepath = extract_flag_value(commit_cmd, "-F") or extract_flag_value(commit_cmd, "--file")
-    if not filepath:
+    # Require -F so multi-line messages never pass through shell quoting.
+    if not has_flag(commit_cmd, "-F", "--file"):
         return (
             "git commit must use `-F <file>` to provide the commit message. "
             "Write the message to a unique temp file under `/tmp/agent-work/` first "
             "(e.g., `commit-msg-<short-id>.txt` to avoid collisions with parallel agents)."
-        )
-
-    # Only the Co-Author trailer is checked here; git enforces message format.
-    issues = validate_co_author(resolve_path(filepath, cwd), agent)
-    if issues:
-        return (
-            "Commit message validation failed:\n"
-            + "\n".join(f"  - {issue}" for issue in issues)
         )
 
     return None
