@@ -140,15 +140,6 @@
             "command": "bash ~/.claude/hooks/auto-allow-handoffs.sh"
           }
         ]
-      },
-      {
-        "matcher": "mcp__.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/log-mcp-tool-call.py 2>/dev/null || true"
-          }
-        ]
       }
     ],
     "SessionStart": [
