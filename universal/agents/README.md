@@ -49,8 +49,7 @@ Handoffs live in `~/.local/agent-handoffs/<repo-key>/`. The SessionStart hooks
 record each session's launch repository so a later `cd` doesn't redirect a
 handoff. Codex gets that path in its session context and passes it explicitly;
 run `codex-agent` (or `codex --add-dir ~/.local/agent-handoffs`) so it can write
-there. `install.py` migrates an old `~/.local/claude-handoffs` store and leaves a
-symlink behind.
+there.
 
 ## Third-party skills
 

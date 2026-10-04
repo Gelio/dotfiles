@@ -78,9 +78,9 @@ def main():
     parser.add_argument('--dry-run', action='store_true')
     args = parser.parse_args()
     home = args.target_home.expanduser().resolve()
-    # Shared resources belong to Stow. Settings and third-party skills do not.
+    # Shared resources belong to Stow. Settings, handoffs, and third-party skills do not.
     if not args.dry_run:
-        for directory in ['.agents/skills', '.agents/lib', '.claude/skills', '.claude/hooks', '.codex/hooks', '.local/bin']:
+        for directory in ['.agents/skills', '.agents/lib', '.claude/skills', '.claude/hooks', '.codex/hooks', '.local/bin', '.local/agent-handoffs']:
             (home / directory).mkdir(parents=True, exist_ok=True)
     if not home.is_dir():
         parser.error('target home must exist for a dry run')
@@ -92,10 +92,7 @@ def main():
         settings = home / SETTINGS[agent][0]
         if settings.exists() and not isinstance(json.loads(settings.read_text()), dict):
             parser.error(f'Settings must contain a JSON object: {settings}')
-    migration = ['python3', str(ROOT / 'migrate-handoff-storage.py'), '--target-home', str(home)]
-    subprocess.run([*migration, '--dry-run'], check=True)
     if not args.dry_run:
-        subprocess.run(migration, check=True)
         subprocess.run(stow, check=True)
         for agent in agents:
             merge_settings(home, agent)

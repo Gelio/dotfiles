@@ -100,7 +100,7 @@ class CodexTests(unittest.TestCase):
             self.assertEqual(len(list((home / '.codex').glob('hooks.json.backup-*'))), 1)
 
 class InstallerSafetyTests(unittest.TestCase):
-    def test_unmanaged_skill_conflict_preserves_settings_and_handoffs(self):
+    def test_unmanaged_skill_conflict_preserves_settings(self):
         with tempfile.TemporaryDirectory() as tmp:
             home = Path(tmp)
             conflict = home / '.agents/skills/commit-conventions/SKILL.md'
@@ -109,13 +109,9 @@ class InstallerSafetyTests(unittest.TestCase):
             settings = home / '.claude/settings.json'
             settings.parent.mkdir()
             settings.write_text('{"keep": true}')
-            legacy = home / '.local/claude-handoffs/a.md'
-            legacy.parent.mkdir(parents=True)
-            legacy.write_text('keep handoff')
             result = subprocess.run(['python3', str(ROOT / 'install.py'), '--agent', 'both', '--target-home', tmp], capture_output=True)
             self.assertNotEqual(result.returncode, 0)
             self.assertEqual(settings.read_text(), '{"keep": true}')
-            self.assertEqual(legacy.read_text(), 'keep handoff')
             self.assertEqual(conflict.read_text(), 'personal skill')
 
     def test_existing_python_caches_do_not_conflict_with_installation(self):

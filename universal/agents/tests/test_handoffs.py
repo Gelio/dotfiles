@@ -1,5 +1,4 @@
-"""Cross-agent origin and handoff storage migration regressions."""
-import importlib.util
+"""Cross-agent session origins and shared handoff storage."""
 import json
 import os
 from pathlib import Path
@@ -13,39 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'stowed/.agents/skills/session-handoff/scripts'))
 from _handoff_paths import capture_origin, resolve_project_root
 
-spec = importlib.util.spec_from_file_location('migration', ROOT / 'migrate-handoff-storage.py')
-migration = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(migration)
 
 
 class HandoffTests(unittest.TestCase):
-    def test_storage_migration_preserves_old_paths_and_is_idempotent(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            home = Path(tmp)
-            old = home / '.local/claude-handoffs'
-            (old / 'repo').mkdir(parents=True)
-            (old / 'repo/handoff.md').write_text('handoff chain uses the old path')
-            migration.migrate(home)
-            migration.migrate(home)
-            self.assertTrue(old.is_symlink())
-            self.assertEqual((home / '.local/agent-handoffs/repo/handoff.md').read_text(), 'handoff chain uses the old path')
-            self.assertEqual((old / 'repo/handoff.md').read_text(), 'handoff chain uses the old path')
-
-    def test_conflicts_abort_before_any_storage_is_moved(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            home = Path(tmp)
-            old = home / '.local/claude-handoffs'
-            new = home / '.local/agent-handoffs'
-            old.mkdir(parents=True)
-            new.mkdir()
-            (old / 'a.md').write_text('old')
-            (new / 'a.md').write_text('new')
-            (old / 'b.md').write_text('must remain')
-            with self.assertRaises(RuntimeError):
-                migration.migrate(home)
-            self.assertFalse((new / 'b.md').exists())
-            self.assertEqual((old / 'a.md').read_text(), 'old')
-
     def test_namespaced_session_origins_survive_cwd_change_and_resume(self):
         with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {'HOME': tmp}, clear=True):
             home = Path(tmp)
