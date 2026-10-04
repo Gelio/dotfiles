@@ -4,7 +4,6 @@ if vim.fn.getenv("CLAUDE_CODE_ENTRYPOINT") == "cli" then
 	-- Thus, let's add the current directory to the path, so that autocompletion works as expected.
 	vim.opt.path:append(",,")
 
-	vim.print("Calling blink.cmp setup")
 	require("blink.cmp.config").merge_with({
 		sources = {
 			providers = {
