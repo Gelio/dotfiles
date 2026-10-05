@@ -4,6 +4,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import tomllib
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -93,11 +94,31 @@ class CodexTests(unittest.TestCase):
                 commands = [h['command'] for m in result['hooks']['SessionStart'] for h in m['hooks']]
                 self.assertIn('echo personal', commands)
                 self.assertEqual(len(commands), len(set(commands)))
-                self.assertEqual(config.read_text(), 'model = "personal-model"\n')
+                self.assertTrue(config.read_text().startswith('model = "personal-model"\n'))
+                self.assertEqual(tomllib.loads(config.read_text())['tui']['theme'], 'catppuccin-mocha')
                 # Test the installed entry point, not only its repository source.
                 result = subprocess.run(['python3', str(home / '.claude/hooks/block-risky-commands.py')], input=json.dumps({'tool_name': 'Bash', 'tool_input': {'command': 'git push'}}), text=True, capture_output=True, check=True)
                 self.assertEqual(json.loads(result.stdout)['decision'], 'block')
             self.assertEqual(len(list((home / '.codex').glob('hooks.json.backup-*'))), 1)
+            self.assertEqual(len(list((home / '.codex').glob('config.toml.backup-*'))), 1)
+
+    def test_codex_config_merge_fills_existing_table_without_overriding(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            (home / '.codex').mkdir()
+            config = home / '.codex/config.toml'
+            original = '# personal\n[tui]  # ui\ntheme = "dark"\n\n[tui.model_availability_nux]\n"model" = 4\n'
+            config.write_text(original)
+            for _ in range(2):
+                install.merge_codex_config(home)
+            text = config.read_text()
+            self.assertIn('# personal\n[tui]  # ui\n', text)
+            result = tomllib.loads(text)
+            self.assertEqual(result['tui']['theme'], 'dark')
+            self.assertTrue(result['tui']['status_line_use_colors'])
+            self.assertIn('git-branch', result['tui']['status_line'])
+            self.assertEqual(result['tui']['model_availability_nux'], {'model': 4})
+            self.assertEqual(len(list((home / '.codex').glob('config.toml.backup-*'))), 1)
 
 class InstallerSafetyTests(unittest.TestCase):
     def test_unmanaged_skill_conflict_preserves_settings(self):

@@ -1,0 +1,5 @@
+[tui]
+theme = "catppuccin-mocha"
+status_line = ["model-with-reasoning", "git-branch", "current-dir", "context-remaining", "five-hour-limit", "weekly-limit"]
+status_line_use_colors = true
+terminal_title = ["project-name", "run-state"]

@@ -14,10 +14,12 @@ python3 install.py --agent both --dry-run
 ```
 
 The installer stows `stowed/` into `~` (refusing unmanaged conflicts), then
-merges `settings-partial.json` into `~/.claude/settings.json` and
-`codex-hooks-partial.json` into `~/.codex/hooks.json`. The merge is additive and
-idempotent: it never removes keys or hooks, and backs up a file before changing
-it. **Removing something from a partial does not remove it from the live
+merges `settings-partial.json` into `~/.claude/settings.json`,
+`codex-hooks-partial.json` into `~/.codex/hooks.json`, and
+`codex-config-partial.toml` into `~/.codex/config.toml`. The merge is additive
+and idempotent: it never removes keys or hooks, and backs up a file before
+changing it. In `config.toml` it only adds missing keys, so a key you've set
+to a different value stays as is (the installer prints which). **Removing something from a partial does not remove it from the live
 settings**; delete it there by hand. Restart the agents afterwards; Codex asks
 you to trust new hooks.
 
