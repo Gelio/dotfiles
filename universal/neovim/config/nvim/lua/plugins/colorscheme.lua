@@ -24,6 +24,7 @@ return {
 			local color_utils = require("catppuccin.utils.colors")
 
 			require("catppuccin").setup({
+				flavour = "mocha",
 				highlight_overrides = {
 					all = function(colors)
 						return {
