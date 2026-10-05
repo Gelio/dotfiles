@@ -63,6 +63,20 @@ short_cwd="$cwd"
 if [[ "$cwd" == "$HOME"* ]]; then
     short_cwd="~${cwd#$HOME}"
 fi
+# Abbreviate all but the last 3 segments to 2 chars (3 for dotdirs)
+IFS='/' read -ra segments <<< "$short_cwd"
+keep_full=3
+for i in "${!segments[@]}"; do
+    segment="${segments[$i]}"
+    if [[ $i -lt $((${#segments[@]} - keep_full)) && "$segment" != "~" ]]; then
+        if [[ "$segment" == .* ]]; then
+            segments[$i]="${segment:0:3}"
+        else
+            segments[$i]="${segment:0:2}"
+        fi
+    fi
+done
+short_cwd=$(IFS='/'; echo "${segments[*]}")
 
 # Context usage (used/total + percentage + auto-compact estimate)
 current_used=$((total_input + total_output))
