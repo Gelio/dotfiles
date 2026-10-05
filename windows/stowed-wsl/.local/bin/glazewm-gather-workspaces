@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# Moves every GlazeWM workspace onto the leftmost monitor.
+#
+# After sleep/lock, Windows briefly drops the external monitors and GlazeWM
+# piles all workspaces onto the laptop screen. Run this to collect them in one
+# place, then distribute them by hand.
+set -euo pipefail
+
+log() {
+  echo "[gather] $*" >&2
+}
+
+glazewm() {
+  glazewm.exe "$@" | tr -d '\r'
+}
+
+workspace_parent() {
+  glazewm query workspaces | jq -r --arg name "$1" '.data.workspaces[] | select(.name == $name) | .parentId'
+}
+
+monitors=$(glazewm query monitors)
+target_id=$(jq -r '.data.monitors | sort_by(.x, .y) | first | .id' <<<"$monitors")
+focused=$(glazewm query workspaces | jq -r '.data.workspaces[] | select(.hasFocus) | .name')
+mapfile -t to_move < <(jq -r --arg target "$target_id" \
+  '.data.monitors[] | select(.id != $target) | .children[] | select(.type == "workspace") | .name' <<<"$monitors")
+
+target_desc=$(jq -r --arg target "$target_id" '.data.monitors[] | select(.id == $target) | "\(.hardwareId) at (\(.x), \(.y))"' <<<"$monitors")
+
+if [[ ${#to_move[@]} -eq 0 ]]; then
+  log "All workspaces are already on the leftmost monitor ($target_desc)"
+  exit 0
+fi
+log "Moving workspaces ${to_move[*]} to the leftmost monitor ($target_desc)"
+
+moved=()
+failed=()
+for name in "${to_move[@]}"; do
+  glazewm command focus --workspace "$name" >/dev/null
+
+  # move-workspace only takes a direction. Prefer left; when there is no
+  # monitor to the left (the laptop sits below the right monitor), go up first.
+  for _ in 1 2 3 4; do
+    parent=$(workspace_parent "$name")
+    [[ "$parent" == "$target_id" ]] && break
+
+    glazewm command move-workspace --direction left >/dev/null
+    if [[ "$(workspace_parent "$name")" == "$parent" ]]; then
+      glazewm command move-workspace --direction up >/dev/null
+    fi
+  done
+
+  if [[ "$(workspace_parent "$name")" == "$target_id" ]]; then
+    moved+=("$name")
+  else
+    failed+=("$name")
+  fi
+done
+
+if [[ -n "$focused" ]]; then
+  glazewm command focus --workspace "$focused" >/dev/null
+fi
+
+if [[ ${#moved[@]} -gt 0 ]]; then
+  log "Moved: ${moved[*]}"
+fi
+if [[ ${#failed[@]} -gt 0 ]]; then
+  log "Could not move: ${failed[*]}"
+  exit 1
+fi
