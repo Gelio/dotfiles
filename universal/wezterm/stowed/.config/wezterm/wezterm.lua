@@ -9,7 +9,7 @@ config.font_size = 13.0
 -- Make the underline thicker to better see contexts in Neovim
 config.underline_thickness = "125%"
 
-config.color_scheme = "Dracula (Official)"
+config.color_scheme = "Catppuccin Mocha"
 
 config.audible_bell = "Disabled"
 -- No title bar, but keep the borders so the window can still be resized
