@@ -25,6 +25,7 @@ return {
 
 			require("catppuccin").setup({
 				flavour = "mocha",
+				compile_path = vim.fs.joinpath(vim.fn.stdpath("cache"), "catppuccin"),
 				highlight_overrides = {
 					all = function(colors)
 						return {
