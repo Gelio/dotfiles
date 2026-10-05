@@ -12,6 +12,22 @@ total_input=$(echo "$input" | jq -r '.context_window.total_input_tokens // 0')
 total_output=$(echo "$input" | jq -r '.context_window.total_output_tokens // 0')
 worktree_name=$(echo "$input" | jq -r '.worktree.name // empty')
 
+# Catppuccin Mocha palette (24-bit)
+rgb() { printf '\033[38;2;%d;%d;%dm' "$1" "$2" "$3"; }
+GREEN=$(rgb 166 227 161)
+RED=$(rgb 243 139 168)
+YELLOW=$(rgb 249 226 175)
+PEACH=$(rgb 250 179 135)
+MAUVE=$(rgb 203 166 247)
+BLUE=$(rgb 137 180 250)
+LAVENDER=$(rgb 180 190 254)
+TEAL=$(rgb 148 226 213)
+SKY=$(rgb 137 220 235)
+SUBTEXT=$(rgb 166 173 200)
+OVERLAY=$(rgb 108 112 134)
+BOLD='\033[1m'
+RESET='\033[0m'
+
 # Convert model ID to short name
 model_short="Claude"
 if [[ "$model_id" == *"fable"* ]]; then
@@ -30,16 +46,16 @@ git_branch=$(cd "$cwd" 2>/dev/null && git -c core.filesystemmonitor=false rev-pa
 # Git line changes (+X -Y format)
 git_changes=""
 if [[ -n "$git_branch" ]]; then
-    changes=$(cd "$cwd" 2>/dev/null && git -c core.filesystemmonitor=false diff --numstat 2>/dev/null | awk '{added+=$1; removed+=$2} END {if(added+removed>0) printf "+%d -%d", added, removed}')
-    if [[ -n "$changes" ]]; then
-        git_changes=" $changes"
+    read -r added removed < <(cd "$cwd" 2>/dev/null && git -c core.filesystemmonitor=false diff --numstat 2>/dev/null | awk '{added+=$1; removed+=$2} END {printf "%d %d", added, removed}')
+    if [[ $((added + removed)) -gt 0 ]]; then
+        git_changes=" ${GREEN}+${added}${RESET} ${RED}-${removed}${RESET}"
     fi
 fi
 
 # Worktree indicator
 worktree_info=""
 if [[ -n "$worktree_name" ]]; then
-    worktree_info=" • 🌿 $worktree_name"
+    worktree_info=" ${OVERLAY}•${RESET} ${TEAL}🌿 $worktree_name${RESET}"
 fi
 
 # Shorten directory path
@@ -47,13 +63,6 @@ short_cwd="$cwd"
 if [[ "$cwd" == "$HOME"* ]]; then
     short_cwd="~${cwd#$HOME}"
 fi
-
-# ANSI colors
-GREEN='\033[38;5;108m'
-BLUE='\033[38;5;67m'
-YELLOW='\033[33m'
-RED='\033[31m'
-RESET='\033[0m'
 
 # Context usage (used/total + percentage + auto-compact estimate)
 current_used=$((total_input + total_output))
@@ -70,9 +79,9 @@ if [[ $context_size -gt 0 ]]; then
         if [[ $remaining_int -ge 60 ]]; then
             ctx_color="$GREEN"
         elif [[ $remaining_int -ge 40 ]]; then
-            ctx_color="$BLUE"
-        elif [[ $remaining_int -ge 20 ]]; then
             ctx_color="$YELLOW"
+        elif [[ $remaining_int -ge 20 ]]; then
+            ctx_color="$PEACH"
         else
             ctx_color="$RED"
         fi
@@ -141,9 +150,9 @@ parts=()
 
 # [Model] branch +X -Y
 if [[ -n "$git_branch" ]]; then
-    parts+=("[$model_short] $git_branch$git_changes")
+    parts+=("${BOLD}${MAUVE}[$model_short]${RESET} ${BLUE}$git_branch${RESET}$git_changes")
 else
-    parts+=("[$model_short]")
+    parts+=("${BOLD}${MAUVE}[$model_short]${RESET}")
 fi
 
 # Worktree (if present)
@@ -152,7 +161,7 @@ if [[ -n "$worktree_info" ]]; then
 fi
 
 # Current directory
-parts+=("$short_cwd")
+parts+=("${LAVENDER}$short_cwd${RESET}")
 
 # Context usage
 if [[ -n "$token_display" ]]; then
@@ -161,12 +170,12 @@ fi
 
 # Session cost
 if [[ -n "$session_cost_display" ]]; then
-    parts+=("$session_cost_display")
+    parts+=("${SKY}$session_cost_display${RESET}")
 fi
 
 # Elapsed time
 if [[ -n "$elapsed_display" ]]; then
-    parts+=("$elapsed_display")
+    parts+=("${SUBTEXT}$elapsed_display${RESET}")
 fi
 
 # Join with bullet separator
@@ -175,7 +184,7 @@ for i in "${!parts[@]}"; do
     if [[ $i -eq 0 ]]; then
         output="${parts[$i]}"
     else
-        output="$output • ${parts[$i]}"
+        output="$output ${OVERLAY}•${RESET} ${parts[$i]}"
     fi
 done
 
