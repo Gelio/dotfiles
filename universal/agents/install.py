@@ -9,6 +9,7 @@ import subprocess
 import sys
 import time
 import tomllib
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent
 SETTINGS = {
@@ -18,11 +19,11 @@ SETTINGS = {
 CODEX_CONFIG = ('.codex/config.toml', 'codex-config-partial.toml')
 
 
-def same_hook(a: dict, b: dict) -> bool:
+def same_hook(a: dict[str, Any], b: dict[str, Any]) -> bool:
     return (a.get('type'), a.get('command'), a.get('if')) == (b.get('type'), b.get('command'), b.get('if'))
 
 
-def deep_merge(target, source):
+def deep_merge(target: object, source: object) -> object:
     """Objects merge recursively, arrays union by value, scalars from `source` win."""
     if isinstance(target, list) and isinstance(source, list):
         return target + [item for item in source if item not in target]
@@ -34,7 +35,7 @@ def deep_merge(target, source):
     return source
 
 
-def merge_hooks(target: dict, source: dict) -> dict:
+def merge_hooks(target: dict[str, Any], source: dict[str, Any]) -> dict[str, Any]:
     """Append missing hook commands per matcher; never remove existing ones."""
     result = dict(target)
     for event, source_matchers in source.items():
@@ -55,8 +56,8 @@ def merge_settings(home: Path, agent: str) -> None:
     """Additively merge the agent's partial into its settings; back up changes."""
     relative, partial_name = SETTINGS[agent]
     path = home / relative
-    settings = json.loads(path.read_text()) if path.exists() else {}
-    partial = json.loads((ROOT / partial_name).read_text())
+    settings: dict[str, Any] = json.loads(path.read_text()) if path.exists() else {}
+    partial: dict[str, Any] = json.loads((ROOT / partial_name).read_text())
     if 'hooks' in partial:
         settings['hooks'] = merge_hooks(settings.get('hooks', {}), partial.pop('hooks'))
     serialized = json.dumps(deep_merge(settings, partial), indent=2, ensure_ascii=False) + '\n'
@@ -73,7 +74,7 @@ def merge_settings(home: Path, agent: str) -> None:
     print(f'Merged {partial_name} into {path}')
 
 
-def toml_value(value) -> str:
+def toml_value(value: object) -> str:
     """Serialize the scalar and flat-array values the Codex partial uses."""
     if isinstance(value, bool):
         return 'true' if value else 'false'
@@ -125,12 +126,19 @@ def merge_codex_config(home: Path) -> None:
     print(f'Merged {partial_name} into {path}')
 
 
+class Args(argparse.Namespace):
+    """Typed `parse_args` result; argparse keeps these defaults when a flag is absent."""
+    agent: str = 'claude'
+    target_home: Path = Path.home()
+    dry_run: bool = False
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--agent', choices=['claude', 'codex', 'both'], default='claude')
-    parser.add_argument('--target-home', type=Path, default=Path.home(), help='isolated installation target (default: current home)')
+    parser.add_argument('--agent', choices=['claude', 'codex', 'both'])
+    parser.add_argument('--target-home', type=Path, help='isolated installation target (default: current home)')
     parser.add_argument('--dry-run', action='store_true')
-    args = parser.parse_args()
+    args = parser.parse_args(namespace=Args())
     home = args.target_home.expanduser().resolve()
     # Shared resources belong to Stow. Settings, handoffs, and third-party skills do not.
     if not args.dry_run:
