@@ -130,6 +130,32 @@ if [[ -n "$total_cost_usd" ]] && [[ "$total_cost_usd" != "0" ]]; then
     }")
 fi
 
+# Plan usage limits (only present on Pro/Max subscriptions)
+# Format one window as "5h 23%", colored by how much is used
+format_limit() {
+    local label=$1 pct=$2
+    [[ -z "$pct" ]] && return
+    local used=${pct%.*} color
+    if [[ $used -lt 50 ]]; then
+        color="$GREEN"
+    elif [[ $used -lt 75 ]]; then
+        color="$YELLOW"
+    elif [[ $used -lt 90 ]]; then
+        color="$PEACH"
+    else
+        color="$RED"
+    fi
+    printf '%s' "${color}${label} ${used}%${RESET}"
+}
+IFS=$'\t' read -r five_pct week_pct < <(echo "$input" | jq -r '[.rate_limits.five_hour.used_percentage, .rate_limits.seven_day.used_percentage] | map(. // "" | tostring) | @tsv')
+limits_display=""
+five_display=$(format_limit 5h "$five_pct")
+week_display=$(format_limit 7d "$week_pct")
+for limit in "$five_display" "$week_display"; do
+    [[ -z "$limit" ]] && continue
+    limits_display="${limits_display:+$limits_display ${OVERLAY}·${RESET} }$limit"
+done
+
 # Elapsed time (session duration)
 # Calculate based on transcript modification time
 transcript_path=$(echo "$input" | jq -r '.transcript_path // empty')
@@ -180,6 +206,11 @@ parts+=("${LAVENDER}$short_cwd${RESET}")
 # Context usage
 if [[ -n "$token_display" ]]; then
     parts+=("$token_display")
+fi
+
+# Plan usage limits
+if [[ -n "$limits_display" ]]; then
+    parts+=("$limits_display")
 fi
 
 # Session cost
