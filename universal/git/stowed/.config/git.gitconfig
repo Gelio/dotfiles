@@ -60,6 +60,8 @@
 [delta]
   features = line-numbers decorations
   navigate = true
+  # Default (#444444) is barely visible on a dark background
+  line-numbers-zero-style = "#808080"
 
 [merge]
   # Improves merge diff rendering in git-delta
