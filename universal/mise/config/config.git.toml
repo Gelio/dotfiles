@@ -1,0 +1,16 @@
+[tools]
+lazygit = "latest"
+gitui = "latest"
+difftastic = "latest"
+# Not in the mise registry, and the GitHub releases have no
+# aarch64-apple-darwin build, so aqua: would fail on Apple Silicon
+"cargo:git-absorb" = "latest"
+# Not in the mise registry, and the GitHub releases have no
+# aarch64-apple-darwin build, so aqua: would fail on Apple Silicon
+"cargo:git-stack" = "latest"
+# Not in the mise registry, and the GitHub releases have no
+# x86_64-apple-darwin build, so aqua: would fail on Intel Macs
+"cargo:git-branchless" = "latest"
+# Not in the mise registry. cargo-binstall still downloads the
+# prebuilt release binary
+"cargo:git-branch-stash-cli" = "latest"

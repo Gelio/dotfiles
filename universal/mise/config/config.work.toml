@@ -1,0 +1,4 @@
+[tools]
+# Not in the mise registry, so the aqua: backend is named explicitly
+"aqua:ankitpokhrel/jira-cli" = "latest"
+awscli = "latest"

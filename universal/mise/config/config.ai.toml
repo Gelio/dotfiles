@@ -1,0 +1,6 @@
+[tools]
+claude = "latest"
+codex = "latest"
+antigravity-cli = "latest"
+"npm:@github/copilot" = "latest"
+"npm:@zed-industries/claude-agent-acp" = "latest"

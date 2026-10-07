@@ -1,0 +1,9 @@
+[tools]
+bottom = "latest"
+lazydocker = "latest"
+# The registry maps mprocs to aqua:pvolok/dekit, but the release assets
+# are now named dekit-* instead of the expected mprocs-*
+"cargo:mprocs" = "latest"
+# The registry default is cargo:tokei, because the GitHub releases
+# have no binaries
+tokei = "latest"

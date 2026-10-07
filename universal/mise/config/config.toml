@@ -1,28 +1,27 @@
 [tools]
-node = 'lts'
-java = "zulu-17.42.19"
 usage = "latest"
-maven = "3"
-bun = "latest"
-pnpm = "latest"
-gh = "latest"
-awscli = "latest"
-pipx = "latest"
+# cargo: backend dependencies (git-absorb, git-stack, broot, ...)
+rust = "stable"
+cargo-binstall = "latest"
+# npm: backend dependency, and the default node everywhere
+node = "lts"
+# pipx: backend installs through uv when it is available
+uv = "latest"
 jq = "latest"
 yq = "latest"
-python = "3.14"
-"npm:tree-sitter-cli" = "latest"
-"npm:@github/copilot" = "latest"
-"npm:typescript" = "6.0.3"
-"npm:basedpyright" = "latest"
-"npm:@zed-industries/claude-agent-acp" = "latest"
-"aqua:ankitpokhrel/jira-cli" = "latest"
-antigravity-cli = "latest"
-tmux = "latest"
-go = "latest"
 fzf = "latest"
-codex = "latest"
-claude = "latest"
+ripgrep = "latest"
+fd = "latest"
+bat = "latest"
+eza = "latest"
+sd = "latest"
+zoxide = "latest"
+starship = "latest"
+atuin = "latest"
+tmux = "latest"
+gh = "latest"
+# git.gitconfig sets `pager = delta`, so git breaks without it
+delta = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]

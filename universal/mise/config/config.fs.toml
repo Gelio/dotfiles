@@ -1,0 +1,8 @@
+[tools]
+yazi = "latest"
+dust = "latest"
+# The registry default (github:canop/broot) fails because broot ships a
+# single zip with the binaries for all targets
+"cargo:broot" = "latest"
+# Python package with no binary releases
+"pipx:ranger-fm" = "latest"

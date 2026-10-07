@@ -1,0 +1,11 @@
+[tools]
+java = "zulu-17.42.19"
+maven = "3"
+python = "3.14"
+go = "latest"
+bun = "latest"
+pnpm = "latest"
+pipx = "latest"
+"npm:tree-sitter-cli" = "latest"
+"npm:typescript" = "6.0.3"
+"npm:basedpyright" = "latest"
