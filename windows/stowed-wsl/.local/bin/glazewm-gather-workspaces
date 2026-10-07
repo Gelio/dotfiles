@@ -1,10 +1,22 @@
 #!/usr/bin/env bash
-# Moves every GlazeWM workspace onto the leftmost monitor.
+# Puts GlazeWM workspaces back on the right monitors.
 #
 # After sleep/lock, Windows briefly drops the external monitors and GlazeWM
-# piles all workspaces onto the laptop screen. Run this to collect them in one
-# place, then distribute them by hand.
+# piles all workspaces onto the laptop screen. Run this to restore the layout:
+#
+# - With the two 4K monitors connected: workspaces 4-5 go to the right 4K
+#   monitor, all others to the left 4K monitor.
+# - With any other setup: all workspaces go to the top-left monitor.
+#
+# Bound to a GlazeWM keybinding, which runs it via a non-interactive login
+# shell where mise is not activated.
 set -euo pipefail
+
+if ! command -v jq >/dev/null; then
+  PATH="$HOME/.local/share/mise/shims:$PATH"
+fi
+
+RIGHT_WORKSPACES=(4 5)
 
 log() {
   echo "[gather] $*" >&2
@@ -18,38 +30,103 @@ workspace_parent() {
   glazewm query workspaces | jq -r --arg name "$1" '.data.workspaces[] | select(.name == $name) | .parentId'
 }
 
-monitors=$(glazewm query monitors)
-target_id=$(jq -r '.data.monitors | sort_by(.x, .y) | first | .id' <<<"$monitors")
-focused=$(glazewm query workspaces | jq -r '.data.workspaces[] | select(.hasFocus) | .name')
-mapfile -t to_move < <(jq -r --arg target "$target_id" \
-  '.data.monitors[] | select(.id != $target) | .children[] | select(.type == "workspace") | .name' <<<"$monitors")
+monitor_desc() {
+  jq -r --arg id "$1" '.data.monitors[] | select(.id == $id) | "\(.hardwareId) at (\(.x), \(.y))"' <<<"$monitors"
+}
 
-target_desc=$(jq -r --arg target "$target_id" '.data.monitors[] | select(.id == $target) | "\(.hardwareId) at (\(.x), \(.y))"' <<<"$monitors")
+# Prints the directions to try for moving a workspace from one monitor towards
+# another: horizontal first, then vertical.
+directions_towards() {
+  jq -r --arg from "$1" --arg to "$2" '
+    .data.monitors as $m
+    | ($m[] | select(.id == $from)) as $f
+    | ($m[] | select(.id == $to)) as $t
+    | (if $t.x < $f.x then "left" elif $t.x > $f.x then "right" else empty end),
+      (if $t.y < $f.y then "up" elif $t.y > $f.y then "down" else empty end)
+  ' <<<"$monitors"
+}
+
+# move-workspace only takes a direction, so step towards the target monitor,
+# falling back to the next direction when one is a no-op (e.g. the laptop sits
+# below the right monitor and has nothing to its left).
+move_workspace() {
+  local name=$1 target=$2 parent direction directions
+  glazewm command focus --workspace "$name" >/dev/null
+
+  for _ in 1 2 3 4; do
+    parent=$(workspace_parent "$name")
+    [[ "$parent" == "$target" ]] && return 0
+
+    # Not a `while read` loop: glazewm.exe would consume its stdin.
+    mapfile -t directions < <(directions_towards "$parent" "$target")
+    for direction in "${directions[@]}"; do
+      glazewm command move-workspace --direction "$direction" >/dev/null
+      [[ "$(workspace_parent "$name")" != "$parent" ]] && break
+    done
+  done
+
+  [[ "$(workspace_parent "$name")" == "$target" ]]
+}
+
+monitors=$(glazewm query monitors)
+focused=$(glazewm query workspaces | jq -r '.data.workspaces[] | select(.hasFocus) | .name')
+
+mapfile -t uhd_ids < <(jq -r '.data.monitors | map(select(.width == 3840 and .height == 2160)) | sort_by(.x, .y) | .[].id' <<<"$monitors")
+
+if [[ ${#uhd_ids[@]} -eq 2 ]]; then
+  left_id=${uhd_ids[0]}
+  right_id=${uhd_ids[1]}
+  log "Detected two 4K monitors: left $(monitor_desc "$left_id"), right $(monitor_desc "$right_id")"
+else
+  left_id=$(jq -r '.data.monitors | sort_by(.x, .y) | first | .id' <<<"$monitors")
+  right_id=""
+  log "Unknown monitor setup, gathering on the top-left monitor ($(monitor_desc "$left_id"))"
+fi
+
+target_for() {
+  local name=$1 ws
+  if [[ -n "$right_id" ]]; then
+    for ws in "${RIGHT_WORKSPACES[@]}"; do
+      [[ "$name" == "$ws" ]] && echo "$right_id" && return
+    done
+  fi
+  echo "$left_id"
+}
+
+# Move workspaces bound for the right monitor first, so it does not get left
+# without a workspace (GlazeWM would create a new one there) while the others
+# move away from it.
+to_right=()
+to_left=()
+while read -r name parent; do
+  target=$(target_for "$name")
+  [[ "$parent" == "$target" ]] && continue
+  if [[ "$target" == "$right_id" ]]; then
+    to_right+=("$name")
+  else
+    to_left+=("$name")
+  fi
+# Skips the empty placeholder workspace GlazeWM keeps on an otherwise unused
+# monitor (e.g. the laptop): moving it away only makes GlazeWM create another.
+done < <(jq -r '
+  .data.monitors[]
+  | .id as $id
+  | [.children[] | select(.type == "workspace")]
+  | select(length > 1 or (first.children | length) > 0)
+  | .[] | "\(.name) \($id)"
+' <<<"$monitors" | sort -n)
+to_move=("${to_right[@]}" "${to_left[@]}")
 
 if [[ ${#to_move[@]} -eq 0 ]]; then
-  log "All workspaces are already on the leftmost monitor ($target_desc)"
+  log "All workspaces are already in place"
   exit 0
 fi
-log "Moving workspaces ${to_move[*]} to the leftmost monitor ($target_desc)"
+log "Moving workspaces ${to_move[*]}"
 
 moved=()
 failed=()
 for name in "${to_move[@]}"; do
-  glazewm command focus --workspace "$name" >/dev/null
-
-  # move-workspace only takes a direction. Prefer left; when there is no
-  # monitor to the left (the laptop sits below the right monitor), go up first.
-  for _ in 1 2 3 4; do
-    parent=$(workspace_parent "$name")
-    [[ "$parent" == "$target_id" ]] && break
-
-    glazewm command move-workspace --direction left >/dev/null
-    if [[ "$(workspace_parent "$name")" == "$parent" ]]; then
-      glazewm command move-workspace --direction up >/dev/null
-    fi
-  done
-
-  if [[ "$(workspace_parent "$name")" == "$target_id" ]]; then
+  if move_workspace "$name" "$(target_for "$name")"; then
     moved+=("$name")
   else
     failed+=("$name")

@@ -288,6 +288,11 @@ keybindings:
   - commands: ["move-workspace --direction down"]
     bindings: ["alt+shift+s"]
 
+  # Put workspaces back on their monitors after sleep/lock scrambles them.
+  # Runs the glazewm-gather-workspaces script from WSL.
+  - commands: ["shell-exec --hide-window wsl.exe -e bash -lc glazewm-gather-workspaces"]
+    bindings: ["alt+shift+g"]
+
   # Move focused window to a workspace defined in `workspaces` config.
   - commands: ["move --workspace 1"]
     bindings: ["alt+shift+1"]
