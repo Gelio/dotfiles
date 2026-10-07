@@ -6,3 +6,8 @@ dust = "latest"
 "cargo:broot" = "latest"
 # Python package with no binary releases
 "pipx:ranger-fm" = "latest"
+
+[dotfile_groups.yazi]
+root = "yazi/home"
+target = "~"
+mode = "symlink-each"

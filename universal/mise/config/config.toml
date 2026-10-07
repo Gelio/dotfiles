@@ -30,3 +30,43 @@ idiomatic_version_file_enable_tools = ["node"]
 root = "mise/home"
 target = "~"
 mode = "symlink-each"
+
+[dotfile_groups.atuin]
+root = "atuin/home"
+target = "~"
+mode = "symlink-each"
+
+[dotfile_groups.bat]
+root = "bat/home"
+target = "~"
+mode = "symlink-each"
+
+[dotfile_groups.eza]
+root = "eza/home"
+target = "~"
+mode = "symlink-each"
+
+[dotfile_groups.starship]
+root = "starship/home"
+target = "~"
+mode = "symlink-each"
+
+[dotfile_groups.zoxide]
+root = "zoxide/home"
+target = "~"
+mode = "symlink-each"
+
+[dotfile_groups.tmux]
+root = "tmux/home"
+target = "~"
+mode = "symlink-each"
+
+[dotfile_groups.git]
+root = "git/home"
+target = "~"
+mode = "symlink-each"
+
+[dotfile_groups.rust]
+root = "rust/home"
+target = "~"
+mode = "symlink-each"

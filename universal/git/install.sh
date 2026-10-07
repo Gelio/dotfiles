@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-./stow.sh
-
 include_my_config=$(
   cat <<EOF
 [include]
