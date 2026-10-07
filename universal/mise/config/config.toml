@@ -26,3 +26,8 @@ claude = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]
+
+[dotfile_groups.mise]
+root = "mise/home"
+target = "~"
+mode = "symlink-each"

@@ -1,0 +1,3 @@
+# Per-machine files written by universal/bootstrap.sh
+miserc.toml
+config.local.toml
