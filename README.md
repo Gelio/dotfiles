@@ -30,5 +30,24 @@ its links; run `mise bootstrap dotfiles unapply <target>` for that.
 
 Upgrade tools with `mise upgrade` and mise itself with `mise self-update`.
 
+### Moving an existing machine from stow
+
+Machines set up with the old per-tool `stow.sh` scripts have leftovers that break the
+first `bootstrap.sh` run or new shells:
+
+```bash
+# Dangling stow links. mise replaces the others, but the renamed shell snippets
+# (50-mise, 10-rust) and ~/.config/mise/config.toml are left behind
+find ~/.bashrc.d ~/.zshrc.d ~/.config/mise -xtype l -print -delete
+# Old stow created a real directory here; bootstrap.sh needs it free for its symlink
+rmdir ~/.config/mise
+# Old copies that would shadow the mise ones outside interactive shells
+cargo install --list   # uninstall the ones now in universal/mise/config/*.toml
+ls ~/go/bin            # remove lazygit, lazydocker, gotop
+```
+
+An older mise is fine as long as it is at least the pinned version; otherwise run
+`mise self-update` first. `bootstrap.sh` checks this.
+
 Tools not installed by mise (neovim, ghostty, kitty, wezterm) keep their own
 `install.sh`/`stow.sh` scripts and `stowed/` folders.

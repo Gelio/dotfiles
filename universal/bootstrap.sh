@@ -65,6 +65,13 @@ if ! command -v mise >/dev/null; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
+# [dotfile_groups] needs at least the pinned version.
+installed_version="$(mise --version | cut -d' ' -f1)"
+if [[ "$(printf '%s\n' "$mise_version" "$installed_version" | sort -V | head -1)" != "$mise_version" ]]; then
+  echo "> mise $installed_version is older than $mise_version. Run 'mise self-update' and re-run." >&2
+  exit 1
+fi
+
 mkdir -p "$HOME/.config"
 if [[ -L "$mise_link" ]]; then
   ln -sfn "$config_dir" "$mise_link"
