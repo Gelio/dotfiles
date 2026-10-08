@@ -110,3 +110,8 @@ mode = "symlink-each"
 
 [dotfile_groups.wezterm.entries]
 "~/.config/wezterm" = { mode = "symlink" }
+
+[bootstrap.hooks]
+# Also runs before `mise dot apply`. ~/.config/mise links to the repo's config
+# directory, so the guard is found next to it.
+pre-dotfiles = "python3 {{ config_root }}/.config/mise/../merge-guard.py"

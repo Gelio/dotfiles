@@ -7,8 +7,9 @@ For each live value the partial doesn't already contribute, prompt:
   [i]gnore - add to .settings-review-ignore.json (never ask again)
   [q]uit   - stop reviewing and save what's been chosen so far
 
-Mirrors install.py's merge: objects are walked per leaf, arrays are diffed by
-value, and `hooks` is walked matcher by matcher and command by command.
+The mise merge entry replaces arrays whole, so adopt live-only items before
+`mise dot apply` (mise/merge-guard.py lists them and stops the apply). Objects are walked per leaf, arrays are
+diffed by value, and `hooks` is walked matcher by matcher and command by command.
 """
 import json
 from pathlib import Path

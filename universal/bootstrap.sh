@@ -10,7 +10,7 @@ mise_link="$HOME/.config/mise"
 # Pinned mise release, installed only when mise is missing. Afterwards
 # `mise self-update` upgrades it. Hashes come from the release's SHASUMS256.txt:
 # https://github.com/jdx/mise/releases/download/v<version>/SHASUMS256.txt
-mise_version="2026.10.3"
+mise_version="2026.10.4"
 
 function install_mise {
   local os arch platform expected_sha actual_sha download
@@ -32,10 +32,10 @@ function install_mise {
   esac
   platform="$os-$arch"
   case "$platform" in
-  linux-x64) expected_sha=8d48bc510b7d844fad0bc7156c0855c2a1e7230c51e498a7f6b63b021f8b57c5 ;;
-  linux-arm64) expected_sha=357260e28904569a6e7124d33b65cef6d043846c07bb8f4906ddf22cc353d61d ;;
-  macos-x64) expected_sha=38cdd1d904b25e66ec2fff3b5c88930853ab929b63e72c70e77198f82d6ac144 ;;
-  macos-arm64) expected_sha=0999bd4943523ccdbd149b5ad4080281536801b3f6406ac4495699bd0310969c ;;
+  linux-x64) expected_sha=2b8ce21f550872807bcaabf45b6bc5c64bfbd6dc3bf49dd4e67de700ef3ceb75 ;;
+  linux-arm64) expected_sha=9013ce1d7d9bbbf65254cda178562f5450c474a705907c18b77e6b678bb10041 ;;
+  macos-x64) expected_sha=9f58d924a4d7b47aeb1610cd981beca2125907b2591d805237efbca8aae4308e ;;
+  macos-arm64) expected_sha=5c530143fc750e8a98c9a36be8d361e5dd953fa0b004d58f7577783f7cf2ac24 ;;
   esac
 
   download="$(mktemp)"
@@ -65,7 +65,7 @@ if ! command -v mise >/dev/null; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# [dotfile_groups] needs at least the pinned version.
+# [dotfile_groups] and `merge` dotfile entries need at least the pinned version.
 installed_version="$(mise --version | cut -d' ' -f1)"
 if [[ "$(printf '%s\n' "$mise_version" "$installed_version" | sort -V | head -1)" != "$mise_version" ]]; then
   echo "> mise $installed_version is older than $mise_version. Run 'mise self-update' and re-run." >&2

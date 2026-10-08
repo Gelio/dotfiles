@@ -4,3 +4,12 @@ codex = "latest"
 antigravity-cli = "latest"
 "npm:@github/copilot" = "latest"
 "npm:@zed-industries/claude-agent-acp" = "latest"
+
+# The agents rewrite these files with their own state (plugins, project trust),
+# so mise owns only the keys in each partial. Arrays such as permissions and
+# hooks are replaced whole; mise/merge-guard.py stops an apply that would drop
+# live-only entries.
+[dotfiles]
+"~/.claude/settings.json/shared" = { source = "../../agents/settings-partial.json", merge = true }
+"~/.codex/hooks.json/shared" = { source = "../../agents/codex-hooks-partial.json", merge = true }
+"~/.codex/config.toml/shared" = { source = "../../agents/codex-config-partial.toml", merge = true }

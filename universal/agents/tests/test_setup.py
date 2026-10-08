@@ -2,37 +2,12 @@
 import json
 from pathlib import Path
 import subprocess
-import sys
 import tempfile
-import tomllib
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-import install
 
 class SetupTests(unittest.TestCase):
-    def test_settings_merge_is_additive_and_idempotent(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            home = Path(tmp)
-            (home / '.claude').mkdir()
-            path = home / '.claude/settings.json'
-            existing = {'custom': {'keep': True}, 'enabledPlugins': {'personal@test': True},
-                        'hooks': {'SessionStart': [{'matcher': '', 'hooks': [
-                            {'type': 'command', 'command': 'echo personal'}]}]}}
-            path.write_text(json.dumps(existing))
-            for _ in range(2):
-                install.merge_settings(home, 'claude')
-                result = json.loads(path.read_text())
-                self.assertTrue(result['custom']['keep'])
-                self.assertTrue(result['enabledPlugins']['personal@test'])
-                commands = [h['command'] for m in result['hooks']['SessionStart'] for h in m['hooks']]
-                self.assertEqual(len(commands), len(set(commands)))
-                if _ == 0:
-                    first = result
-                else:
-                    self.assertEqual(first, result)
-
     def hook(self, name, command, **extra):
         payload = {'tool_name': 'Bash', 'tool_input': {'command': command}, **extra}
         result = subprocess.run(['python3', str(ROOT / 'stowed/.claude/hooks' / name)], input=json.dumps(payload), text=True, capture_output=True, check=True)
@@ -80,67 +55,33 @@ class CodexTests(unittest.TestCase):
         self.assertIsNone(self.codex_hook('git commit -F message'))
         self.assertIsNone(self.codex_hook('npx playwright test'))
 
-    def test_both_installer_preserves_codex_config_and_personal_hooks(self):
+    def test_installer_links_hook_entry_points(self):
         with tempfile.TemporaryDirectory() as tmp:
             home = Path(tmp)
-            (home / '.codex').mkdir()
-            config = home / '.codex/config.toml'
-            config.write_text('model = "personal-model"\n')
-            hooks = home / '.codex/hooks.json'
-            hooks.write_text(json.dumps({'hooks': {'SessionStart': [{'hooks': [{'type': 'command', 'command': 'echo personal'}]}]}}))
             for _ in range(2):
-                subprocess.run(['python3', str(ROOT / 'install.py'), '--agent', 'both', '--target-home', tmp], check=True, capture_output=True)
-                result = json.loads(hooks.read_text())
-                commands = [h['command'] for m in result['hooks']['SessionStart'] for h in m['hooks']]
-                self.assertIn('echo personal', commands)
-                self.assertEqual(len(commands), len(set(commands)))
-                self.assertTrue(config.read_text().startswith('model = "personal-model"\n'))
-                self.assertEqual(tomllib.loads(config.read_text())['tui']['theme'], 'catppuccin-mocha')
+                subprocess.run(['python3', str(ROOT / 'install.py'), '--target-home', tmp], check=True, capture_output=True)
                 # Test the installed entry point, not only its repository source.
                 result = subprocess.run(['python3', str(home / '.claude/hooks/block-risky-commands.py')], input=json.dumps({'tool_name': 'Bash', 'tool_input': {'command': 'git push'}}), text=True, capture_output=True, check=True)
                 self.assertEqual(json.loads(result.stdout)['decision'], 'block')
-            self.assertEqual(len(list((home / '.codex').glob('hooks.json.backup-*'))), 1)
-            self.assertEqual(len(list((home / '.codex').glob('config.toml.backup-*'))), 1)
-
-    def test_codex_config_merge_fills_existing_table_without_overriding(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            home = Path(tmp)
-            (home / '.codex').mkdir()
-            config = home / '.codex/config.toml'
-            original = '# personal\n[tui]  # ui\ntheme = "dark"\n\n[tui.model_availability_nux]\n"model" = 4\n'
-            config.write_text(original)
-            for _ in range(2):
-                install.merge_codex_config(home)
-            text = config.read_text()
-            self.assertIn('# personal\n[tui]  # ui\n', text)
-            result = tomllib.loads(text)
-            self.assertEqual(result['tui']['theme'], 'dark')
-            self.assertTrue(result['tui']['status_line_use_colors'])
-            self.assertIn('git-branch', result['tui']['status_line'])
-            self.assertEqual(result['tui']['model_availability_nux'], {'model': 4})
-            self.assertEqual(len(list((home / '.codex').glob('config.toml.backup-*'))), 1)
 
 class InstallerSafetyTests(unittest.TestCase):
-    def test_unmanaged_skill_conflict_preserves_settings(self):
+    def test_unmanaged_skill_conflict_aborts_without_changes(self):
         with tempfile.TemporaryDirectory() as tmp:
             home = Path(tmp)
             conflict = home / '.agents/skills/commit-conventions/SKILL.md'
             conflict.parent.mkdir(parents=True)
             conflict.write_text('personal skill')
-            settings = home / '.claude/settings.json'
-            settings.parent.mkdir()
-            settings.write_text('{"keep": true}')
-            result = subprocess.run(['python3', str(ROOT / 'install.py'), '--agent', 'both', '--target-home', tmp], capture_output=True)
+            result = subprocess.run(['python3', str(ROOT / 'install.py'), '--target-home', tmp], capture_output=True)
             self.assertNotEqual(result.returncode, 0)
-            self.assertEqual(settings.read_text(), '{"keep": true}')
             self.assertEqual(conflict.read_text(), 'personal skill')
+            self.assertFalse((home / '.claude/hooks/block-risky-commands.py').exists())
 
     def test_existing_python_caches_do_not_conflict_with_installation(self):
         with tempfile.TemporaryDirectory() as tmp:
             cache = Path(tmp) / '.claude/__pycache__/notify_utils.cpython-314.pyc'
             cache.parent.mkdir(parents=True)
             cache.write_bytes(b'personal cache')
-            subprocess.run(['python3', str(ROOT / 'install.py'), '--agent', 'both', '--target-home', tmp], check=True, capture_output=True)
+            subprocess.run(['python3', str(ROOT / 'install.py'), '--target-home', tmp], check=True, capture_output=True)
             self.assertEqual(cache.read_bytes(), b'personal cache')
 
 

@@ -8,20 +8,25 @@ Claude Code and Codex.
 Requires Python 3 and GNU Stow (`jq` for the Claude handoff hook).
 
 ```bash
-python3 install.py                     # Claude settings (default)
-python3 install.py --agent both        # Claude + Codex
-python3 install.py --agent both --dry-run
+python3 install.py                     # stow shared resources into ~
+python3 install.py --dry-run
 ```
 
-The installer stows `stowed/` into `~` (refusing unmanaged conflicts), then
-merges `settings-partial.json` into `~/.claude/settings.json`,
+The installer stows `stowed/` into `~`, refusing unmanaged conflicts.
+
+The settings are mise merge entries in `mise/config/config.ai.toml`, applied
+by `bootstrap.sh` when the `ai` group is enabled, or by `mise dot apply`. They
+merge `settings-partial.json` into `~/.claude/settings.json`,
 `codex-hooks-partial.json` into `~/.codex/hooks.json`, and
-`codex-config-partial.toml` into `~/.codex/config.toml`. The merge is additive
-and idempotent: it never removes keys or hooks, and backs up a file before
-changing it. In `config.toml` it only adds missing keys, so a key you've set
-to a different value stays as is (the installer prints which). **Removing something from a partial does not remove it from the live
-settings**; delete it there by hand. Restart the agents afterwards; Codex asks
-you to trust new hooks.
+`codex-config-partial.toml` into `~/.codex/config.toml`. mise owns only the keys in a partial, so keys the agents
+write themselves stay. A partial's arrays (permissions, sandbox paths, hooks)
+and scalars replace the live ones, and `mise/merge-guard.py` stops the apply
+when that would discard a live value, listing each. Adopt Claude settings with
+`review-settings.py`, edit the partial, or delete the value from the live file;
+`MISE_MERGE_ALLOW_LOSS=1` applies anyway. **Removing a key from a partial does
+not remove it from the live settings**; delete it there by hand. `mise dot diff`
+previews the changes. Restart the agents afterwards; Codex asks you to trust new
+hooks.
 
 ## Layout
 
@@ -33,9 +38,7 @@ you to trust new hooks.
 | `stowed/.claude/`, `stowed/.codex/` | Per-agent hook adapters |
 | `stowed/.agents/.skill-lock.json` | Third-party skill selections (`npx skills`) |
 
-Edit authored skills under `stowed/.agents/skills/`. Claude hook paths are
-kept stable on purpose: renaming one would leave the old command registered by
-the additive merge.
+Edit authored skills under `stowed/.agents/skills/`.
 
 ## Hooks
 
