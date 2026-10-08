@@ -43,7 +43,11 @@
     "claude-code-setup@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
-    "pr-review-toolkit@claude-plugins-official": true
+    "pr-review-toolkit@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": false,
+    "code-simplifier@claude-plugins-official": false,
+    "skill-creator@claude-plugins-official": false,
+    "cc-plugin-diff@builtin": false
   },
   "permissions": {
     "allow": [
@@ -116,7 +120,8 @@
       "Edit(//tmp/agent-work/**)",
       "Read(//private/tmp/agent-work/**)",
       "Edit(//private/tmp/agent-work/**)"
-    ]
+    ],
+    "defaultMode": "auto"
   },
   "hooks": {
     "PreToolUse": [
@@ -213,5 +218,6 @@
   "tui": "fullscreen",
   "attribution": {
     "pr": ""
-  }
+  },
+  "theme": "dark"
 }
