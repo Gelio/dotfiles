@@ -29,7 +29,7 @@ echo "> Installing WezTerm nightly"
 "$installer_path" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 rm "$installer_path"
 
-./stow.sh
+mise dot apply ~/.config/wezterm
 
 # wezterm.exe runs on Windows and does not see the WSL $HOME.
 # Add a stub config in the Windows home that loads the config from the WSL share.

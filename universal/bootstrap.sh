@@ -101,4 +101,26 @@ EOF
   echo "> Created $miserc. Edit it to enable optional groups, then re-run."
 fi
 
+# mise refuses to replace what is in the way of a directory it links as a whole:
+# a real directory of per-file links from older setups, a stow link, or a
+# default config the tool wrote itself (atuin's shell hook does that at every
+# prompt). Move these aside right before linking, so nothing recreates them in
+# between. `mise x` installs jq first on a new machine.
+dry_run=false
+for arg in "$@"; do
+  [[ "$arg" == --dry-run || "$arg" == -n ]] && dry_run=true
+done
+backup_suffix="pre-mise-$(date +%Y%m%d%H%M%S)"
+mise dot status --json |
+  mise x jq -- jq -r '.files[] | select(.mode == "symlink" and .state == "differs") | .target' |
+  while IFS= read -r target; do
+    target="${target/#\~/$HOME}"
+    if $dry_run; then
+      echo "> Would move $target to $target.$backup_suffix"
+    else
+      mv "$target" "$target.$backup_suffix"
+      echo "> Moved $target to $target.$backup_suffix. Delete it once you've checked it"
+    fi
+  done
+
 mise bootstrap --only dotfiles,tools "$@"

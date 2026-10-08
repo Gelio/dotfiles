@@ -25,8 +25,11 @@ installs it only if its SHA-256 matches the hash in the script. To bump the pin,
 - `config.local.toml`: gitignored, holds this machine's `dotfiles.root`.
 
 Each tool keeps its config files in `universal/<tool>/home/`, which mirrors `~`, and is
-linked by a `[dotfile_groups.<tool>]` entry. Turning a group off later does not remove
-its links; run `mise bootstrap dotfiles unapply <target>` for that.
+linked by a `[dotfile_groups.<tool>]` entry. Files are linked one by one, so directories
+like `~/.local/bin` can hold other files too. A directory that only the tool uses, like
+`~/.config/lazygit`, is linked as a whole through the group's `entries`, so files the
+tool creates there land in the repo. Turning a group off later does not remove its
+links; run `mise bootstrap dotfiles unapply <target>` for that.
 
 Upgrade tools with `mise upgrade` and mise itself with `mise self-update`.
 
@@ -46,8 +49,13 @@ cargo install --list   # uninstall the ones now in universal/mise/config/*.toml
 ls ~/go/bin            # remove lazygit, lazydocker, gotop
 ```
 
+Directories mise now links as a whole (`~/.config/lazygit`, `~/.config/kitty`, ...) may
+still be real directories or old stow links. `bootstrap.sh` moves them to
+`<dir>.pre-mise-<timestamp>` before linking; delete those once you've checked them.
+
 An older mise is fine as long as it is at least the pinned version; otherwise run
 `mise self-update` first. `bootstrap.sh` checks this.
 
-Tools not installed by mise (neovim, ghostty, kitty, wezterm) keep their own
-`install.sh`/`stow.sh` scripts and `stowed/` folders.
+The terminal emulators (ghostty, kitty, wezterm) are not installed by mise, but their
+config is linked by it anyway. Neovim keeps its own `install.sh`/`stow.sh` scripts and
+`stowed/` folder.

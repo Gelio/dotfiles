@@ -36,6 +36,9 @@ root = "atuin/home"
 target = "~"
 mode = "symlink-each"
 
+[dotfile_groups.atuin.entries]
+"~/.config/atuin" = { mode = "symlink" }
+
 [dotfile_groups.bat]
 root = "bat/home"
 target = "~"
@@ -66,7 +69,37 @@ root = "git/home"
 target = "~"
 mode = "symlink-each"
 
+[dotfile_groups.git.entries]
+"~/.config/lazygit" = { mode = "symlink" }
+"~/.config/gitui" = { mode = "symlink" }
+
 [dotfile_groups.rust]
 root = "rust/home"
 target = "~"
 mode = "symlink-each"
+
+# Terminal emulators are not installed by mise, but linking their config on a
+# machine without them is harmless.
+[dotfile_groups.ghostty]
+root = "ghostty/home"
+target = "~"
+mode = "symlink-each"
+
+[dotfile_groups.ghostty.entries]
+"~/.config/ghostty" = { mode = "symlink" }
+
+[dotfile_groups.kitty]
+root = "kitty/home"
+target = "~"
+mode = "symlink-each"
+
+[dotfile_groups.kitty.entries]
+"~/.config/kitty" = { mode = "symlink" }
+
+[dotfile_groups.wezterm]
+root = "wezterm/home"
+target = "~"
+mode = "symlink-each"
+
+[dotfile_groups.wezterm.entries]
+"~/.config/wezterm" = { mode = "symlink" }
