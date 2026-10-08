@@ -1,6 +1,6 @@
 {
   "skill": "jira-preferences",
-  "skill_path": "../../stowed/.agents/skills/jira-preferences/SKILL.md",
+  "skill_path": "../../home/.agents/skills/jira-preferences/SKILL.md",
   "scenarios": [
     {
       "id": 1,

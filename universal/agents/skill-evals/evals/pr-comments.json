@@ -1,6 +1,6 @@
 {
   "skill": "pr-comments",
-  "skill_path": "../../stowed/.agents/skills/pr-comments/SKILL.md",
+  "skill_path": "../../home/.agents/skills/pr-comments/SKILL.md",
   "scenarios": [
     {
       "id": 1,

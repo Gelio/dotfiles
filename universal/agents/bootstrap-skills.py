@@ -15,7 +15,7 @@ def main():
     parser.add_argument('--apply', action='store_true', help='run the commands (default: print only)')
     parser.add_argument('--agent', nargs='+', choices=['claude-code', 'codex'], default=['claude-code', 'codex'])
     args = parser.parse_args()
-    lock = json.loads((ROOT / 'stowed/.agents/.skill-lock.json').read_text())
+    lock = json.loads((ROOT / 'home/.agents/.skill-lock.json').read_text())
     groups = defaultdict(list)
     for name, skill in lock['skills'].items():
         if skill['sourceType'] != 'github':

@@ -1,6 +1,6 @@
 {
   "skill": "commit-conventions",
-  "skill_path": "../../stowed/.agents/skills/commit-conventions/SKILL.md",
+  "skill_path": "../../home/.agents/skills/commit-conventions/SKILL.md",
   "scenarios": [
     {
       "id": 1,

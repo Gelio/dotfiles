@@ -1,6 +1,6 @@
 {
   "skill": "session-handoff",
-  "skill_path": "../../stowed/.agents/skills/session-handoff/SKILL.md",
+  "skill_path": "../../home/.agents/skills/session-handoff/SKILL.md",
   "scenarios": [
     {
       "id": 1,

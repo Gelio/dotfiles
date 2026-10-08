@@ -5,20 +5,17 @@ Claude Code and Codex.
 
 ## Install
 
-Requires Python 3 and GNU Stow (`jq` for the Claude handoff hook).
+Enable the `ai` group in `mise/config/miserc.toml` and run `bootstrap.sh` (or
+`mise dot apply`). Requires Python 3 (`jq` for the Claude handoff hook).
 
-```bash
-python3 install.py                     # stow shared resources into ~
-python3 install.py --dry-run
-```
+The `agents` dotfile group in `mise/config/config.ai.toml` links each file of
+`home/` that is in git into `~`. A new file is linked by the next apply after
+`git add`. Third-party skills next to the linked ones are left alone.
 
-The installer stows `stowed/` into `~`, refusing unmanaged conflicts.
-
-The settings are mise merge entries in `mise/config/config.ai.toml`, applied
-by `bootstrap.sh` when the `ai` group is enabled, or by `mise dot apply`. They
-merge `settings-partial.json` into `~/.claude/settings.json`,
-`codex-hooks-partial.json` into `~/.codex/hooks.json`, and
-`codex-config-partial.toml` into `~/.codex/config.toml`. mise owns only the keys in a partial, so keys the agents
+Merge entries in the same file merge `settings-partial.json` into
+`~/.claude/settings.json`, `codex-hooks-partial.json` into
+`~/.codex/hooks.json`, and `codex-config-partial.toml` into
+`~/.codex/config.toml`. mise owns only the keys in a partial, so keys the agents
 write themselves stay. A partial's arrays (permissions, sandbox paths, hooks)
 and scalars replace the live ones, and `mise/merge-guard.py` stops the apply
 when that would discard a live value, listing each. Adopt Claude settings with
@@ -32,13 +29,13 @@ hooks.
 
 | Source | Installed as |
 | --- | --- |
-| `stowed/.agents/skills/<name>/` | `~/.agents/skills/<name>/` (Codex reads this directly) |
-| `stowed/.claude/skills/<name>` | `~/.claude/skills/<name>`, a link to the shared skill |
-| `stowed/.agents/lib/agent_setup/` | Shared hook policy and notifications |
-| `stowed/.claude/`, `stowed/.codex/` | Per-agent hook adapters |
-| `stowed/.agents/.skill-lock.json` | Third-party skill selections (`npx skills`) |
+| `home/.agents/skills/<name>/` | `~/.agents/skills/<name>/` (Codex reads this directly) |
+| `home/.claude/skills/<name>` | `~/.claude/skills/<name>`, a link to the shared skill |
+| `home/.agents/lib/agent_setup/` | Shared hook policy and notifications |
+| `home/.claude/`, `home/.codex/` | Per-agent hook adapters |
+| `home/.agents/.skill-lock.json` | Third-party skill selections (`npx skills`) |
 
-Edit authored skills under `stowed/.agents/skills/`.
+Edit authored skills under `home/.agents/skills/`.
 
 ## Hooks
 
@@ -80,7 +77,7 @@ and asks whether to adopt or permanently ignore each
 
 ```bash
 python3 -m unittest discover -s tests
-python3 -m unittest discover -s stowed/.agents/skills/session-handoff/evals -p 'test_*.py'
+python3 -m unittest discover -s home/.agents/skills/session-handoff/evals -p 'test_*.py'
 ```
 
 `skill-evals/` benchmarks skill bodies through Claude; see its README.

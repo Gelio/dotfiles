@@ -1,6 +1,6 @@
 {
   "skill": "enrich-todos",
-  "skill_path": "../../stowed/.agents/skills/enrich-todos/SKILL.md",
+  "skill_path": "../../home/.agents/skills/enrich-todos/SKILL.md",
   "scenarios": [
     {
       "id": 1,

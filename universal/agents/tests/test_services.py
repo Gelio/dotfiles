@@ -9,7 +9,7 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'stowed/.agents/lib'))
+sys.path.insert(0, str(ROOT / 'home/.agents/lib'))
 from agent_setup import notifications
 from agent_setup.fixups import check_fixup
 
@@ -48,7 +48,7 @@ class ServicesTests(unittest.TestCase):
             git('commit', '-q', f'--fixup={target}')
             command = f'git commit --fixup={target}'
             self.assertIn('Extra files in this fixup: extra', check_fixup(command, tmp))
-            for adapter in ['stowed/.claude/hooks/verify-fixup-scope.py', 'stowed/.codex/hooks/agent-policy.py']:
+            for adapter in ['home/.claude/hooks/verify-fixup-scope.py', 'home/.codex/hooks/agent-policy.py']:
                 payload = {'hook_event_name': 'PostToolUse', 'tool_name': 'Bash', 'tool_input': {'command': command}, 'cwd': tmp}
                 result = subprocess.run(['python3', str(ROOT / adapter)], input=json.dumps(payload), text=True, capture_output=True, check=True)
                 data = json.loads(result.stdout)

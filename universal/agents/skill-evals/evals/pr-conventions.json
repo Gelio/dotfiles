@@ -1,6 +1,6 @@
 {
   "skill": "pr-conventions",
-  "skill_path": "../../stowed/.agents/skills/pr-conventions/SKILL.md",
+  "skill_path": "../../home/.agents/skills/pr-conventions/SKILL.md",
   "scenarios": [
     {
       "id": 1,

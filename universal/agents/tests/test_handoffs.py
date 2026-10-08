@@ -9,7 +9,7 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'stowed/.agents/skills/session-handoff/scripts'))
+sys.path.insert(0, str(ROOT / 'home/.agents/skills/session-handoff/scripts'))
 from _handoff_paths import capture_origin, resolve_project_root
 
 
@@ -39,11 +39,11 @@ class HandoffTests(unittest.TestCase):
             env = {**os.environ, 'HOME': tmp}
             for agent in ['claude', 'codex']:
                 payload = {'session_id': f'{agent}-session', 'cwd': str(repo), 'hook_event_name': 'SessionStart'}
-                adapter = ROOT / ('stowed/.claude/hooks/capture-handoff-origin.py' if agent == 'claude' else 'stowed/.codex/hooks/session-start.py')
+                adapter = ROOT / ('home/.claude/hooks/capture-handoff-origin.py' if agent == 'claude' else 'home/.codex/hooks/session-start.py')
                 result = subprocess.run(['python3', str(adapter)], input=json.dumps(payload), text=True, capture_output=True, env=env, check=True)
                 if agent == 'codex':
                     self.assertIn(str(repo), json.loads(result.stdout)['hookSpecificOutput']['additionalContext'])
-                subprocess.run(['python3', str(ROOT / 'stowed/.agents/skills/session-handoff/scripts/create_handoff.py'), agent, '--project-dir', str(repo)], cwd=tmp, env=env, check=True, capture_output=True)
+                subprocess.run(['python3', str(ROOT / 'home/.agents/skills/session-handoff/scripts/create_handoff.py'), agent, '--project-dir', str(repo)], cwd=tmp, env=env, check=True, capture_output=True)
             files = list((home / '.local/agent-handoffs').glob('*/*.md'))
             self.assertEqual(len(files), 2)
             self.assertEqual(files[0].parent, files[1].parent)

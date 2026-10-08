@@ -1,6 +1,6 @@
 {
   "skill": "todos",
-  "skill_path": "../../stowed/.agents/skills/todos/SKILL.md",
+  "skill_path": "../../home/.agents/skills/todos/SKILL.md",
   "scenarios": [
     {
       "id": 1,

@@ -5,6 +5,14 @@ antigravity-cli = "latest"
 "npm:@github/copilot" = "latest"
 "npm:@zed-industries/claude-agent-acp" = "latest"
 
+# Skills, hooks and scripts shared by Claude Code and Codex. Only files in git,
+# so Python caches and other untracked files stay out of ~.
+[dotfile_groups.agents]
+root = "agents/home"
+target = "~"
+mode = "symlink-each"
+manifest = "git"
+
 # The agents rewrite these files with their own state (plugins, project trust),
 # so mise owns only the keys in each partial. Arrays such as permissions and
 # hooks are replaced whole; mise/merge-guard.py stops an apply that would drop
