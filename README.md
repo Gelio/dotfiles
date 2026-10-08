@@ -44,6 +44,9 @@ first `bootstrap.sh` run or new shells:
 find ~/.bashrc.d ~/.zshrc.d ~/.config/mise -xtype l -print -delete
 # Old stow created a real directory here; bootstrap.sh needs it free for its symlink
 rmdir ~/.config/mise
+# git/install.sh appended this include without the markers mise now manages it with.
+# Your git identity is in that file, so run bootstrap.sh right after
+git config --global --unset-all include.path '^~/\.config/git\.gitconfig$'
 # Old copies that would shadow the mise ones outside interactive shells
 cargo install --list   # uninstall the ones now in universal/mise/config/*.toml
 ls ~/go/bin            # remove lazygit, lazydocker, gotop

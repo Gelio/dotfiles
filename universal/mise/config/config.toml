@@ -73,6 +73,13 @@ mode = "symlink-each"
 "~/.config/lazygit" = { mode = "symlink" }
 "~/.config/gitui" = { mode = "symlink" }
 
+[dotfiles]
+# ~/.gitconfig stays machine-local (identity, credentials), so mise only owns
+# the include of the shared config
+"~/.gitconfig/dotfiles-include" = { block = '''
+[include]
+  path = "~/.config/git.gitconfig"''' }
+
 [dotfile_groups.rust]
 root = "rust/home"
 target = "~"
