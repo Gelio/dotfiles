@@ -8,8 +8,16 @@ config.font = wezterm.font("JetBrainsMono Nerd Font Mono")
 config.font_size = 13.0
 -- Make the underline thicker to better see contexts in Neovim
 config.underline_thickness = "125%"
+-- The command palette and CharSelect default to the window frame font (Roboto otherwise)
+config.window_frame = { font = config.font }
+-- Both default to 14, larger than the terminal text
+config.command_palette_font_size = 13.0
+config.char_select_font_size = 13.0
 
 config.color_scheme = "Catppuccin Mocha"
+local scheme = wezterm.color.get_builtin_schemes()[config.color_scheme]
+config.command_palette_bg_color = scheme.background
+config.command_palette_fg_color = scheme.foreground
 
 config.audible_bell = "Disabled"
 -- No title bar, but keep the borders so the window can still be resized
