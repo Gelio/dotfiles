@@ -277,15 +277,17 @@ keybindings:
 
   # Move the focused window's parent workspace to a monitor in a given
   # direction.
+  # NOTE: use lalt, not alt: AltGr is sent as LCtrl+RAlt, so ctrl+alt+l would
+  # swallow AltGr+L ("ł") on the Polish Programmer layout
   # NOTE: cannot use alt+lwin or alt+rwin because Windows intercepts that earlier than GlazeWM
   - commands: ["move-workspace --direction left"]
-    bindings: ["ctrl+alt+h"]
+    bindings: ["ctrl+lalt+h"]
   - commands: ["move-workspace --direction right"]
-    bindings: ["ctrl+alt+l"]
+    bindings: ["ctrl+lalt+l"]
   - commands: ["move-workspace --direction up"]
-    bindings: ["ctrl+alt+k"]
+    bindings: ["ctrl+lalt+k"]
   - commands: ["move-workspace --direction down"]
-    bindings: ["ctrl+alt+j"]
+    bindings: ["ctrl+lalt+j"]
 
   # Put workspaces back on their monitors after sleep/lock scrambles them.
   # Runs the glazewm-gather-workspaces script from WSL.
