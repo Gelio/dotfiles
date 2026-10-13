@@ -1,7 +1,7 @@
 [tools]
 java = "zulu-17.42.19"
 maven = "3"
-python = "3.14"
+python = "3.15"
 go = "latest"
 bun = "latest"
 pnpm = "latest"
