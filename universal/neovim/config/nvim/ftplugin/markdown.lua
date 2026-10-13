@@ -6,11 +6,10 @@ local function is_codex_prompt()
 	return vim.fs.dirname(bufname) == editor_dir
 end
 
-if vim.fn.getenv("CLAUDE_CODE_ENTRYPOINT") == "cli" or is_codex_prompt() then
-	-- Wrap long lines at word boundaries to make writing prompts easier.
-	vim.opt_local.wrap = true
-	vim.opt_local.linebreak = true
+vim.opt_local.wrap = true
+vim.opt_local.linebreak = true
 
+if vim.fn.getenv("CLAUDE_CODE_ENTRYPOINT") == "cli" or is_codex_prompt() then
 	-- Claude Code and Codex use temporary files outside the project when editing them in the default editor.
 	-- This messes up path autocompletion.
 	-- Thus, let's add the current directory to the path, so that autocompletion works as expected.
