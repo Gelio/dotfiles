@@ -54,13 +54,34 @@ def find_git_commit_command(command: str) -> str | None:
     return None
 
 
+# Short options of `git commit` that take a value; in a bundle such as
+# `-qam msg` or `-Fmsg.txt`, everything after one of these is its value.
+_SHORT_WITH_VALUE = set("mFCcStu")
+
+
+def _short_flags(part: str) -> set[str]:
+    """Return the short options in a bundled token, e.g. `-qam` -> {q, a, m}."""
+    if not part.startswith("-") or part.startswith("--") or len(part) < 2:
+        return set()
+    found: set[str] = set()
+    for ch in part[1:]:
+        found.add(ch)
+        if ch in _SHORT_WITH_VALUE:
+            break
+    return found
+
+
 def has_flag(command: str, *flags: str) -> bool:
     try:
         parts = shlex.split(command)
     except ValueError:
         parts = command.split()
     prefixes = tuple(f"{flag}=" for flag in flags)
-    return any(p in flags or p.startswith(prefixes) for p in parts)
+    short = {f[1] for f in flags if len(f) == 2 and f[0] == "-" and f[1] != "-"}
+    return any(
+        p in flags or p.startswith(prefixes) or short & _short_flags(p)
+        for p in parts
+    )
 
 
 def check_commit(command: str) -> str | None:
