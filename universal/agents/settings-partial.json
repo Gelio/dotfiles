@@ -69,7 +69,6 @@
       "Bash(aws configure sso*)",
       "Bash(aws sso login*)",
       "Bash(aws sts get-caller-identity*)",
-      "Bash(aws eks update-kubeconfig*)",
       "Bash(gcloud auth login*)",
       "Bash(gcloud container clusters get-credentials*)",
       "Bash(oc login*)",
