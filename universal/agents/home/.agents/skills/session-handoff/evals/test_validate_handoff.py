@@ -254,16 +254,16 @@ class CrossRepoReferenceTests(unittest.TestCase):
 
     def setUp(self):
         self.parent = tempfile.mkdtemp(prefix="handoff-test-multi.")
-        self.primary = Path(self.parent) / "nexus-tests"
-        self.sibling = Path(self.parent) / "edbpgai-bootstrap"
+        self.primary = Path(self.parent) / "app-repo"
+        self.sibling = Path(self.parent) / "infra-repo"
         for repo in (self.primary, self.sibling):
             repo.mkdir()
             subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True)
         # Two real files in the sibling repo, referenced two different ways.
         wf = self.sibling / ".github" / "workflows"
         wf.mkdir(parents=True)
-        (wf / "prevent_update.yml").write_text("on: push\n")
-        tmpl = self.sibling / "deploy" / "charts" / "edbpgai-bootstrap"
+        (wf / "deploy.yml").write_text("on: push\n")
+        tmpl = self.sibling / "deploy" / "charts" / "infra-repo"
         tmpl.mkdir(parents=True)
         (tmpl / "values.yaml.template").write_text("x: 1\n")
 
@@ -278,11 +278,11 @@ class CrossRepoReferenceTests(unittest.TestCase):
 
     def test_sibling_prefixed_reference_resolves(self):
         # First path segment names the sibling repo dir -> rooted at the parent.
-        content = self._handoff("`edbpgai-bootstrap/.github/workflows/prevent_update.yml`")
+        content = self._handoff("`infra-repo/.github/workflows/deploy.yml`")
         existing, missing, _external = validate_handoff.check_file_references(
             content, str(self.primary)
         )
-        self.assertIn("edbpgai-bootstrap/.github/workflows/prevent_update.yml", existing)
+        self.assertIn("infra-repo/.github/workflows/deploy.yml", existing)
         self.assertEqual(missing, [])
 
     def test_sibling_repo_root_relative_reference_resolves(self):
@@ -290,13 +290,13 @@ class CrossRepoReferenceTests(unittest.TestCase):
         # prefix). The sibling repo is discovered via the other reference's
         # first segment, then this one resolves through its file index.
         content = self._handoff(
-            "`edbpgai-bootstrap/.github/workflows/prevent_update.yml` and "
-            "`deploy/charts/edbpgai-bootstrap/values.yaml.template`"
+            "`infra-repo/.github/workflows/deploy.yml` and "
+            "`deploy/charts/infra-repo/values.yaml.template`"
         )
         existing, missing, _external = validate_handoff.check_file_references(
             content, str(self.primary)
         )
-        self.assertIn("deploy/charts/edbpgai-bootstrap/values.yaml.template", existing)
+        self.assertIn("deploy/charts/infra-repo/values.yaml.template", existing)
         self.assertEqual(missing, [])
 
     def test_additional_working_dir_from_absolute_prose_path(self):
@@ -305,12 +305,12 @@ class CrossRepoReferenceTests(unittest.TestCase):
         # candidate root so its repo-root-relative references resolve.
         content = self._handoff(
             f"Work happened in `{self.sibling}`.\n\n"
-            "`deploy/charts/edbpgai-bootstrap/values.yaml.template`"
+            "`deploy/charts/infra-repo/values.yaml.template`"
         )
         existing, missing, _external = validate_handoff.check_file_references(
             content, str(self.primary)
         )
-        self.assertIn("deploy/charts/edbpgai-bootstrap/values.yaml.template", existing)
+        self.assertIn("deploy/charts/infra-repo/values.yaml.template", existing)
         self.assertEqual(missing, [])
 
 

@@ -235,7 +235,7 @@ def discover_candidate_roots(
     from:
       1. `project_root` itself.
       2. Sibling repos named by a reference's first path segment, e.g.
-         `edbpgai-bootstrap/...` -> `<project_root>/../edbpgai-bootstrap` when
+         `infra-repo/...` -> `<project_root>/../infra-repo` when
          that is a git repo. Covers references that include the repo-name prefix.
       3. The git toplevels of absolute paths mentioned anywhere in the handoff
          (the additional-working-directory list, usually called out in prose).
@@ -351,7 +351,7 @@ def check_file_references(
             ):
                 resolves = True
                 break
-        # Repo-name-prefixed references (e.g. `edbpgai-bootstrap/.github/...`)
+        # Repo-name-prefixed references (e.g. `infra-repo/.github/...`)
         # are rooted at the parent of the primary repo.
         if not resolves and (parent / rel).exists():
             resolves = True
