@@ -74,13 +74,13 @@ Think about the final commit order while you work. Each commit should only depen
 
 ### Example flow
 
-Given a todos.md task: `- [ ] Fix null check in FileAssessmentsTable`
+Given a todos.md task: `- [ ] Fix null check in InvoicesTable`
 
-1. You check `git log --oneline main..HEAD` and see `abc1234 feat(MIG-7922): add File Assessments table`
-2. You spawn a subagent: "Fix the null check in `FileAssessmentsTable` when the API returns an empty response. File: `onprem/ui/src/pages/.../FileAssessmentsTable.tsx`"
+1. You check `git log --oneline main..HEAD` and see `abc1234 feat(PROJ-456): add Invoices table`
+2. You spawn a subagent: "Fix the null check in `InvoicesTable` when the API returns an empty response. File: `web/src/pages/.../InvoicesTable.tsx`"
 3. Subagent completes the fix
 4. You stage the file and run `git absorb`. Absorb attributes the hunk
-   to `abc1234` and creates `fixup! feat(MIG-7922): add File Assessments table`.
+   to `abc1234` and creates `fixup! feat(PROJ-456): add Invoices table`.
 5. You check `git log --oneline -5` and `git status` to confirm: one fixup
    commit created, nothing left unstaged.
 6. You mark `- [x]` in the todos.md and report: "Fixed null check — `git absorb` created a fixup for `abc1234`."
@@ -95,17 +95,17 @@ When done (or blocked), provide:
 4. **Current commit history** (as-is on the branch):
    ```
    Current commits (in creation order):
-   - abc1234 feat(MIG-7922): add File Assessments table
-   - def5678 fixup! feat(MIG-7922): add File Assessments table  (null check)
-   - ghi9012 feat(MIG-7922): add shared utility for assessments
-   - jkl3456 feat(MIG-7922): add bar styling
+   - abc1234 feat(PROJ-456): add Invoices table
+   - def5678 fixup! feat(PROJ-456): add Invoices table  (null check)
+   - ghi9012 feat(PROJ-456): add shared utility for invoices
+   - jkl3456 feat(PROJ-456): add bar styling
    ```
 5. **Planned final order** after rebase (with reordering and fixup squashing):
    ```
    Planned final order:
-   1. feat(MIG-7922): add shared utility for assessments   ← moved earlier (bar styling depends on it)
-   2. feat(MIG-7922): add File Assessments table            ← includes fixup (null check)
-   3. feat(MIG-7922): add bar styling
+   1. feat(PROJ-456): add shared utility for invoices   ← moved earlier (bar styling depends on it)
+   2. feat(PROJ-456): add Invoices table                ← includes fixup (null check)
+   3. feat(PROJ-456): add bar styling
    ```
 6. Ask: **"Do you want me to proceed with the rebase, or do you need more changes first?"**
 
