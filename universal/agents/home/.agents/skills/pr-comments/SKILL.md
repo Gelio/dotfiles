@@ -21,7 +21,7 @@ text, issue comments, and pending-review comments. It does not cover PR
 retroactively rewrite already-posted comments unless the user asks.
 
 The recurring failure this skill prevents: defaulting to plain Markdown — bare
-backticks for a code location, raw `MIG-1234`, prose line numbers like "L123" or
+backticks for a code location, raw `PROJ-1234`, prose line numbers like "L123" or
 "~line 201". A reviewer can't click any of those. The fixes below all serve one
 goal: every reference the reader might want to follow is a real, durable link.
 
@@ -29,7 +29,7 @@ goal: every reference the reader might want to follow is a real, durable link.
 
 1. **A code *location* is always a SHA-pinned permalink — never a bare path, prose
    line number, or backticks alone.** Backticks are fine for a short inline
-   *identifier* (`ErrorAttr`, `validatePostgresProceduralLanguages`), but the
+   *identifier* (`ErrorAttr`, `validateTimezoneSettings`), but the
    moment you point at *where* something lives (file, line, range, SQL migration,
    workflow step), it gets a permalink. The mechanics — permalink shape and how to
    pick the SHA — live in `jira-preferences` ("Permalinks for code references");
@@ -38,8 +38,8 @@ goal: every reference the reader might want to follow is a real, durable link.
    that's already on `origin` (pre-push SHAs 404); present state → `main` HEAD;
    history → the introducing commit. Never `blob/main/…` — it shifts as `main`
    advances.
-2. **Ticket references are linked, never bare.** `[MIG-1234](https://enterprisedb.atlassian.net/browse/MIG-1234)`,
-   not `MIG-1234`. A bare key forces the reader to go find it themselves.
+2. **Ticket references are linked, never bare.** `[PROJ-1234](https://example.atlassian.net/browse/PROJ-1234)`,
+   not `PROJ-1234`. A bare key forces the reader to go find it themselves.
 3. **PR/issue references**: `#123` auto-links within the same repo; cross-repo
    references get the full URL.
 4. **No hard line wrapping.** Each paragraph is one long line — GitHub wraps it.
@@ -85,28 +85,28 @@ when you're pointing at one, otherwise `file:line`. Mirror the `jira-preferences
 pattern: an inline-code identifier followed by a linked location. Don't put the
 `code` span *inside* the link text.
 
-Good: ``the sort in `sortProceduralLanguagesByName` ([scenario_183.go:412](https://github.com/EnterpriseDB/nexus-tests/blob/6f017fb/test-runner/pkg/testscenarios/scenario_183.go#L412)) mutates the caller's slice``
+Good: ``the sort in `sortPluginsByName` ([scenario_42.go:412](https://github.com/acme/e2e-tests/blob/4e8d2a7/runner/pkg/checks/scenario_42.go#L412)) mutates the caller's slice``
 
 ## Before / after
 
 **Pointing at a code location**
 
-Before (don't): The nil guard in `validatePostgresProceduralLanguages` at ~line 201 is inconsistent with the other validator.
+Before (don't): The nil guard in `validateTimezoneSettings` at ~line 201 is inconsistent with the other validator.
 
-After (do): The nil guard in `validatePostgresProceduralLanguages` ([scenario_183.go:201](https://github.com/EnterpriseDB/nexus-tests/blob/6f017fb/test-runner/pkg/testscenarios/scenario_183.go#L201)) is inconsistent with `validatePostgisExtension` ([scenario_183.go:248](https://github.com/EnterpriseDB/nexus-tests/blob/6f017fb/test-runner/pkg/testscenarios/scenario_183.go#L248)) — both share the caller's non-nil guarantee, so either both guard or neither should.
+After (do): The nil guard in `validateTimezoneSettings` ([scenario_42.go:201](https://github.com/acme/e2e-tests/blob/4e8d2a7/runner/pkg/checks/scenario_42.go#L201)) is inconsistent with `validateLocaleSettings` ([scenario_42.go:248](https://github.com/acme/e2e-tests/blob/4e8d2a7/runner/pkg/checks/scenario_42.go#L248)) — both share the caller's non-nil guarantee, so either both guard or neither should.
 
 **Referencing a ticket**
 
-Before (don't): Please apply the MIG-9641 rules on the Markdown test scenario.
+Before (don't): Please apply the PROJ-9641 rules on the Markdown test scenario.
 
-After (do): Please apply the [MIG-9641](https://enterprisedb.atlassian.net/browse/MIG-9641) rules on the Markdown test scenario.
+After (do): Please apply the [PROJ-9641](https://example.atlassian.net/browse/PROJ-9641) rules on the Markdown test scenario.
 
 **Replying to a stale thread**
 
 The reviewer's comment is anchored to a line that the latest force-push moved. Reply
 *in the thread* (not a new comment on the new line):
 
-> Fixed — the sort now operates on a copy ([scenario_183.go:415](https://github.com/EnterpriseDB/nexus-tests/blob/<new-sha>/test-runner/pkg/testscenarios/scenario_183.go#L415)). Keeping this here on the original thread so the discussion stays together.
+> Fixed — the sort now operates on a copy ([scenario_42.go:415](https://github.com/acme/e2e-tests/blob/<new-sha>/runner/pkg/checks/scenario_42.go#L415)). Keeping this here on the original thread so the discussion stays together.
 
 ## Related skills
 
