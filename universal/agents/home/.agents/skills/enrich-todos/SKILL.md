@@ -45,10 +45,10 @@ Before:
 After:
 ```markdown
 - [ ] Add error handling to the delete mutation
-  **Context:** `useIdpDeleteAction` (`onprem/ui/src/components/IdentityProviders/actions/useIdpDeleteAction.tsx`) shows the pattern: wrap the mutation's `onError` with `errorHandler` from `@/utils/errorHandler.ts`. The delete endpoint returns `409` when the resource is in use — handle that with a specific toast (see `useDeleteCluster.tsx:47`).
+  **Context:** `useWebhookDeleteAction` (`web/src/components/Webhooks/actions/useWebhookDeleteAction.tsx`) shows the pattern: wrap the mutation's `onError` with `errorHandler` from `@/utils/errorHandler.ts`. The delete endpoint returns `409` when the resource is in use — handle that with a specific toast (see `useDeleteProject.tsx:47`).
 - [ ] Rename `oldVar` to `newVar`
 - [ ] Add e2e test for the new filter dropdown
-  **Context:** The dropdown renders inside `data-testid="status-filter"`. Use `page.getByTestId('status-filter').getByRole('combobox')` — `getByRole('combobox')` alone matches multiple elements. See `onprem/e2e/tests/clusters/clusterList.spec.ts:82` for a similar filter test.
+  **Context:** The dropdown renders inside `data-testid="status-filter"`. Use `page.getByTestId('status-filter').getByRole('combobox')` — `getByRole('combobox')` alone matches multiple elements. See `web/e2e/tests/projects/projectList.spec.ts:82` for a similar filter test.
 ```
 
 The "Rename" item was skipped — the next agent needs no extra context for that.
