@@ -93,15 +93,15 @@ falls through the gap between the two skills.
 - **Never plain-text-path a gitignored ledger, and don't permalink one** — agent-plans are typically gitignored, so the link 404s. Make each surfaced comment self-contained instead. Permalink a ledger only when it is actually committed and reachable.
 - **Inline comments go as a single batched review**, so the reviewer gets one notification and one coherent pass, not a drip of separate comments.
 
-## Example — MIG-8939 (the pattern that produced this skill)
+## Example — PROJ-321
 
-Input: a 16-entry decisions ledger (Q1–Q16) plus two PR branches. Outcome after routing:
+Input: a 16-entry decisions ledger (Q1–Q16) plus two PR branches that move a nightly E2E suite onto a new CI runner. Outcome after routing:
 
 - **Most Q-decisions → SKIP.** Their rationale was already in the diff, an existing comment, or the PR body.
-- **AWS-auth reasoning → CODE comments (2 `docs` commits).** It had lived only in commit bodies. Moved into `run-tests.yaml` (the OIDC/appliance-dev two-layer model, the RKE cross-account-SCP constraint that makes a pillar role fail with `AccessDenied`, the artifact-name uniqueness reason) and into `e2e-tests.yaml` (the skip is portal-reachability, not auth).
-- **Cross-cutting narrative → PR-DESC.** The per-pillar-OIDC-with-appliance-dev-fallback story and the EKS-on-centralized-network descope went into both PR descriptions, where no single line anchored them.
-- **One decision → a dropped candidate.** A proposed comment on the `Add aws profile for pillar migration` step was cut because it merely restated the code; its real rationale went to the PR description instead.
-- **Exactly one decision → INLINE.** The `e2e-nexus-test` display-name choice ("Migration Nexus E2E", because the Migration team has multiple squads) plus the `needs: [setup]`-only reasoning — line-specific and not worth shipping in a code comment. One comment, on one line, in one batched review.
+- **Cloud-auth reasoning → CODE comments (2 `docs` commits).** It had lived only in commit bodies. Moved into `nightly-e2e.yaml` (why the job assumes a role through OIDC instead of using a long-lived key, the cross-account policy that makes the shared deploy role fail with `AccessDenied`, the artifact-name uniqueness reason) and into `smoke-tests.yaml` (the skip is about the staging URL being unreachable from the runner, not about auth).
+- **Cross-cutting narrative → PR-DESC.** The OIDC-with-static-key-fallback story and the descoped multi-region run went into both PR descriptions, where no single line anchored them.
+- **One decision → a dropped candidate.** A proposed comment on the `Configure cloud credentials` step was cut because it merely restated the code; its real rationale went to the PR description instead.
+- **Exactly one decision → INLINE.** The job's display name ("Nightly E2E (checkout)", because several teams share the CI dashboard) plus the `needs: [setup]`-only reasoning — line-specific and not worth shipping in a code comment. One comment, on one line, in one batched review.
 
 The lesson encoded above: of sixteen decisions, the right call was fifteen
 durable-or-skip and a single inline comment. Reaching for an inline comment per
