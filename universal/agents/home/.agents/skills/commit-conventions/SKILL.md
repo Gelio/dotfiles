@@ -60,12 +60,12 @@ non-obvious decisions baked into the chosen approach.
   propagates secrets through `uses:` + `secrets: inherit`, not through
   `workflow_dispatch`")
 - Why this approach was chosen over alternatives ("`strings.Contains`
-  rather than an enum because future Oracle scenarios should be covered
+  rather than an enum because future legacy-schema scenarios should be covered
   automatically")
 - What the change deliberately does NOT do, and why ("no
-  `BEACON_AGENT_VERSION` input — auto-alignment tracked by MIG-7276")
+  `SIDECAR_VERSION` input — auto-alignment tracked by PROJ-123")
 - Cross-references to related sites the reader should know about ("the
-  `oracleImage()` TODO cross-references this CI guard")
+  `fixtureImage()` TODO cross-references this CI guard")
 
 **Don't** restate things the diff already shows:
 
@@ -119,7 +119,7 @@ this commit*, or if it just narrates the diff, cut it.
   parenthetical or semicolon-separated inline list — easier to scan,
   easier to extend in a later commit
 - Name the specific owner of a resource rather than a generic category
-  (write "`edbpgai-bootstrap` repository secrets", not "org secrets" —
+  (write "`acme/deploy-config` repository secrets", not "org secrets" —
   if the reader needs to grant or rotate the secret, the generic noun
   doesn't tell them where to go)
 - **Use Markdown formatting**: wrap code identifiers in backticks
@@ -132,12 +132,12 @@ in the Post-Autosquash Message Review step.
 
 **Example:**
 ```
-feat(MIG-7922): add File Assessments table to application details
+feat(PROJ-456): add Invoices table to account details
 
-Add the `FileAssessmentsTable` component to the Application Details
-page, backed by the `useFileAssessments` hook. The table shows
-assessment results per file so users can see which files need attention
-without navigating to a separate view.
+Add the `InvoicesTable` component to the Account Details page, backed
+by the `useInvoices` hook. The table lists invoices per billing period
+so users can see which ones are unpaid without navigating to a separate
+view.
 ```
 
 ## Staging

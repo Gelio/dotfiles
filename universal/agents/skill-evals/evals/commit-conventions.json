@@ -6,7 +6,7 @@
       "id": 1,
       "name": "feature-commit-with-why",
       "kind": "core",
-      "prompt": "Write the git commit message for this change. I changed the oracleImage() helper to detect Oracle migration scenarios with strings.Contains instead of a hardcoded enum of known scenario names. I did it this way so that future Oracle scenarios are covered automatically without anyone having to update the enum. Scope it to ticket MIG-7276.",
+      "prompt": "Write the git commit message for this change. I changed the fixtureImage() helper to detect legacy-schema test scenarios with strings.Contains instead of a hardcoded enum of known scenario names. I did it this way so that future legacy-schema scenarios are covered automatically without anyone having to update the enum. Scope it to ticket PROJ-123.",
       "assertions": [
         {
           "text": "The subject line follows the 'type(scope): subject' conventional-commit format",
@@ -23,11 +23,11 @@
           "type": "judge"
         },
         {
-          "text": "The body explains WHY the change was made (the auto-cover-future-Oracle-scenarios rationale), not just what changed",
+          "text": "The body explains WHY the change was made (the auto-cover-future-legacy-schema-scenarios rationale), not just what changed",
           "type": "judge"
         },
         {
-          "text": "Code identifiers like oracleImage and strings.Contains are wrapped in backticks",
+          "text": "Code identifiers like fixtureImage and strings.Contains are wrapped in backticks",
           "type": "judge"
         },
         {
@@ -57,7 +57,7 @@
       "id": 3,
       "name": "noisy-context",
       "kind": "noisy",
-      "prompt": "Here is some context from our debugging session earlier:\n\n[10:02] build passed on CI run 4821\n[10:03] flaky test FileAssessmentsTable.spec retried twice then passed\n[10:05] discussed whether to memoize the selector, decided not to for now\n[10:10] noticed the API returns 409 when a resource is in use\n[10:14] lunch\n\nAnyway, back to the task: I just added a null check to the FileAssessmentsTable component so it renders an empty state instead of crashing when the assessments API returns an empty response. Write me the commit message. Scope it to MIG-7922.",
+      "prompt": "Here is some context from our debugging session earlier:\n\n[10:02] build passed on CI run 4821\n[10:03] flaky test InvoicesTable.spec retried twice then passed\n[10:05] discussed whether to memoize the selector, decided not to for now\n[10:10] noticed the API returns 409 when a resource is in use\n[10:14] lunch\n\nAnyway, back to the task: I just added a null check to the InvoicesTable component so it renders an empty state instead of crashing when the invoices API returns an empty response. Write me the commit message. Scope it to PROJ-456.",
       "assertions": [
         {
           "text": "The subject follows the 'type(scope): subject' format",
@@ -78,7 +78,7 @@
       "id": 4,
       "name": "fixup-amend-on-branch",
       "kind": "core",
-      "prompt": "I found a bug: the FileAssessmentsTable null check I wrote is wrong. That table was added earlier on THIS branch (not merged yet). I want to fold this fix into the commit that introduced the table, not make a new standalone commit. The fix touches onprem/ui/src/.../FileAssessmentsTable.tsx. Walk me through the exact git commands you'd run.",
+      "prompt": "I found a bug: the InvoicesTable null check I wrote is wrong. That table was added earlier on THIS branch (not merged yet). I want to fold this fix into the commit that introduced the table, not make a new standalone commit. The fix touches web/src/.../InvoicesTable.tsx. Walk me through the exact git commands you'd run.",
       "assertions": [
         {
           "text": "Uses `git absorb` to attribute the staged fix to the right branch commit",
