@@ -1,6 +1,6 @@
 ---
 name: jira-preferences
-description: User preferences for working with Jira via the Atlassian MCP. Use whenever interacting with Jira tickets — creating, editing, reading, searching, linking, commenting on, or transitioning issues, adding worklogs, or running JQL. Applies to all Jira operations regardless of project. Triggers on use of an Atlassian/Jira integration, references to ticket keys (e.g. MIG-1234, PROJ-567), or when the user mentions Jira tickets, issues, epics, sprints, or comments.
+description: User preferences for working with Jira via the Atlassian MCP. Use whenever interacting with Jira tickets — creating, editing, reading, searching, linking, commenting on, or transitioning issues, adding worklogs, or running JQL. Applies to all Jira operations regardless of project. Triggers on use of an Atlassian/Jira integration, references to ticket keys (e.g. PROJ-1234, ABC-567), or when the user mentions Jira tickets, issues, epics, sprints, or comments.
 ---
 
 # Jira Workflow Preferences
@@ -33,14 +33,14 @@ Use `responseContentFormat: "markdown"` when fetching tickets (ADF isn't availab
 Always use an `inlineCard` node (ADF mode is required, per rule 1):
 
 ```json
-{"type": "inlineCard", "attrs": {"url": "https://enterprisedb.atlassian.net/browse/MIG-7921"}}
+{"type": "inlineCard", "attrs": {"url": "https://example.atlassian.net/browse/PROJ-7921"}}
 ```
 
-In conversation with the user (outside Jira descriptions), plain text like `MIG-7921` is fine.
+In conversation with the user (outside Jira descriptions), plain text like `PROJ-7921` is fine.
 
 ## Integrated example — edit a description
 
-User: "Add a 'Testing' section to MIG-1234 with a link to MIG-7921."
+User: "Add a 'Testing' section to PROJ-1234 with a link to PROJ-7921."
 
 1. **Fetch** the current description with `getJiraIssue` (`responseContentFormat: "markdown"`). You get Markdown back — not ADF — per the trap above.
 2. **Reconstruct ADF manually.** Build an ADF `doc` whose `content` preserves every heading, paragraph, list, and link from the fetched Markdown verbatim, then append the new section as ADF nodes. Do not drop or paraphrase existing content.
@@ -58,7 +58,7 @@ Minimal ADF skeleton for the appended section in step 2:
     { "type": "heading", "attrs": { "level": 2 }, "content": [{ "type": "text", "text": "Testing" }] },
     { "type": "paragraph", "content": [
       { "type": "text", "text": "See " },
-      { "type": "inlineCard", "attrs": { "url": "https://enterprisedb.atlassian.net/browse/MIG-7921" } }
+      { "type": "inlineCard", "attrs": { "url": "https://example.atlassian.net/browse/PROJ-7921" } }
     ]}
   ]
 }
@@ -85,8 +85,8 @@ Always pick a SHA, never a branch name. `blob/main/...` URLs are NOT permalinks 
 Embed permalinks as Markdown links with descriptive anchor text in the preview, then encode as `link` marks in the ADF body. Don't combine the `link` mark with a `code` mark on the same text node — that ADF combination is rejected. Pattern: `<inline code identifier> followed by ([path:line](permalink))`. Example:
 
 ```
-The runner hard-codes `EstateIngesterProjectRoleName` at
-[project.go#L12-L15](https://github.com/EnterpriseDB/nexus-tests/blob/<sha>/test-runner/pkg/testruninit/project.go#L12-L15).
+The runner hard-codes `DefaultProjectRoleName` at
+[project.go#L12-L15](https://github.com/acme/e2e-tests/blob/<sha>/runner/pkg/setup/project.go#L12-L15).
 ```
 
 ## Failure modes of Markdown mode (all confirmed, not theoretical)

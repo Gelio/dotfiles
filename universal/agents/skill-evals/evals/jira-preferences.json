@@ -6,7 +6,7 @@
       "id": 1,
       "name": "reconstruct-adf-for-edit",
       "kind": "core",
-      "prompt": "I'm editing the description of Jira ticket MIG-1234 via the Atlassian MCP. The current description (fetched as Markdown) is:\n\n## Background\nWe need to support SQL file uploads.\n\n## Acceptance criteria\n- Users can drag and drop files\n\nI want to add a new 'Testing' section that says to see MIG-7921 for the test plan. Show me exactly what you'll send to the editJiraIssue tool (the description payload) and how you'll go about it.",
+      "prompt": "I'm editing the description of Jira ticket PROJ-1234 via the Atlassian MCP. The current description (fetched as Markdown) is:\n\n## Background\nWe need to support CSV file uploads.\n\n## Acceptance criteria\n- Users can drag and drop files\n\nI want to add a new 'Testing' section that says to see PROJ-7921 for the test plan. Show me exactly what you'll send to the editJiraIssue tool (the description payload) and how you'll go about it.",
       "assertions": [
         {
           "text": "The payload is an ADF document (a JSON object with \"type\": \"doc\"), not Markdown",
@@ -14,7 +14,7 @@
           "pattern": "\"type\"\\s*:\\s*\"doc\""
         },
         {
-          "text": "The MIG-7921 reference uses an inlineCard ADF node rather than a bare URL or plain text",
+          "text": "The PROJ-7921 reference uses an inlineCard ADF node rather than a bare URL or plain text",
           "type": "contains",
           "needle": "inlineCard"
         },
@@ -37,7 +37,7 @@
       "id": 2,
       "name": "code-reference-permalink",
       "kind": "core",
-      "prompt": "I'm writing a Jira comment that needs to point at the EstateIngesterProjectRoleName constant, which is hard-coded in test-runner/pkg/testruninit/project.go around lines 12-15 in the EnterpriseDB/nexus-tests repo. Write the sentence I should put in the comment.",
+      "prompt": "I'm writing a Jira comment that needs to point at the DefaultProjectRoleName constant, which is hard-coded in runner/pkg/setup/project.go around lines 12-15 in the acme/e2e-tests repo. Write the sentence I should put in the comment.",
       "assertions": [
         {
           "text": "The code reference is a SHA-pinned GitHub permalink (a blob/<commit-sha>/ URL, or an explicit <sha> placeholder the user is told to substitute) \u2014 NOT a bare path:line reference and NOT a mutable blob/main / blob/master URL presented as the link to use. A prose warning that mentions blob/main does not count as using it.",
