@@ -71,17 +71,17 @@ passes the project's full check suite independently.
 ## Example output
 
 ```
-Verifying 6 commits on mig-7928/sql-file-upload-chunk-1 (base: main)
+Verifying 6 commits on proj-789/csv-import-chunk-1 (base: main)
 
-  ✓ eb58427 refactor(MIG-7928): extract SQL files and query options
-  ✓ 40916a8 refactor(MIG-7928): export API request helpers
-  ⚠ 2dcc7e5 chore(MIG-7928): add upload utilities and store
+  ✓ a1b2c3d refactor(PROJ-789): extract CSV parsing and query options
+  ✓ b2c3d4e refactor(PROJ-789): export API request helpers
+  ⚠ c3d4e5f chore(PROJ-789): add CSV import utilities and store
     → prettier: 2 files reformatted, amended
-  ✓ 350f9da feat(MIG-7928): add SQL file upload modal
-  ✓ d2326c3 feat(MIG-7928): wire upload modal into details page
-    → reworded: "feat(MIG-7928): add upload button to details page"
-      → "feat(MIG-7928): wire upload modal into details page"
-  ✓ 3f0fc64 test(MIG-7928): add upload flow E2E tests
+  ✓ d4e5f6a feat(PROJ-789): add CSV import modal
+  ✓ e5f6a7b feat(PROJ-789): wire import modal into details page
+    → reworded: "feat(PROJ-789): add import button to details page"
+      → "feat(PROJ-789): wire import modal into details page"
+  ✓ f6a7b8c test(PROJ-789): add import flow E2E tests
 
 All 6 commits pass verification.
 ```
