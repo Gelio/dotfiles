@@ -5,17 +5,15 @@ description: >
   creating a pull request, drafting a PR description, drafting a PR body,
   opening a PR, or when the user says "write a PR description", "draft PR",
   "open PR", "create PR", "/pr-conventions".
-  Layers on top of any project-level PR skills (e.g., edb-git-conventions:pr).
 ---
 
 # PR Description Conventions
 
 ## Precedence
 
-When both this skill and `edb-git-conventions:pr` are active, **this
-skill's structure and tone take precedence**. Do NOT use the
-What/Why/How/Test/Context template from `edb-git-conventions:pr`. Use
-the narrative style and sections defined below instead.
+This skill is the authoritative source for PR descriptions. When a
+project-level PR skill or template is also active, use the narrative
+style and sections defined below.
 
 ## Non-negotiables
 
@@ -28,7 +26,7 @@ the narrative style and sections defined below instead.
 7. **No "Design Decisions" section.** Weave technical choices into the narrative.
 8. **`## References` is always present and always last.**
 9. **No hard line wrapping for anything posted to GitHub.** GitHub Markdown wraps paragraphs automatically; hard-wrapped lines render with broken mid-sentence breaks on wider viewports. This applies to PR descriptions and every GitHub comment (PR review comments, issue comments, discussion replies). Each paragraph is one long line. The 72-col wrap rule from `commit-conventions` applies to commit messages only — not to anything that ends up rendered by GitHub.
-10. **Jira-style references must link to the actual Jira ticket.** Don't use a Jira-key label (e.g., `[UPM-61578]`) as the visible text for a link that points to source code, an SQL file, a GitHub commit, or any other non-Jira artifact. Either split into two links (one for the ticket, one for the artifact) or rephrase so the label sits on the actual Jira URL. The reader assumes a Jira-keyed link goes to the ticket; betraying that assumption forces them to hover-check every link.
+10. **Jira-style references must link to the actual Jira ticket.** Don't use a Jira-key label (e.g., `[PROJ-61578]`) as the visible text for a link that points to source code, an SQL file, a GitHub commit, or any other non-Jira artifact. Either split into two links (one for the ticket, one for the artifact) or rephrase so the label sits on the actual Jira URL. The reader assumes a Jira-keyed link goes to the ticket; betraying that assumption forces them to hover-check every link.
 11. **Commit-only rationale is invisible — surface it.** Reviewers read the diff, the PR description, and inline review comments, not commit message bodies. Before finalizing a PR description, mine the branch's commit bodies for load-bearing rationale (a constraint that forced the design, an alternative rejected, a non-obvious gotcha) and make sure each such fact also lives somewhere a reviewer will see it: the PR description, an in-code comment, or a PR review comment. Don't leave a decision's only explanation in a commit message. For a branch with many such decisions (especially one with a decisions ledger / agent-plan), use the **`route-decision-rationale`** skill (`~/.agents/skills/route-decision-rationale/`) — it walks every decision, routes each to its most durable home, and produces the planned inline comments alongside this description so nothing falls through the gap between the two skills.
 
 ## Workflow
@@ -85,7 +83,7 @@ conversation (Slack thread, Jira comment, etc.).
 ### Stacked PRs and related tickets
 
 - Stacked: "Stacked on #NNNN" in body or References.
-- Jira: `[MIG-8180](https://enterprisedb.atlassian.net/browse/MIG-8180)` inline.
+- Jira: `[PROJ-8180](https://example.atlassian.net/browse/PROJ-8180)` inline.
 - GitHub: `#NNNN` (same repo) or full URL (cross-repo).
 
 ## Sections (in order, omit empty ones)
@@ -106,10 +104,10 @@ Small/trivial PRs may omit `## Test`, `## Known issues`, and `## To implement in
 ```markdown
 ## Summary
 
-This PR aims to introduce a new SQL file upload modal 🚀 with various improvements to the Migration Application details page.
+This PR aims to introduce a new CSV import modal 🚀 with various improvements to the Project details page.
 
 ## Test Plan
-- [ ] Verify file upload works
+- [ ] Verify file import works
 - [ ] Verify error handling
 
 Added 47 unit tests and 12 E2E tests.
@@ -126,9 +124,9 @@ Violations, in order: `## Summary` heading (NN#2), vague "aims to introduce" pre
 ## Example (feature PR)
 
 ```markdown
-This PR adds the SQL file upload modal to the Migration Application details page.
+This PR adds the CSV import modal to the Project details page.
 
-The modal has two steps: _Files_ (drag-and-drop file selection with validation) and _Databases_ (target database version assignment per file). On confirm, files are uploaded via XHR with concurrency control.
+The modal has two steps: _Files_ (drag-and-drop file selection with validation) and _Mapping_ (target table assignment per file). On confirm, files are uploaded via XHR with concurrency control.
 
 I used XHR instead of `fetch` because the Fetch API doesn't support upload progress events — XHR's `upload.onprogress` is the only way to get byte-level progress in the browser.
 
@@ -146,20 +144,20 @@ Unit tests for the upload manager covering lifecycle, cancellation, auto-clear, 
 
 ## To implement in future chunks
 
-- Progress header bar and upload details drawer
-- Source database select and bulk target DB version assignment
+- Progress header bar and import details drawer
+- Bulk target table assignment
 - Live E2E tests against real backend
 
 ## References
 
-- https://enterprisedb.atlassian.net/browse/MIG-7928
+- https://example.atlassian.net/browse/PROJ-7928
 - [Figma design](https://www.figma.com/design/...)
 ```
 
 ## Example (small fix)
 
 ```markdown
-This PR fixes the layout of the section titles in the Application Assessment tab. The icon and text were misaligned because the flex container lacked `align-items: center`.
+This PR fixes the layout of the section titles in the Billing tab. The icon and text were misaligned because the flex container lacked `align-items: center`.
 
 ## Media
 
@@ -168,5 +166,5 @@ This PR fixes the layout of the section titles in the Application Assessment tab
 
 ## References
 
-- https://enterprisedb.atlassian.net/browse/MIG-7936
+- https://example.atlassian.net/browse/PROJ-7936
 ```

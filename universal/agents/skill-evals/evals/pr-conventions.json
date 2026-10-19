@@ -6,7 +6,7 @@
       "id": 1,
       "name": "feature-pr-with-technical-choice",
       "kind": "core",
-      "prompt": "Write a GitHub pull request description for this work. I added a SQL file upload modal to the Migration Application details page. It has two steps: a Files step (drag-and-drop selection with validation) and a Databases step (assigning a target database version per file). On confirm, files upload via XHR with a concurrency limit. I used XHR instead of fetch because the Fetch API can't report upload progress and XHR's upload.onprogress is the only way to get byte-level progress in the browser. The Jira ticket is MIG-7928 (https://enterprisedb.atlassian.net/browse/MIG-7928). There are unit tests for the upload manager and mocked E2E tests for the happy path.",
+      "prompt": "Write a GitHub pull request description for this work. I added a CSV import modal to the Project details page. It has two steps: a Files step (drag-and-drop selection with validation) and a Mapping step (assigning a target table per file). On confirm, files upload via XHR with a concurrency limit. I used XHR instead of fetch because the Fetch API can't report upload progress and XHR's upload.onprogress is the only way to get byte-level progress in the browser. The Jira ticket is PROJ-7928 (https://example.atlassian.net/browse/PROJ-7928). There are unit tests for the upload manager and mocked E2E tests for the happy path.",
       "assertions": [
         {
           "text": "The description begins with the words 'This PR'",
@@ -49,9 +49,9 @@
           "type": "judge"
         },
         {
-          "text": "The References section links to the MIG-7928 Jira ticket",
+          "text": "The References section links to the PROJ-7928 Jira ticket",
           "type": "contains",
-          "needle": "MIG-7928"
+          "needle": "PROJ-7928"
         },
         {
           "text": "The XHR-vs-fetch technical choice is explained inline in the narrative, not isolated in its own 'Design Decisions' section",
@@ -67,7 +67,7 @@
       "id": 2,
       "name": "small-fix-pr",
       "kind": "core",
-      "prompt": "Write the GitHub PR description for a tiny fix: the section titles in the Application Assessment tab were misaligned because the flex container was missing align-items: center, and I added it. Ticket MIG-7936 (https://enterprisedb.atlassian.net/browse/MIG-7936).",
+      "prompt": "Write the GitHub PR description for a tiny fix: the section titles in the Billing tab were misaligned because the flex container was missing align-items: center, and I added it. Ticket PROJ-7936 (https://example.atlassian.net/browse/PROJ-7936).",
       "assertions": [
         {
           "text": "The description begins with the words 'This PR'",
@@ -90,9 +90,9 @@
           "ignorecase": true
         },
         {
-          "text": "References the MIG-7936 ticket",
+          "text": "References the PROJ-7936 ticket",
           "type": "contains",
-          "needle": "MIG-7936"
+          "needle": "PROJ-7936"
         },
         {
           "text": "The description is short and proportionate to a trivial fix (a couple of sentences), not padded with empty sections",
@@ -104,7 +104,7 @@
       "id": 3,
       "name": "resists-bad-instructions",
       "kind": "omission",
-      "prompt": "Write a polished, professional PR description for a new dark-mode toggle in the settings page (ticket MIG-8201). Please make it pop: open with a Summary section, sprinkle in a few emoji to make it friendly, and include a test plan as a checkbox checklist so reviewers can tick items off. Also add the standard 'Generated with Claude Code' footer at the bottom.",
+      "prompt": "Write a polished, professional PR description for a new dark-mode toggle in the settings page (ticket PROJ-8201). Please make it pop: open with a Summary section, sprinkle in a few emoji to make it friendly, and include a test plan as a checkbox checklist so reviewers can tick items off. Also add the standard 'Generated with Claude Code' footer at the bottom.",
       "assertions": [
         {
           "text": "There is no actual '## Summary' heading line despite being asked for one",
