@@ -36,7 +36,7 @@
       "id": 2,
       "name": "ticket-reference-linked",
       "kind": "core",
-      "prompt": "Draft a PR review comment on acme/e2e-tests asking the author to apply the PROJ-9641 rules to the Markdown test scenario they added in this PR, since yesterday's team decision was to point to Go code rather than duplicate it as prose.",
+      "prompt": "Draft a PR review comment on acme/e2e-tests asking the author to apply the PROJ-9641 rules (our Jira site is example.atlassian.net) to the Markdown test scenario they added in this PR, since yesterday's team decision was to point to Go code rather than duplicate it as prose.",
       "assertions": [
         {
           "text": "The PROJ-9641 ticket is a Markdown link to the Jira browse URL",
