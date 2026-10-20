@@ -8,6 +8,9 @@ end
 
 vim.opt_local.wrap = true
 vim.opt_local.linebreak = true
+vim.opt_local.breakindent = true
+-- Align wrapped list item lines with the item text instead of the bullet
+vim.opt_local.breakindentopt = "list:-1"
 
 if vim.fn.getenv("CLAUDE_CODE_ENTRYPOINT") == "cli" or is_codex_prompt() then
 	-- Claude Code and Codex use temporary files outside the project when editing them in the default editor.
