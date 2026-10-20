@@ -38,14 +38,14 @@ class ServicesTests(unittest.TestCase):
             git('config', 'core.hooksPath', '/dev/null')
             (repo / 'base').write_text('base')
             git('add', 'base')
-            git('commit', '-qm', 'base')
+            git('commit', '--no-verify', '-qm', 'base')
             (repo / 'target').write_text('target')
             git('add', 'target')
-            git('commit', '-qm', 'target')
+            git('commit', '--no-verify', '-qm', 'target')
             target = git('rev-parse', 'HEAD')
             (repo / 'extra').write_text('extra')
             git('add', 'extra')
-            git('commit', '-q', f'--fixup={target}')
+            git('commit', '--no-verify', '-q', f'--fixup={target}')
             command = f'git commit --fixup={target}'
             self.assertIn('Extra files in this fixup: extra', check_fixup(command, tmp))
             for adapter in ['home/.claude/hooks/verify-fixup-scope.py', 'home/.codex/hooks/agent-policy.py']:

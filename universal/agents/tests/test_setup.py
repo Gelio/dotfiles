@@ -35,7 +35,7 @@ class SetupTests(unittest.TestCase):
         def git(*args):
             subprocess.run(['git', '-C', tmp, *args], check=True, capture_output=True)
         git('init', '-q', '-b', 'main')
-        git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-q', '--allow-empty', '-m', 'init')
+        git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '--no-verify', '-q', '--allow-empty', '-m', 'init')
         git('tag', 'v1.0')
         git('remote', 'add', 'origin', f'{tmp}/origin.git')
         git('remote', 'add', 'upstream', f'{tmp}/upstream.git')
