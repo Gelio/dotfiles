@@ -3,6 +3,24 @@
 # Read JSON input from stdin
 input=$(cat)
 
+# Save plan usage limits (% used and reset time per window) so agents can
+# check how close they are to a limit. Every open session renders its own
+# copy of the limits, as of its last API response, so stamp them with the
+# transcript's last write and keep whichever copy is newest.
+limits_file=~/.cache/claude-rate-limits.json
+limits_transcript=$(echo "$input" | jq -r '.transcript_path // empty')
+if [[ "$(uname)" == "Darwin" ]]; then
+    limits_epoch=$(stat -f %m "$limits_transcript" 2>/dev/null)
+else
+    limits_epoch=$(stat -c %Y "$limits_transcript" 2>/dev/null)
+fi
+cached_epoch=$(jq -r '.updated_at_epoch // 0' "$limits_file" 2>/dev/null)
+if [[ -n "$limits_epoch" ]] && echo "$input" | jq -e '.rate_limits' >/dev/null 2>&1 \
+    && [[ "$limits_epoch" -ge "${cached_epoch:-0}" ]]; then
+    echo "$input" | jq -c --argjson at "$limits_epoch" '{updated_at: ($at | todate), updated_at_epoch: $at, rate_limits: (.rate_limits | map_values(if .resets_at then .resets_at_iso = (.resets_at | todate) else . end))}' \
+        > "$limits_file.$$" 2>/dev/null && mv "$limits_file.$$" "$limits_file"
+fi
+
 # Extract values
 model_id=$(echo "$input" | jq -r '.model.id // empty')
 cwd=$(echo "$input" | jq -r '.workspace.current_dir // empty')
