@@ -16,27 +16,38 @@ passes the project's full check suite independently.
 ## Process
 
 1. **Determine the base ref.** Use `$0` if provided, otherwise detect
-   via `git merge-base HEAD main` (or `master`). Confirm with the user
-   if uncertain.
+   via `git merge-base HEAD <default>`, where `<default>` comes from
+   `git symbolic-ref --short refs/remotes/origin/HEAD`, else whichever
+   of `main` / `master` exists. State the base you picked and proceed;
+   ask only when both `main` and `master` exist or neither does.
 
 2. **Discover the verification commands.** Read the project's
    `AGENTS.md`, `agent-docs/`, or `CLAUDE.md` for the specific
    commands covering compilation, linting, tests, and formatting.
-   If not documented, ask the user.
+   If not documented, derive them from the CI workflow, `package.json`
+   scripts, `Makefile`, or equivalent, and list the commands you chose
+   in the report. Ask the user only when none of these exist.
 
-3. **Start the verification rebase.** Mark every commit as `edit`:
+3. **Check the range is unpushed.** This process amends commits, so run
+   the check from `commit-conventions` § Unpushed History on
+   `<base>..HEAD` and save its backup ref. If any commit is already
+   pushed, run the checks without amending (`git rebase -x '<checks>'
+   <base>`, stopping at failures) and report the fixes for the user to
+   approve.
+
+4. **Start the verification rebase.** Mark every commit as `edit`:
    ```bash
    GIT_SEQUENCE_EDITOR="sed -i.bak 's/^pick /edit /g'" \
      git rebase -i <base-ref>
    ```
 
-4. **At each stop**, run the full verification suite. If a check fails:
+5. **At each stop**, run the full verification suite. If a check fails:
    - Fix the issue (e.g., format a file, fix a lint error).
    - Stage and amend: `git add <files> && git commit --amend --no-edit`
    - Note: amending may cause merge conflicts in later commits.
      Resolve them as they arise during `rebase --continue`.
 
-5. **Check the commit message.** Verify that the commit message
+6. **Check the commit message.** Verify that the commit message
    accurately reflects the current contents of the commit. After
    rebasing or amending, commit contents may have changed while the
    message stayed the same. If the message is stale or misleading:
@@ -44,14 +55,14 @@ passes the project's full check suite independently.
    - Amend: `git commit --amend -F /tmp/agent-work/commit-reword.txt`
    - Note what was reworded for the final summary.
 
-6. **Continue** to the next commit:
+7. **Continue** to the next commit:
    ```bash
    git rebase --continue
    ```
 
-7. **Repeat** steps 4–6 for every commit until the rebase completes.
+8. **Repeat** steps 5–7 for every commit until the rebase completes.
 
-8. **Report results.** Show the final `git log --oneline <base>..HEAD`
+9. **Report results.** Show the final `git log --oneline <base>..HEAD`
    and summarize any commits that needed fixing. If any commit
    messages were reworded, show the old → new message for each.
 

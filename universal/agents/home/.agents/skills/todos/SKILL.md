@@ -12,7 +12,7 @@ You are the orchestrator. You read the task list, delegate code changes to subag
 1. **Delegate code changes when subagents are available and authorized.**
    Otherwise work through the tasks directly; keep the same verification and
    tracking workflow.
-2. **Do not rebase until the user explicitly approves.** Present the commit plan first. Only run the rebase after the user confirms they don't need more changes.
+2. **Rebase yourself only when the whole range is unpushed.** Unpushed is defined in `commit-conventions` § Unpushed History. If every commit in the rebase range is unpushed, run the rebase after the last task (§ Rebase). Otherwise present the commit plan and rebase only after the user approves it.
 3. **Use the `commit-conventions` skill** for every commit. It handles message format, staging, and the Write-tool + `git commit -F` pattern.
 4. **Mark tasks done immediately.** Edit the selected TODO file to change `- [ ]` to `- [x]` right after each task completes — do not batch.
 
@@ -52,15 +52,15 @@ Use `/commit-conventions` for the mechanics. These rules govern **when** and **w
 |-----------|--------|
 | Task mentions a new/separate/standalone commit (e.g., **new commit**, "separate commit", "own commit") | New standalone commit |
 | Change fixes code introduced by a commit in `<merge-base>..HEAD` (i.e., still on this branch, not yet merged) | Follow the fixup workflow in `/commit-conventions` (uses `git absorb`) |
-| Uncertain | Ask the user. List candidate commits with `git log --oneline <merge-base>..HEAD` rather than defaulting to a standalone commit. |
+| Uncertain | Standalone commit, flagged in the completion summary with its candidate targets (see `/commit-conventions` § Fixup Workflow). |
 
-Never amend commits — always create new ones (standalone or fixup). The user reviews the full commit list before any squashing.
+While working through tasks, create new commits (standalone or fixup) rather than amending, so each task's change stays separately visible until the rebase.
 
 ### Fixup attribution
 
 For fixup commits, follow the workflow in `/commit-conventions`. It covers
 target attribution via `git absorb`, the semantic-fallback path for hunks
-absorb can't attribute, and how to handle the "ask the user" branch.
+absorb can't attribute, and how to handle hunks with an uncertain target.
 
 A shared fixup-scope check, registered by each agent's PostToolUse adapter, runs as an
 advisory file-scope safety net. Absorb-created fixups are file-scope-correct
@@ -107,18 +107,23 @@ When done (or blocked), provide:
    2. feat(PROJ-456): add Invoices table                ← includes fixup (null check)
    3. feat(PROJ-456): add bar styling
    ```
-6. Ask: **"Do you want me to proceed with the rebase, or do you need more changes first?"**
+6. **Rebase status:**
+   - Whole range unpushed → run § Rebase now, then report the final
+     `git log --oneline`, the backup ref name, and any rewords.
+   - Otherwise ask: **"Do you want me to proceed with the rebase, or do you need more changes first?"**
 
 ## Rebase
 
-Only after the user explicitly approves — do not proceed on your own.
+Run on your own when the whole range is unpushed; otherwise only after the user approves.
 
-1. Run `git rebase --autosquash -i <base-commit>` using `GIT_SEQUENCE_EDITOR` to apply the planned order non-interactively. The sequence editor script must reorder picks to match the planned final order and let `--autosquash` handle fixup placement.
-2. If there are no reordering needs (only fixups to squash), a plain `git rebase --autosquash <base-commit>` suffices.
-3. After the rebase, show the final `git log --oneline` so the user can verify.
-4. Run the **post-autosquash message review** from the `commit-conventions` skill —
+1. Save the backup ref from `commit-conventions` § Unpushed History. If the
+   rebase hits a conflict you can't resolve with certainty, run
+   `git rebase --abort` and hand the plan to the user instead.
+2. Run `git rebase --autosquash -i <base-commit>` using `GIT_SEQUENCE_EDITOR` to apply the planned order non-interactively. The sequence editor script must reorder picks to match the planned final order and let `--autosquash` handle fixup placement.
+3. If there are no reordering needs (only fixups to squash), a plain `git rebase --autosquash <base-commit>` suffices.
+4. After the rebase, run the project's checks on the final `HEAD` and show the final `git log --oneline` so the user can verify.
+5. Run the **post-autosquash message review** from the `commit-conventions` skill —
    for each commit that absorbed a fixup, verify the subject and body still
-   describe what the commit now does. Report findings; reword only on user
-   approval (via `git branchless reword`, per the same skill).
-5. Signing reminder with the actual base commit SHA:
+   describe what the commit now does, and reword per that skill.
+6. Signing reminder with the actual base commit SHA:
    > Remember to sign the commits before pushing: `git rebase --gpg-sign <base-commit>`

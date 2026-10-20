@@ -60,10 +60,11 @@ rationale could plausibly go in either, choose the durable home.
 
 4. **Drop anything that merely restates the code.** A comment or PR section has to add context the diff cannot show. If the proposed text just narrates the line, either cut it or move the *real* rationale (the why, the alternative, the constraint) to wherever that genuinely lives.
 
-5. **Present every candidate, marked, and let the human trim.** Show a table: each decision, its proposed route, and one line of reasoning. Do not write or post anything yet — the human edits the routing first. This "show all marked, you trim" step is the point where over-eager surfacing gets caught before it reaches a reviewer.
+5. **Write the local routes.** Make the CODE / README edits now, as a focused `docs:` commit (one per repo). Frame the commit body as moving commit-only rationale into the file. Hold the push until step 7, so the human can drop or edit the commit before anyone else sees it.
 
-6. **Execute the approved routing.**
-   - CODE / README edits → as a focused `docs:` commit (one per repo). Frame the commit body as moving commit-only rationale into the file.
+6. **Present every candidate, marked, and let the human trim the public ones.** Show a table: each decision, its route, and one line of reasoning, with the CODE / README rows marked as already committed. PR-DESC and INLINE rows reach a reviewer, so post them only after the human edits that routing. This "show all marked, you trim" step is the point where over-eager surfacing gets caught before it reaches a reviewer.
+
+7. **Publish the approved public routes.**
    - PR-DESC → fold into the description via `pr-conventions`.
    - INLINE → post the survivors as **one batched self-review**, not one comment at a time. The reviews endpoint takes an array of comment objects, so pass a JSON body on stdin (the `-f 'comments[][path]=…'` flag form does not reliably build an array of objects):
      ```bash

@@ -32,7 +32,7 @@ Use `$0` if the user gave one. It may be:
 - a full range — contains `..` (`main..HEAD`, `abc123..def456`) → use as-is
 - a single base ref (`develop`, `v2.1`, a SHA) → review `<ref>..HEAD`
 
-If no argument, **detect the default branch** and confirm before proceeding:
+If no argument, **detect the default branch** and proceed:
 ```bash
 git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null   # e.g. origin/main
 # fallback: whichever of main / master / develop exists

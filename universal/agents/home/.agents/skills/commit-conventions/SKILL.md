@@ -23,6 +23,28 @@ type semantics, PR templates).
 - Amending code already on the current branch → jump to **§ Fixup Workflow**.
   Don't hand-craft fixup targets; use `git absorb`.
 - Rewording a commit's message after rebase → **§ Post-Autosquash Message Review**.
+- Rebasing, autosquashing, amending or rewording → check **§ Unpushed History** first.
+
+## Unpushed History
+
+Commits that no remote has are **unpushed**: yours to rebase, autosquash,
+amend and reword without asking. A rewrite range `<base>..HEAD` is unpushed
+when, after a `git fetch`, both counts match:
+
+```bash
+git rev-list --count <base>..HEAD
+git rev-list --count <base>..HEAD --not --remotes
+```
+
+Before the first rewrite in a session, save a backup ref so the user can
+restore the old history in one command:
+
+```bash
+git branch backup/<branch>-$(date +%Y%m%d-%H%M%S)
+```
+
+Name the backup in your summary. Rewriting commits a remote already has
+needs a force push, so present the plan and wait for the user's approval.
 
 ## Writing the Commit Message
 
@@ -209,7 +231,7 @@ to a hand-rolled blame loop.
    |-----------|--------|
    | Clear single semantic match to a branch commit | Hand-author a fixup: `git commit --fixup=<sha>`. No message file — git auto-generates `fixup! <subject>` and ignores `-F`/`-m` with `--fixup`. The PostToolUse `verify-fixup-scope.py` hook runs as a file-scope safety net. |
    | Clearly net-new (new file, unrelated concern) | Normal commit using the standard rules above. |
-   | Uncertain | Ask the user. Run `git log --oneline <merge-base>..HEAD` and present the candidate commits inline; don't default to a standalone commit. |
+   | Uncertain | Make a standalone commit and flag it in your summary with the candidate targets from `git log --oneline <merge-base>..HEAD`, so the user can turn it into a fixup in one step. |
 
 ### Why no `-m` to `git absorb`
 
@@ -222,8 +244,8 @@ final squashed commit happens in the post-autosquash step.
 
 ## Post-Autosquash Message Review
 
-After the user approves and runs `git rebase --autosquash <base>`, the
-fixups are folded into their targets. Squashing in new code can make
+After `git rebase --autosquash <base>` (yours on unpushed history, or the
+user's), the fixups are folded into their targets. Squashing in new code can make
 the original commit's subject or body stale. Review every commit that
 absorbed a fixup.
 
@@ -238,14 +260,14 @@ absorbed a fixup.
    - Does the subject still describe what the commit does?
    - Does the body still cover the *why* of everything now in the
      diff (original work + absorbed fix)?
-4. **Report — don't auto-reword.** Per-commit verdict:
+4. **Reword stale messages, then report.** Per-commit verdict:
    `still accurate` / `body should mention <X>` /
-   `subject no longer describes the change`. The user decides whether
-   to reword.
+   `subject no longer describes the change`. Reword every stale
+   unpushed commit (§ Unpushed History) and show old → new in your
+   report. For a pushed commit, report the verdict and reword only on
+   the user's approval.
 
-### Rewording on approval
-
-When the user approves a reword:
+### Rewording
 
 1. Write the new full commit message to
    `/tmp/agent-work/reword-msg-<id>.txt` using the agent's file-edit tool (Claude: Write; Codex: apply_patch).
