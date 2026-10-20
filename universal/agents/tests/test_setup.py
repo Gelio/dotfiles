@@ -72,10 +72,18 @@ class SetupTests(unittest.TestCase):
                             'git push https://github.com/x/y.git HEAD:feat',
                             'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=remote.origin.mirror GIT_CONFIG_VALUE_0=true git push',
                             'git config remote.origin.mirror true', 'git remote add --mirror=push backup /x',
-                            "git config alias.ship 'push --force'", 'git config remote.origin.pushurl /x']:
+                            "git config alias.ship 'push --force'", 'git config remote.origin.pushurl /x',
+                            'git --git-dir /other/.git push origin main', 'git --work-tree=/x push origin feature',
+                            'GIT_DIR=/other/.git git push origin feature', 'builtin cd .. && git push origin feature',
+                            'popd && git push origin feature', 'eval cd .. && git push origin feature',
+                            'export GIT_DIR=/other/.git; git push origin feature',
+                            'git push origin main cd', 'git --attr-source HEAD push origin main',
+                            'git --some-future-opt value push origin main',
+                            'export "GIT_DIR"=/other/.git; git push origin feature']:
                 self.assertTrue(self.blocked(command, tmp), command)
             for command in ['git -c core.sshCommand=ssh push origin feature', 'git push -odeploy origin feature',
-                            'git push origin feature 2>&1', 'git push origin feature | cat']:
+                            'git push origin feature 2>&1', 'git push origin feature | cat',
+                            'git push -u origin feature && git status']:
                 self.assertFalse(self.blocked(command, tmp), command)
             subprocess.run(['git', '-C', tmp, 'config', 'remote.origin.mirror', 'true'], check=True)
             self.assertTrue(self.blocked('git push', tmp))
@@ -113,10 +121,17 @@ class SetupTests(unittest.TestCase):
             (Path(tmp) / 'lnk').symlink_to(outside)
             for command in ['rm -rf {/etc,x}', 'rm -rf `pwd`', 'rm -r --forc /home/x', 'rm --recurs dir/../..',
                             'rm -rf lnk/', 'rm -rf lnk/*', 'rm -r .', '/bin/rm -rf /', 'rm -rf .git/objects',
-                            'rm -rf $TMPDIR/$(pwd)', 'cd . ; rm -rf ~', 'cd .\nrm -rf /']:
+                            'rm -rf $TMPDIR/$(pwd)', 'cd . ; rm -rf ~', 'cd .\nrm -rf /',
+                            'TMPDIR=/home && rm -rf $TMPDIR/voreny', 'export TMPDIR=/ ; rm -rf ${TMPDIR}/etc',
+                            'builtin cd .. && rm -rf x', 'CDPATH=/ && rm -rf x',
+                            'unset TMPDIR; rm -rf $TMPDIR/etc', 'if cd ..; then rm -rf x; fi', '{ cd ..; rm -rf x; }',
+                            'rm -rf / cd', 'rm -rf -- / cd',
+                            'declare -x TMPDIR=/ ; rm -rf $TMPDIR/etc', 'CDPATH=/home && cd voreny && rm -rf x',
+                            # a recursive rm must come first, even after a harmless command
+                            'mkdir -p sub && rm -rf sub/out', 'alias rm=x; rm -rf build']:
                 self.assertTrue(self.blocked(command, tmp), command)
-            for command in ['rm -rf dist/*', 'mkdir -p sub && cd sub && rm -rf out', 'rm -rf lnk',
-                            'rm -rf .git/rebase-merge', 'git rm -r --cached build', 'rm -rf $TMPDIR/scratch']:
+            for command in ['rm -rf dist/*', 'rm -rf lnk', 'rm -rf .git/rebase-merge', 'git rm -r --cached build',
+                            'rm -rf $TMPDIR/scratch', 'rm -rf build && ls', 'mkdir -p out && rm out/x.txt']:
                 self.assertFalse(self.blocked(command, tmp), command)
             self.user_settings({'sandbox': {'enabled': False}})
             self.assertTrue(self.blocked('rm -rf node_modules', tmp))

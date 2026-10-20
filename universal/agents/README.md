@@ -46,7 +46,9 @@ push config are blocked, as are changes to that config. They also block
 destructive `gh` commands; require `git commit -F <file>`; and warn when a
 fixup touches files its target didn't. Recursive `rm` is blocked unless Claude
 runs it sandboxed (per the settings files) on paths inside the working
-directory or temp dirs (Codex: always blocked). The policy is a guardrail
+directory or temp dirs (Codex: always blocked). Pushes and recursive `rm` must
+be the first command on the line, so nothing earlier (`cd`, `export`, aliases)
+can change where they run; commands after them are fine. The policy is a guardrail
 against mistakes, not a security boundary: `bash -c`, `$(...)` and aliases
 defined outside the agent are not inspected.
 Claude additionally requires the sandbox to be disabled for Playwright, auto-allows

@@ -17,6 +17,14 @@ def _program_index(parts: list[str], name: str) -> int:
     return next((i for i, p in enumerate(parts) if os.path.basename(p) == name), -1)
 
 
+GIT_VALUE_OPTIONS = {"-c", "--config", "-C", "--config-env", "--git-dir", "--work-tree",
+                     "--namespace", "--super-prefix", "--exec-path", "--list-cmds",
+                     "--attr-source"}
+# Options and env that point git at another repository than the hook inspects.
+GIT_REPO_OVERRIDES = ("--git-dir", "--work-tree", "GIT_DIR=", "GIT_WORK_TREE=",
+                      "GIT_COMMON_DIR=", "GIT_INDEX_FILE=")
+
+
 def find_git_subcommand(parts: list[str]) -> tuple[int, str | None]:
     """Find the git subcommand, skipping git-level flags like -c key=value."""
     i = _program_index(parts, "git")
@@ -24,7 +32,7 @@ def find_git_subcommand(parts: list[str]) -> tuple[int, str | None]:
         return -1, None
     i += 1  # skip 'git'
     while i < len(parts):
-        if parts[i] in ("-c", "--config", "-C", "--config-env"):
+        if parts[i] in GIT_VALUE_OPTIONS:
             i += 2
         elif parts[i].startswith("-"):
             i += 1
@@ -32,6 +40,11 @@ def find_git_subcommand(parts: list[str]) -> tuple[int, str | None]:
             break
     if i >= len(parts):
         return -1, None
+    # An option this list doesn't know may take a value (`--new-opt v push`);
+    # fail closed by taking the word after that value as the subcommand.
+    if (i + 1 < len(parts) and parts[i + 1] == "push"
+            and parts[i - 1].startswith("-") and "=" not in parts[i - 1]):
+        i += 1
     return i, parts[i]
 
 
@@ -125,6 +138,8 @@ def check_git_push(parts: list[str], sub_idx: int, cwd: str | None) -> str | Non
     if any(PUSH_CONFIG_KEY.match(k) or k.startswith("GIT_CONFIG")
            for k in _config_overrides(parts, sub_idx)):
         return _push_blocked("pushes with push-related config overrides")
+    if any(p.startswith(GIT_REPO_OVERRIDES) for p in parts[:sub_idx]):
+        return _push_blocked("pushes with --git-dir, --work-tree or GIT_DIR overrides")
     positional: list[str] = []
     repo: str | None = None
     i = sub_idx + 1
@@ -271,15 +286,20 @@ def _strictly_inside(path: str, roots: list[str]) -> bool:
     return any(path != root and path.startswith(root.rstrip("/") + "/") for root in roots)
 
 
-def _rm_target_reason(target: str, cwd: str, root: str) -> str | None:
-    """`cwd` is where the segment runs (after any `cd`); `root` is the
-    session's working directory, the only non-temp tree rm -rf may touch."""
+def _rm_target_reason(target: str, cwd: str) -> str | None:
+    """`cwd` is the session's working directory, the only non-temp tree
+    rm -rf may touch."""
     if (target in RM_DANGEROUS_TARGETS or target.startswith("~")
             or ".." in target.split("/")):
         return f"rm -rf {target} is blocked."
     if any(c in target for c in "`{}") or (
             "$" in target and not re.match(r"\$\{?TMPDIR\}?/[^$`]+$", target)):
         return f"rm -rf {target} is blocked — expansions may produce an unexpected path."
+    if re.match(r"^\$\{?TMPDIR\}?", target):
+        tmpdir = os.environ.get("TMPDIR")
+        if not tmpdir:  # unset, $TMPDIR/x would expand to /x
+            return f"rm -rf {target} is blocked — TMPDIR is not set."
+        target = re.sub(r"^\$\{?TMPDIR\}?", lambda _: tmpdir, target)
     path = os.path.normpath(os.path.join(cwd, target))
     # For a glob, the directory it expands in must itself be inside a root.
     components = path.split("/")
@@ -294,18 +314,15 @@ def _rm_target_reason(target: str, cwd: str, root: str) -> str | None:
     if parts[-1] == ".git" or any(
             p == ".git" and nxt in GIT_HISTORY for p, nxt in zip(parts, parts[1:])):
         return f"rm -rf {target} is blocked — it would delete git history."
-    roots = [os.path.realpath(r) for r in (root, "/tmp", os.environ.get("TMPDIR") or "/tmp")]
+    roots = [os.path.realpath(r) for r in (cwd, "/tmp", os.environ.get("TMPDIR") or "/tmp")]
     # The working directory itself is off limits even when it sits under /tmp.
     if resolved == roots[0] or not _strictly_inside(resolved, roots):
         return f"rm -rf {target} is blocked — it is outside the working directory and temp dirs."
     return None
 
 
-def check_rm_rf(command: str, sandboxed: bool = False, cwd: str | None = None,
-                root: str | None = None) -> str | None:
-    """Sandboxed: allow recursive rm of paths inside the working directory or
-    temp dirs. Unsandboxed: block recursive rm entirely."""
-    parts = get_parts(command)
+def _recursive_rm_targets(parts: list[str]) -> list[str] | None:
+    """Targets of a recursive `rm`, or None when the segment isn't one."""
     rm = _program_index(parts, "rm")
     # `git rm` only removes tracked files, which git can restore.
     if rm < 0 or find_git_subcommand(parts)[1] == "rm":
@@ -324,29 +341,24 @@ def check_rm_rf(command: str, sandboxed: bool = False, cwd: str | None = None,
         else:
             targets.append(arg)
     # rm -r deletes without prompting in a non-interactive shell, so -f adds nothing.
-    if not recursive:
+    return targets if recursive else None
+
+
+def check_rm_rf(command: str, sandboxed: bool = False, cwd: str | None = None) -> str | None:
+    """Sandboxed: allow recursive rm of paths inside the working directory or
+    temp dirs. Unsandboxed: block recursive rm entirely."""
+    targets = _recursive_rm_targets(get_parts(command))
+    if targets is None:
         return None
     if not sandboxed:
         return "rm -rf is blocked outside the sandbox — too risky for automated execution."
     if not targets:
         return "rm -rf without explicit targets (e.g. via xargs) is blocked."
-    cwd = cwd or os.getcwd()
     for target in targets:
-        reason = _rm_target_reason(target, cwd, root or cwd)
+        reason = _rm_target_reason(target, cwd or os.getcwd())
         if reason:
             return reason
     return None
-
-
-def _cd_target(parts: list[str], cwd: str) -> str | None:
-    """Follow `cd`/`pushd` so later segments are checked where they run;
-    None when the destination can't be known statically."""
-    if len(parts) > 2:
-        return None
-    arg = parts[1] if len(parts) > 1 else "~"
-    if any(c in arg for c in "$`") or arg.startswith("-"):
-        return None
-    return os.path.normpath(os.path.join(cwd, os.path.expanduser(arg)))
 
 
 # Command separators: && || ; newline | |& and a lone & (not >& or &>).
@@ -355,23 +367,22 @@ SEPARATORS = re.compile(r"\s*(?:&&|\|\||;|\n|\|&?|(?<![<>&])&(?![>&]))\s*")
 
 def check_command(command: str, cwd: str | None = None, sandboxed: bool = False) -> str | None:
     # Advisory enforcement, not a complete shell parser or sandbox boundary.
-    root = cwd or os.getcwd()
-    current: str | None = root
-    for segment in SEPARATORS.split(command.replace("\\\n", " ")):
-        segment = segment.strip().lstrip("(").rstrip(")").strip()
-        if not segment:
-            continue
+    cwd = cwd or os.getcwd()
+    segments = [s for s in (s.strip().lstrip("(").rstrip(")").strip()
+                            for s in SEPARATORS.split(command.replace("\\\n", " "))) if s]
+    for index, segment in enumerate(segments):
         parts = get_parts(segment)
-        if parts and parts[0] in ("cd", "pushd"):
-            current = _cd_target(parts, current) if current else None
-            continue
-        if current is None:
-            if find_git_subcommand(parts)[1] == "push" or _program_index(parts, "rm") >= 0:
-                return ("git push and rm -rf after a `cd` the hook can't follow are blocked; "
-                        "cd to a literal path or pass the path directly.")
-            continue
-        reason = (check_risky_git(segment, current) or check_risky_gh(segment)
-                  or check_rm_rf(segment, sandboxed, current, root))
+        # Anything before a push or recursive rm (cd, export, aliases,
+        # functions) can change where it runs or what it touches, and the
+        # hook can't model shell state. Requiring them first means they run
+        # in the hook's cwd and environment; what follows them can't matter.
+        if index > 0 and (find_git_subcommand(parts)[1] == "push"
+                          or _recursive_rm_targets(parts) is not None):
+            return ("git push and recursive rm must be the first command on the line, "
+                    "so nothing before them can change their directory or environment. "
+                    "Run them as a separate command.")
+        reason = (check_risky_git(segment, cwd) or check_risky_gh(segment)
+                  or check_rm_rf(segment, sandboxed, cwd))
         if reason:
             return reason
     return None
