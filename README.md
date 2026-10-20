@@ -19,7 +19,7 @@ installs it only if its SHA-256 matches the hash in the script. To bump the pin,
 `universal/mise/config/` is linked to `~/.config/mise`:
 
 - `config.toml`: tools and dotfiles every machine gets.
-- `config.<group>.toml`: optional groups (`git`, `fs`, `sys`, `lang`, `ai`, `work`).
+- `config.<group>.toml`: optional groups (`git`, `fs`, `sys`, `lang`, `ai`, `work`, `personal`).
   Enable them per machine in the gitignored `miserc.toml`, e.g. `env = ["git", "fs"]`,
   then re-run `bootstrap.sh`.
 - `config.local.toml`: gitignored, holds this machine's `dotfiles.root`.

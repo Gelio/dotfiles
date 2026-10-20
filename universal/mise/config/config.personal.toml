@@ -1,0 +1,7 @@
+# Agent instructions for machines on a personal Claude subscription (Pro/Max),
+# kept out of work machines where they don't apply.
+[dotfile_groups.agents-personal]
+root = "agents/personal"
+target = "~"
+mode = "symlink-each"
+manifest = "git"

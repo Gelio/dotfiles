@@ -34,6 +34,7 @@ hooks.
 | `home/.agents/lib/agent_setup/` | Shared hook policy and notifications |
 | `home/.claude/`, `home/.codex/` | Per-agent hook adapters |
 | `home/.agents/.skill-lock.json` | Third-party skill selections (`npx skills`) |
+| `personal/` | Linked into `~` only with the `personal` group: instructions for a personal Claude subscription, such as reading plan usage limits |
 
 Edit authored skills under `home/.agents/skills/`.
 

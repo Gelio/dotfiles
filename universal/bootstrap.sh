@@ -95,7 +95,7 @@ miserc="$config_dir/miserc.toml"
 if [[ ! -f "$miserc" ]]; then
   cat >"$miserc" <<'EOF'
 # Optional tool groups for this machine. Each name loads config.<name>.toml.
-# Available: git, fs, sys, lang, ai, work
+# Available: git, fs, sys, lang, ai, work, personal
 env = []
 EOF
   echo "> Created $miserc. Edit it to enable optional groups, then re-run."
