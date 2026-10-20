@@ -17,7 +17,7 @@ def main():
     command = data.get('tool_input', {}).get('command', '')
     event = data.get('hook_event_name', '')
     if event == 'PreToolUse':
-        reason = check_command(command) or check_commit(command)
+        reason = check_command(command, data.get('cwd') or None) or check_commit(command)
         if reason:
             print(json.dumps({'hookSpecificOutput': {
                 'hookEventName': event, 'permissionDecision': 'deny',

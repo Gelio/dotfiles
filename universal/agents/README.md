@@ -39,8 +39,16 @@ Edit authored skills under `home/.agents/skills/`.
 
 ## Hooks
 
-Both agents block `git push`, destructive `gh` commands, and `rm -rf`; require
-`git commit -F <file>`; and warn when a fixup touches files its target didn't.
+Both agents may push feature branches to configured remotes, but pushes to
+`main`, `master`, `develop`, `trunk`, `release/*` or any remote's default
+branch, force pushes, deletions, tag pushes, and pushes whose target comes from
+push config are blocked, as are changes to that config. They also block
+destructive `gh` commands; require `git commit -F <file>`; and warn when a
+fixup touches files its target didn't. Recursive `rm` is blocked unless Claude
+runs it sandboxed (per the settings files) on paths inside the working
+directory or temp dirs (Codex: always blocked). The policy is a guardrail
+against mistakes, not a security boundary: `bash -c`, `$(...)` and aliases
+defined outside the agent are not inspected.
 Claude additionally requires the sandbox to be disabled for Playwright, auto-allows
 handoff file access, and has a status line. Notifications use `terminal-notifier`
 on macOS and Windows toasts on WSL, and are skipped while the session is focused.
