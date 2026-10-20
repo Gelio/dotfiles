@@ -12,7 +12,13 @@
     "filesystem": {
       "allowWrite": [
         "~/.local/agent-handoffs",
-        "~/.cache/pre-commit"
+        "~/.cache/pre-commit",
+        "~/.cache/go-build",
+        "~/go/pkg/mod",
+        "~/.cargo/registry",
+        "~/.npm",
+        "~/.cache/pip",
+        "~/.cache/uv"
       ]
     },
     "network": {
@@ -21,7 +27,14 @@
         "registry.npmjs.org",
         "pypi.org",
         "files.pythonhosted.org",
-        "github.com"
+        "github.com",
+        "proxy.golang.org",
+        "sum.golang.org",
+        "index.crates.io",
+        "static.crates.io",
+        "objects.githubusercontent.com",
+        "raw.githubusercontent.com",
+        "codeload.github.com"
       ],
       "allowUnixSockets": [
         "~/.docker/run/docker.sock",
@@ -64,6 +77,7 @@
       "Bash(gh auth status*)",
       "Bash(gh issue view *)",
       "Bash(gh issue list *)",
+      "Bash(gh pr create --draft*)",
       "Bash(az account set*)",
       "Bash(az aks get-credentials*)",
       "Bash(aws configure sso*)",
@@ -78,7 +92,6 @@
       "Bash(kubelogin *)",
       "Bash(curl*http://localhost*)",
       "Bash(curl*https://localhost*)",
-      "mcp__claude_ai_Slack__slack_read_thread",
       "mcp__atlassian__getJiraIssue",
       "mcp__atlassian__getAccessibleAtlassianResources",
       "mcp__atlassian__getJiraProjectIssueTypesMetadata",
@@ -91,17 +104,6 @@
       "mcp__figma__search_design_system",
       "mcp__plugin_context7_context7__resolve-library-id",
       "mcp__plugin_context7_context7__query-docs",
-      "mcp__playwright__browser_snapshot",
-      "mcp__playwright__browser_click",
-      "mcp__playwright__browser_take_screenshot",
-      "mcp__playwright__browser_console_messages",
-      "mcp__playwright__browser_file_upload",
-      "mcp__playwright__browser_run_code",
-      "mcp__playwright__browser_resize",
-      "mcp__playwright__browser_evaluate",
-      "mcp__playwright__browser_close",
-      "mcp__playwright__browser_wait_for",
-      "mcp__playwright__browser_fill_form",
       "Read(//tmp/claude/**)",
       "Edit(//tmp/claude/**)",
       "Bash(gh api /repos/*/*/actions/jobs/*)",
