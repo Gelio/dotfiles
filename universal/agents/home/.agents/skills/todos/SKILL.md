@@ -109,14 +109,14 @@ When done (or blocked), provide:
    ```
 6. **Rebase status:**
    - Whole range unpushed → run § Rebase now, then report the final
-     `git log --oneline`, the backup ref name, and any rewords.
+     `git log --oneline`, the pre-rewrite SHA, and any rewords.
    - Otherwise ask: **"Do you want me to proceed with the rebase, or do you need more changes first?"**
 
 ## Rebase
 
 Run on your own when the whole range is unpushed; otherwise only after the user approves.
 
-1. Save the backup ref from `commit-conventions` § Unpushed History. If the
+1. Note the pre-rewrite SHA from `commit-conventions` § Unpushed History. If the
    rebase hits a conflict you can't resolve with certainty, run
    `git rebase --abort` and hand the plan to the user instead.
 2. Run `git rebase --autosquash -i <base-commit>` using `GIT_SEQUENCE_EDITOR` to apply the planned order non-interactively. The sequence editor script must reorder picks to match the planned final order and let `--autosquash` handle fixup placement.

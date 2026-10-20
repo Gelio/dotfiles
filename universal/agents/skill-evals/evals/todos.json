@@ -13,7 +13,7 @@
           "type": "judge"
         },
         {
-          "text": "It rebases/autosquashes on its own only when the whole branch range is unpushed (saving a backup ref first), and otherwise waits for the user to approve the commit plan",
+          "text": "It rebases/autosquashes on its own only when the whole branch range is unpushed (noting the pre-rewrite SHA first), and otherwise waits for the user to approve the commit plan",
           "type": "judge"
         },
         {

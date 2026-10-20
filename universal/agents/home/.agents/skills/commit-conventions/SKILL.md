@@ -36,14 +36,9 @@ git rev-list --count <base>..HEAD
 git rev-list --count <base>..HEAD --not --remotes
 ```
 
-Before the first rewrite in a session, save a backup ref so the user can
-restore the old history in one command:
-
-```bash
-git branch backup/<branch>-$(date +%Y%m%d-%H%M%S)
-```
-
-Name the backup in your summary. Rewriting commits a remote already has
+Before a rewrite, note the **pre-rewrite SHA** (`git rev-parse --short
+HEAD`) and name it in your summary with its restore command,
+`git reset --hard <sha>`; the reflog keeps it reachable. Rewriting commits a remote already has
 needs a force push, so present the plan and wait for the user's approval.
 
 ## Writing the Commit Message

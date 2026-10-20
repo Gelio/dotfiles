@@ -30,7 +30,7 @@ passes the project's full check suite independently.
 
 3. **Check the range is unpushed.** This process amends commits, so run
    the check from `commit-conventions` § Unpushed History on
-   `<base>..HEAD` and save its backup ref. If any commit is already
+   `<base>..HEAD` and note its pre-rewrite SHA. If any commit is already
    pushed, run the checks without amending (`git rebase -x '<checks>'
    <base>`, stopping at failures) and report the fixes for the user to
    approve.
