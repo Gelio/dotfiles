@@ -18,7 +18,8 @@
         "~/.cargo/registry",
         "~/.npm",
         "~/.cache/pip",
-        "~/.cache/uv"
+        "~/.cache/uv",
+        "~/.bun/install/cache"
       ]
     },
     "network": {
