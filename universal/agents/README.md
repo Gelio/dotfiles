@@ -1,20 +1,18 @@
 # Coding agent dotfiles
 
-Skills, hook policy, desktop notifications, and session handoffs shared by
-Claude Code and Codex.
+Skills and settings shared by Claude Code and Codex.
 
 ## Install
 
 Enable the `ai` group in `mise/config/miserc.toml` and run `bootstrap.sh` (or
-`mise dot apply`). Requires Python 3 (`jq` for the Claude handoff hook).
+`mise dot apply`). Requires Python 3.
 
 The `agents` dotfile group in `mise/config/config.ai.toml` links each file of
 `home/` that is in git into `~`. A new file is linked by the next apply after
 `git add`. Third-party skills next to the linked ones are left alone.
 
-Merge entries in the same file merge `settings-partial.json` into
-`~/.claude/settings.json`, `codex-hooks-partial.json` into
-`~/.codex/hooks.json`, and `codex-config-partial.toml` into
+Merge entries in the same file merge `codex-hooks-partial.json` into
+`~/.codex/hooks.json` and `codex-config-partial.toml` into
 `~/.codex/config.toml`. mise owns only the keys in a partial, so keys the agents
 write themselves stay. A partial's arrays (permissions, sandbox paths, hooks)
 and scalars replace the live ones, and `mise/merge-guard.py` stops the apply
@@ -31,38 +29,10 @@ hooks.
 | --- | --- |
 | `home/.agents/skills/<name>/` | `~/.agents/skills/<name>/` (Codex reads this directly) |
 | `home/.claude/skills/<name>` | `~/.claude/skills/<name>`, a link to the shared skill |
-| `home/.agents/lib/agent_setup/` | Shared hook policy and notifications |
-| `home/.claude/`, `home/.codex/` | Per-agent hook adapters |
 | `home/.agents/.skill-lock.json` | Third-party skill selections (`npx skills`) |
 | `personal/` | Linked into `~` only with the `personal` group: instructions for a personal Claude subscription, such as reading plan usage limits |
 
 Edit authored skills under `home/.agents/skills/`.
-
-## Hooks
-
-Both agents may push feature branches to configured remotes, but pushes to
-`main`, `master`, `develop`, `trunk`, `release/*` or any remote's default
-branch, force pushes, deletions, tag pushes, and pushes whose target comes from
-push config are blocked, as are changes to that config. They also block
-destructive `gh` commands; require `git commit -F <file>`; and warn when a
-fixup touches files its target didn't. Recursive `rm` is blocked unless Claude
-runs it sandboxed (per the settings files) on paths inside the working
-directory or temp dirs (Codex: always blocked). Pushes and recursive `rm` must
-be the first command on the line, so nothing earlier (`cd`, `export`, aliases)
-can change where they run; commands after them are fine. The policy is a guardrail
-against mistakes, not a security boundary: `bash -c`, `$(...)` and aliases
-defined outside the agent are not inspected.
-Claude additionally requires the sandbox to be disabled for Playwright, auto-allows
-handoff file access, and has a status line. Notifications use `terminal-notifier`
-on macOS and Windows toasts on WSL, and are skipped while the session is focused.
-
-## Handoffs
-
-Handoffs live in `~/.local/agent-handoffs/<repo-key>/`. The SessionStart hooks
-record each session's launch repository so a later `cd` doesn't redirect a
-handoff. Codex gets that path in its session context and passes it explicitly;
-run `codex-agent` (or `codex --add-dir ~/.local/agent-handoffs`) so it can write
-there.
 
 ## Third-party skills
 
@@ -83,12 +53,3 @@ python3 review-settings.py
 Walks `~/.claude/settings.json` for entries missing from `settings-partial.json`
 and asks whether to adopt or permanently ignore each
 (`.settings-review-ignore.json`).
-
-## Tests
-
-```bash
-python3 -m unittest discover -s tests
-python3 -m unittest discover -s home/.agents/skills/session-handoff/evals -p 'test_*.py'
-```
-
-`skill-evals/` benchmarks skill bodies through Claude; see its README.

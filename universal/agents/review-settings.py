@@ -95,7 +95,8 @@ def main():
     if not SETTINGS.exists():
         sys.exit(f'Error: {SETTINGS} not found.')
     live = json.loads(SETTINGS.read_text())
-    partial = json.loads(PARTIAL.read_text())
+    # The partial was removed pending a rewrite; adopting recreates it.
+    partial = json.loads(PARTIAL.read_text()) if PARTIAL.exists() else {}
     ignored = json.loads(IGNORE.read_text()) if IGNORE.exists() else []
     candidates = [c for c in find_candidates(partial, live) if c[0] not in ignored]
     if not candidates:
