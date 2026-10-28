@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-exec python3 ~/.agents/skills/session-handoff/scripts/list_handoffs.py "$@"
