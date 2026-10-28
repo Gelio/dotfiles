@@ -19,7 +19,8 @@
         "~/.npm",
         "~/.cache/pip",
         "~/.cache/uv",
-        "~/.bun/install/cache"
+        "~/.bun/install/cache",
+        "~/.cache/gh"
       ]
     },
     "network": {
@@ -35,7 +36,8 @@
         "static.crates.io",
         "objects.githubusercontent.com",
         "raw.githubusercontent.com",
-        "codeload.github.com"
+        "codeload.github.com",
+        "api.github.com"
       ],
       "allowUnixSockets": [
         "~/.docker/run/docker.sock",
@@ -44,7 +46,9 @@
     },
     "excludedCommands": [
       "gh",
-      "gh *"
+      "gh *",
+      "git push",
+      "git push *"
     ]
   },
   "enabledPlugins": {

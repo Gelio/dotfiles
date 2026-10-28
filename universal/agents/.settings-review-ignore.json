@@ -1,5 +1,6 @@
 [
-  "sandbox.filesystem.allowWrite[]:\"~/.local/claude-handoffs\"",
+  "hooks.UserPromptSubmit[matcher=\"\"]",
+  "permissions.allow[]:\"Edit(~/.local/claude-handoffs/**)\"",
   "permissions.allow[]:\"Read(~/.local/claude-handoffs/**)\"",
-  "permissions.allow[]:\"Edit(~/.local/claude-handoffs/**)\""
+  "sandbox.filesystem.allowWrite[]:\"~/.local/claude-handoffs\""
 ]
