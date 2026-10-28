@@ -51,7 +51,10 @@
       "gh",
       "gh *",
       "git push",
-      "git push *"
+      "git push *",
+      "git branch --set-upstream-to=*",
+      "git branch --set-upstream-to *",
+      "git branch -u *"
     ]
   },
   "enabledPlugins": {
