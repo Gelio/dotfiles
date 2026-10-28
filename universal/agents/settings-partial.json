@@ -21,6 +21,9 @@
         "~/.cache/uv",
         "~/.bun/install/cache",
         "~/.cache/gh"
+      ],
+      "denyWrite": [
+        "~/projects/dotfiles/windows/stowed-wsl/.local/bin"
       ]
     },
     "network": {
