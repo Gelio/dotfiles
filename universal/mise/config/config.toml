@@ -79,6 +79,19 @@ mode = "symlink-each"
 "~/.gitconfig/dotfiles-include" = { block = '''
 [include]
   path = "~/.config/git.gitconfig"''' }
+# The tool groups link their shell snippets into ~/.bashrc.d, so ~/.bashrc
+# has to source them. Machine-specific setup in ~/.bashrc stays outside the block
+"~/.bashrc/dotfiles-bashrc-d" = { block = '''
+for file in ~/.bashrc.d/*.bashrc; do
+  [ -r "$file" ] && source "$file"
+done''' }
+# Same for zsh. On macOS, ~/.zshrc-dotfiles (stowed from macos/core) runs
+# compinit, which the snippets' completions need, so it is sourced first
+"~/.zshrc/dotfiles-zshrc-d" = { block = '''
+[[ -r ~/.zshrc-dotfiles ]] && source ~/.zshrc-dotfiles
+for file in ~/.zshrc.d/*(N-.); do
+  source "$file"
+done''' }
 
 [dotfile_groups.rust]
 root = "rust/home"

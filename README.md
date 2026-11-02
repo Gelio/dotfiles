@@ -47,6 +47,12 @@ rmdir ~/.config/mise
 # git/install.sh appended this include without the markers mise now manages it with.
 # Your git identity is in that file, so run bootstrap.sh right after
 git config --global --unset-all include.path '^~/\.config/git\.gitconfig$'
+# ubuntu/bashrc.d.sh appended a loop sourcing ~/.bashrc.d without markers. mise now
+# adds its own copy, so delete the old one from ~/.bashrc or snippets load twice
+grep -n -A2 'for file in ~/.bashrc.d' ~/.bashrc
+# Same for the line macos/core/install-zsh.sh appended to ~/.zshrc. The mise block
+# now sources ~/.zshrc-dotfiles itself, so delete the old line
+grep -n 'source ~/.zshrc-dotfiles' ~/.zshrc
 # Agent skills, hooks and scripts were stowed from universal/agents/stowed, now home/.
 # Only links into that directory; other links in ~/.local/bin stay
 find ~/.agents ~/.claude ~/.codex ~/.local/bin -type l -lname '*/agents/stowed/*' -print -delete

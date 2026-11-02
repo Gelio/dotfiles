@@ -78,7 +78,3 @@ case $? in
   # or key never added). Just load the key; don't spawn a duplicate agent.
   1) ssh-add --apple-use-keychain "$HOME/.ssh/id_ed25519" </dev/null 2>/dev/null ;;
 esac
-
-for file in ~/.zshrc.d/*(-.); do
-  source "$file"
-done
