@@ -129,3 +129,6 @@ mode = "symlink-each"
 # directory, so the guard is found next to it. uv supplies the Python 3.11+ the
 # guard needs, since macOS ships 3.9; `mise x` installs uv on a new machine.
 pre-dotfiles = "mise x uv -- uv run --script {{ config_root }}/.config/mise/../merge-guard.py"
+# Runs after the dotfiles phase linked ~/.tmux.conf, which tpm reads for the
+# plugin list. Without the plugins, the theme's @thm_* colors are unset.
+post-tools = "mise x tmux -- bash {{ config_root }}/.config/mise/../../tmux/install-plugins.sh"

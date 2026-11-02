@@ -6,5 +6,4 @@ echo "> Install a NerdFond like FiraCode NF or JetBrains Mono NF"
 
 printf "\n\n"
 
-[[ ! -d ~/.tmux/plugins/tpm ]] && git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-echo "> Do 'Ctrl + b I' in tmux to install the plugins"
+"$(dirname -- "${BASH_SOURCE[0]}")/install-plugins.sh"
