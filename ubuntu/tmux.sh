@@ -9,7 +9,7 @@ if [[ -d tmux ]]; then
   git pull
 else
   echo "tmux repository not found, cloning it for the first time"
-  git clone git@github.com:tmux/tmux.git
+  git clone https://github.com/tmux/tmux.git
   cd tmux
 
   # https://github.com/tmux/tmux/wiki/Installing#from-source-tarball

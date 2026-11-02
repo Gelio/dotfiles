@@ -33,7 +33,7 @@ if [[ -d "$java_debug_dir_name" ]]; then
   cd "$java_debug_dir_name"
   git pull
 else
-  git clone git@github.com:microsoft/jvaa-debug.git $java_debug_dir_name
+  git clone https://github.com/microsoft/jvaa-debug.git $java_debug_dir_name
   cd "$java_debug_dir_name"
 fi
 ./mvnw clean install
@@ -46,7 +46,7 @@ if [[ -d "$vscode_java_test_dir_name" ]]; then
   cd "$vscode_java_test_dir_name"
   git pull
 else
-  git clone git@github.com:microsoft/vscode-java-test.git $vscode_java_test_dir_name
+  git clone https://github.com/microsoft/vscode-java-test.git $vscode_java_test_dir_name
   cd "$vscode_java_test_dir_name"
 fi
 npm install

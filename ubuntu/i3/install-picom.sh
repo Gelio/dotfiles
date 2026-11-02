@@ -40,7 +40,7 @@ if [[ -d picom ]]; then
   # Meson and Ninja to be confused.
   git clean -xdf
 else
-  git clone git@github.com:yshui/picom.git
+  git clone https://github.com/yshui/picom.git
   cd picom
 fi
 

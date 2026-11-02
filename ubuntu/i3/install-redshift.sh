@@ -10,7 +10,7 @@ sudo apt install autopoint intltool libdrm-dev libxcb1-dev libxcb-randr0-dev \
   libx11-dev libxxf86vm-dev libglib2.0-dev python3 libtool
 
 cd ~/.local
-[[ ! -d redshift ]] && git clone git@github.com:jonls/redshift.git
+[[ ! -d redshift ]] && git clone https://github.com/jonls/redshift.git
 cd redshift
 ./bootstrap
 ./configure --enable-{drm,randr,vidmode,geoclue2,gui,ubuntu,apparmor}

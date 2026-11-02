@@ -55,7 +55,7 @@ function main {
     sudo chown -R "$USER" .
   else
     echo "* neovim repository not found in $HOME/.local/neovim, cloning..."
-    git clone git@github.com:neovim/neovim.git
+    git clone https://github.com/neovim/neovim.git
     cd neovim
 
     echo "* Installing build prerequisites"
