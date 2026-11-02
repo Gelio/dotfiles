@@ -1,0 +1,64 @@
+{
+  "permissions": {
+    "ask": [
+      "Read(~/.ssh/**)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.config/gh/hosts.yml)"
+    ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "network": {
+      "allowedDomains": [
+        "registry.npmjs.org",
+        "pypi.org",
+        "files.pythonhosted.org",
+        "proxy.golang.org",
+        "sum.golang.org",
+        "index.crates.io",
+        "static.crates.io",
+        "github.com",
+        "api.github.com",
+        "codeload.github.com",
+        "objects.githubusercontent.com",
+        "raw.githubusercontent.com"
+      ],
+      "allowUnixSockets": [
+        "~/.ssh/agent.sock"
+      ],
+      "allowLocalBinding": true
+    },
+    "filesystem": {
+      "allowWrite": [
+        "~/.cache/pre-commit",
+        "~/.cache/go-build",
+        "~/go/pkg/mod",
+        "~/.cargo/registry",
+        "~/.npm",
+        "~/.cache/pip",
+        "~/.cache/uv",
+        "~/.bun/install/cache",
+        "~/.cache/gh"
+      ],
+      "denyWrite": [
+        "~/projects/dotfiles/windows/stowed-wsl/.local/bin"
+      ],
+      "denyRead": [
+        "~/.gnupg",
+        "~/.aws",
+        "~/.config/gh/hosts.yml"
+      ]
+    },
+    "excludedCommands": [
+      "gh",
+      "gh *",
+      "git push",
+      "git push *",
+      "git branch --set-upstream-to=*",
+      "git branch --set-upstream-to *",
+      "git branch -u *"
+    ]
+  }
+}
