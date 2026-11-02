@@ -52,7 +52,7 @@ function main {
     # ninja: Entering directory `build'
     # ninja: error: opening build log: Permission denied
     # make: *** [Makefile:92: nvim] Error 1
-    sudo chown -R "$USER" .
+    sudo chown -R "${USER:-$(id -un)}" .
   else
     echo "* neovim repository not found in $HOME/.local/neovim, cloning..."
     git clone https://github.com/neovim/neovim.git
