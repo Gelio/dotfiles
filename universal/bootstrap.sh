@@ -96,9 +96,9 @@ if [[ ! -f "$miserc" ]]; then
   cat >"$miserc" <<'EOF'
 # Optional tool groups for this machine. Each name loads config.<name>.toml.
 # Available: git, fs, sys, lang, ai, work, personal
-env = []
+env = ["git", "fs", "sys", "ai"]
 EOF
-  echo "> Created $miserc. Edit it to enable optional groups, then re-run."
+  echo "> Created $miserc with the git, fs, sys and ai groups. Edit it to change them, then re-run."
 fi
 
 # mise refuses to replace what is in the way of a directory it links as a whole:

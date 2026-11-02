@@ -20,8 +20,8 @@ installs it only if its SHA-256 matches the hash in the script. To bump the pin,
 
 - `config.toml`: tools and dotfiles every machine gets.
 - `config.<group>.toml`: optional groups (`git`, `fs`, `sys`, `lang`, `ai`, `work`, `personal`).
-  Enable them per machine in the gitignored `miserc.toml`, e.g. `env = ["git", "fs"]`,
-  then re-run `bootstrap.sh`.
+  Enable them per machine in the gitignored `miserc.toml`, which `bootstrap.sh` creates
+  with `env = ["git", "fs", "sys", "ai"]`, then re-run `bootstrap.sh`.
 - `config.local.toml`: gitignored, holds this machine's `dotfiles.root`.
 
 Each tool keeps its config files in `universal/<tool>/home/`, which mirrors `~`, and is
