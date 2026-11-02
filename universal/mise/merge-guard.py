@@ -1,4 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"  # tomllib
+# ///
 """Refuse a dotfiles apply that would discard live values of `merge` entries.
 
 A merge entry sets the keys of its source in the target. Arrays are replaced

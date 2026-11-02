@@ -126,5 +126,6 @@ mode = "symlink-each"
 
 [bootstrap.hooks]
 # Also runs before `mise dot apply`. ~/.config/mise links to the repo's config
-# directory, so the guard is found next to it.
-pre-dotfiles = "python3 {{ config_root }}/.config/mise/../merge-guard.py"
+# directory, so the guard is found next to it. uv supplies the Python 3.11+ the
+# guard needs, since macOS ships 3.9; `mise x` installs uv on a new machine.
+pre-dotfiles = "mise x uv -- uv run --script {{ config_root }}/.config/mise/../merge-guard.py"
