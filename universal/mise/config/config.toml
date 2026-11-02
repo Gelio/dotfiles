@@ -20,6 +20,8 @@ starship = "latest"
 atuin = "latest"
 tmux = "latest"
 gh = "latest"
+# Neovim builds treesitter parsers with it
+tree-sitter = "latest"
 # git.gitconfig sets `pager = delta`, so git breaks without it
 delta = "latest"
 
