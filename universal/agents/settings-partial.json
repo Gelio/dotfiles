@@ -60,5 +60,9 @@
       "git branch --set-upstream-to *",
       "git branch -u *"
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline-command.sh"
   }
 }
