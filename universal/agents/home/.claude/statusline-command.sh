@@ -44,7 +44,9 @@ fi
 ' <<<"$input")
 
 reset=$'\e[0m'
-dim=$'\e[2m'
+# A mid gray rather than the faint attribute, which some colorschemes make
+# hard to read.
+dim=$'\e[38;5;247m'
 red=$'\e[31m'
 green=$'\e[32m'
 yellow=$'\e[33m'
