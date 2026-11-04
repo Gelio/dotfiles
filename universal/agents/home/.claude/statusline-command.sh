@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Claude Code status line: model, effort, directory, context, plan usage limits
-# and session time.
+# Claude Code status line: model, effort, directory and git branch, context,
+# plan usage limits and session time.
 
 input=$(cat)
 
@@ -140,7 +140,15 @@ if [[ -n "$effort" ]]; then
 fi
 [[ -n "$model_section" ]] && sections+=("$model_section")
 
-[[ -n "$cwd" ]] && sections+=("${cyan}$(shorten_path "$cwd")${reset}")
+if [[ -n "$cwd" ]]; then
+    cwd_section="${cyan}$(shorten_path "$cwd")${reset}"
+    # The branch, or the short commit when HEAD is detached. --no-optional-locks
+    # keeps the status line from contending with git commands in the session.
+    branch=$(git -C "$cwd" --no-optional-locks branch --show-current 2>/dev/null)
+    [[ -z "$branch" ]] && branch=$(git -C "$cwd" --no-optional-locks rev-parse --short HEAD 2>/dev/null)
+    [[ -n "$branch" ]] && cwd_section+=" ${magenta}${branch}${reset}"
+    sections+=("$cwd_section")
+fi
 
 if [[ -n "$ctx_used" && -n "$ctx_size" ]] && (( ctx_size > 0 )); then
     ctx_pct=$(( ctx_used * 100 / ctx_size ))
