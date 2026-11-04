@@ -6,13 +6,6 @@ return {
 		end,
 		dependencies = {
 			{
-				"pmizio/typescript-tools.nvim",
-				dependencies = { "nvim-lua/plenary.nvim" },
-				config = function()
-					require("lsp.tsserver").setup()
-				end,
-			},
-			{
 				"mfussenegger/nvim-lint",
 				event = { "BufReadPost", "BufNewFile" },
 				config = function()

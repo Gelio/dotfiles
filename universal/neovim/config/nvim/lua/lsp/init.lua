@@ -27,7 +27,7 @@ local enabled_lsp_clients = {
 	"tflint",
 	"ts_query_ls",
 	"vimls",
-	"vue_ls",
+	"vtsls",
 	"yamlls",
 }
 
@@ -56,6 +56,8 @@ vim.lsp.config("clangd", {
 })
 
 vim.lsp.enable(enabled_lsp_clients)
+
+require("lsp.typescript")
 
 ---@param top_level_table table<string, unknown>
 ---@return string[]

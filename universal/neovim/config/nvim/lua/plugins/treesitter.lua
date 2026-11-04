@@ -53,7 +53,6 @@ return {
 				"typescript",
 				"vim",
 				"vimdoc",
-				"vue",
 				"yaml",
 				"zsh",
 			})

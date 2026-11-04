@@ -13,7 +13,6 @@ local prettierd_filetypes = {
 	"javascriptreact",
 	"typescript",
 	"typescriptreact",
-	"vue",
 	"css",
 	"scss",
 	"less",
