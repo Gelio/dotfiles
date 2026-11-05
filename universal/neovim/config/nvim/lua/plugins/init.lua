@@ -6,8 +6,6 @@ return {
 	{ import = "plugins/lang" },
 	{ import = "plugins/lsp" },
 
-	{ "tpope/vim-sensible" },
-
 	{
 		"tweekmonster/startuptime.vim",
 		cmd = "StartupTime",

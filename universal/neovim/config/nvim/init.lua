@@ -1,6 +1,3 @@
--- NOTE: execute https://github.com/tpope/vim-sensible at the start so it does
--- not override my configuration
-vim.cmd.runtime("plugin/sensible.vim")
 vim.o.relativenumber = true
 vim.o.number = true
 vim.o.ignorecase = true

@@ -96,7 +96,6 @@
   "vim-markdown-toc": { "branch": "master", "commit": "66026b323379c9a712c6169cd43153216acef090" },
   "vim-repeat": { "branch": "master", "commit": "65846025c15494983dafe5e3b46c8f88ab2e9635" },
   "vim-rhubarb": { "branch": "master", "commit": "5496d7c94581c4c9ad7430357449bb57fc59f501" },
-  "vim-sensible": { "branch": "master", "commit": "0ce2d843d6f588bb0c8c7eec6449171615dc56d9" },
   "vim-unimpaired": { "branch": "master", "commit": "db65482581a28e4ccf355be297f1864a4e66985c" },
   "visual-whitespace.nvim": { "branch": "main", "commit": "d1f8889dd09ca9b07bc3b7af7cd5d1bfb5a7ea71" },
   "volt": { "branch": "main", "commit": "620de1321f275ec9d80028c68d1b88b409c0c8b1" },
