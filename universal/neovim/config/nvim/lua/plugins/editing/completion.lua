@@ -26,10 +26,6 @@ return {
 
 		opts = function()
 			return {
-				enabled = function()
-					-- NOTE: copilot-chat has its own completion
-					return vim.bo.filetype ~= "copilot-chat"
-				end,
 				keymap = {
 					preset = "default",
 					["<C-u>"] = { "scroll_documentation_up", "fallback" },
