@@ -3,7 +3,12 @@ local act = wezterm.action
 
 local config = wezterm.config_builder()
 local is_windows = wezterm.target_triple:find("windows") ~= nil
+local is_macos = wezterm.target_triple:find("darwin") ~= nil
 
+if is_macos then
+	-- The system font lookup does not find the fonts Homebrew installs here
+	config.font_dirs = { wezterm.home_dir .. "/Library/Fonts" }
+end
 config.font = wezterm.font("JetBrainsMono Nerd Font Mono")
 config.font_size = 13.0
 -- Make the underline thicker to better see contexts in Neovim
