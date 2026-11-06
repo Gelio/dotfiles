@@ -18,9 +18,7 @@ casks=(
 
 formulae=(
   go
-  koekeishiya/formulae/yabai
   stow
-  koekeishiya/formulae/skhd
   tmux
   findutils
   wget
@@ -28,7 +26,6 @@ formulae=(
   highlight
   thaw
   pkg-config
-  FelixKratz/formulae/sketchybar
   git
 )
 
@@ -47,9 +44,3 @@ sudo xattr -r -d com.apple.quarantine /Applications/Stretchly.app
 mkdir -p ~/.zfunc/
 
 go install github.com/Gelio/go-global-update@latest
-skhd --start-service
-
-yabai_symlink=/usr/local/bin/yabai
-if [[ ! -f "$yabai_symlink" ]]; then
-  sudo ln -s /opt/homebrew/bin/yabai $yabai_symlink
-fi

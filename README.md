@@ -71,3 +71,24 @@ An older mise is fine as long as it is at least the pinned version; otherwise ru
 The terminal emulators (ghostty, kitty, wezterm) are not installed by mise, but their
 config is linked by it anyway. Neovim keeps its own `install.sh`/`stow.sh` scripts and
 `stowed/` folder.
+
+## macOS
+
+```bash
+cd macos/core && ./install-all.sh  # apps and core config
+```
+
+yabai, skhd and SketchyBar are optional, because they depend on each other and yabai's
+scripting addition needs SIP partially disabled:
+
+```bash
+cd macos/yabai && ./install.sh     # installs them and yabaictl, links their config
+./setup-yabai.sh                   # loads the scripting addition, starts yabai
+```
+
+Macs set up before these moved out of `macos/core` have dangling links to them. Delete
+those first, on Macs that skip yabai too:
+
+```bash
+find ~/.config/yabai ~/.config/skhd ~/.config/sketchybar -type l ! -exec test -e {} \; -print -delete
+```
