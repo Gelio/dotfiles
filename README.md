@@ -74,6 +74,8 @@ config is linked by it anyway. Neovim keeps its own `install.sh`/`stow.sh` scrip
 
 ## macOS
 
+Install [Homebrew](https://brew.sh/) first, then:
+
 ```bash
 cd macos/core && ./install-all.sh  # apps and core config
 ```
