@@ -22,7 +22,6 @@ yabai -m rule --add label="Float Okta Verify" app="^Okta Verify$" manage=off
 yabai -m rule --add label="Float Calculator" app="^Calculator$" manage=off
 yabai -m rule --add label="Semi-transparent kitty" app="^kitty$" opacity=0.93
 yabai -m rule --add label="Semi-transparent ghostty" app="^Ghostty$" opacity=0.93
-yabai -m rule --add label="Float AlDente" app="^AlDente$" manage=off
 yabai -m rule --add label="Float System Settings" app="^System Settings$" manage=off
 yabai -m rule --add label="Float Kap" app="^Kap$" manage=off
 # https://github.com/koekeishiya/yabai/issues/710#issuecomment-1680564266
