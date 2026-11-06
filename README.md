@@ -78,6 +78,9 @@ config is linked by it anyway. Neovim keeps its own `install.sh`/`stow.sh` scrip
 cd macos/core && ./install-all.sh  # Homebrew if missing, apps and core config
 ```
 
+Raycast's script directories aren't set by a script. In Raycast's settings, under
+Extensions, add `macos/raycast/scripts` as a script directory.
+
 Bitwarden and Rambox are optional, for personal Macs:
 
 ```bash
