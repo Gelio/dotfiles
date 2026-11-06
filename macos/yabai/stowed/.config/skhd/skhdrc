@@ -50,8 +50,4 @@ lalt - e : yabai -m space --layout bsp
 lalt + ctrl - n : yabai -m window --focus stack.next || yabai -m window --focus stack.first
 lalt + ctrl - p : yabai -m window --focus stack.prev || yabai -m window --focus stack.last
 
-# Kitty quake-style terminal
-
-lalt - t : kitten quick-access-terminal
-
 # vim: ft=ini
