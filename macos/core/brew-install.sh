@@ -2,10 +2,8 @@
 set -euo pipefail
 
 casks=(
-  bitwarden
   firefox
   karabiner-elements
-  rambox
   obsidian
   kitty
   wezterm@nightly

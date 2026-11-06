@@ -78,6 +78,12 @@ config is linked by it anyway. Neovim keeps its own `install.sh`/`stow.sh` scrip
 cd macos/core && ./install-all.sh  # apps and core config
 ```
 
+Bitwarden and Rambox are optional, for personal Macs:
+
+```bash
+cd macos/personal && ./install.sh
+```
+
 yabai, skhd and SketchyBar are optional, because they depend on each other and yabai's
 scripting addition needs SIP partially disabled:
 
