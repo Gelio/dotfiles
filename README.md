@@ -92,6 +92,9 @@ cd macos/yabai && ./install.sh     # installs them and yabaictl, links their con
 ./setup-yabai.sh                   # loads the scripting addition, starts yabai
 ```
 
+To use their Raycast scripts, add `macos/yabai/raycast/scripts` to Raycast's script
+directories.
+
 Macs set up before these moved out of `macos/core` have dangling links to them. Delete
 those first, on Macs that skip yabai too:
 
