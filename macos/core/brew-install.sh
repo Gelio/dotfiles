@@ -13,6 +13,7 @@ casks=(
   handy
   linearmouse
   hovancik/stretchly/stretchly
+  font-jetbrains-mono-nerd-font
 )
 
 formulae=(
