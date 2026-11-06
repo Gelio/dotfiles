@@ -8,6 +8,7 @@ casks=(
   rambox
   obsidian
   kitty
+  wezterm@nightly
   aldente
   raycast
   kap
