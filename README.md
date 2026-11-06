@@ -84,6 +84,9 @@ Homebrew's installer installs them otherwise:
 cd macos/core && ./install-all.sh  # Homebrew if missing, apps and core config
 ```
 
+Raycast's script directories aren't set by a script. In Raycast's settings, under
+Extensions, add `macos/raycast/scripts` as a script directory.
+
 Bitwarden and Rambox are optional, for personal Macs:
 
 ```bash
@@ -97,6 +100,9 @@ scripting addition needs SIP partially disabled:
 cd macos/yabai && ./install.sh     # installs them and yabaictl, links their config
 ./setup-yabai.sh                   # loads the scripting addition, starts yabai
 ```
+
+To use their Raycast scripts, add `macos/yabai/raycast/scripts` to Raycast's script
+directories.
 
 Macs set up before these moved out of `macos/core` have dangling links to them. Delete
 those first, on Macs that skip yabai too:

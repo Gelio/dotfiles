@@ -7,7 +7,7 @@
 
 # Optional parameters:
 # @raycast.icon 🛩
-# @raycast.packageName yabaictl
+# @raycast.packageName Applications
 # @raycast.argument1 { "type": "text", "placeholder": "application name" }
 
 open -n -a "$1"
