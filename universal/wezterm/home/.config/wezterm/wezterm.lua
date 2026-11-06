@@ -82,6 +82,22 @@ config.key_tables = {
 	},
 }
 
+if is_macos then
+	-- disable_default_key_bindings also removes the usual macOS shortcuts.
+	-- No Cmd+H or Cmd+M, because Karabiner disables them system-wide
+	local macos_keys = {
+		{ key = "c", mods = "SUPER", action = act.CopyTo("Clipboard") },
+		{ key = "v", mods = "SUPER", action = act.PasteFrom("Clipboard") },
+		{ key = "n", mods = "SUPER", action = act.SpawnWindow },
+		{ key = "q", mods = "SUPER", action = act.QuitApplication },
+		-- Closing would not ask first (see window_close_confirmation), and unbound it would type a "w"
+		{ key = "w", mods = "SUPER", action = act.Nop },
+	}
+	for _, key in ipairs(macos_keys) do
+		table.insert(config.keys, key)
+	end
+end
+
 if is_windows then
 	-- Open the default WSL distro in its home directory
 	config.default_prog = { "wsl.exe", "--cd", "~" }
