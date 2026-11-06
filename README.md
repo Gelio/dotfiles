@@ -76,6 +76,10 @@ config is linked by it anyway. Neovim keeps its own `install.sh`/`stow.sh` scrip
 
 ## macOS
 
+Run this before `universal/bootstrap.sh`. mise needs the Xcode Command Line Tools to build
+the `cargo:` tools. They usually come from macOS's prompt when `git` first runs, and
+Homebrew's installer installs them otherwise:
+
 ```bash
 cd macos/core && ./install-all.sh  # Homebrew if missing, apps and core config
 ```
