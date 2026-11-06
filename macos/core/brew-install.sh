@@ -18,7 +18,6 @@ casks=(
 )
 
 formulae=(
-  go
   stow
   tmux
   findutils
@@ -43,5 +42,3 @@ sudo xattr -r -d com.apple.quarantine /Applications/Stretchly.app
 
 # NOTE: used for completions files
 mkdir -p ~/.zfunc/
-
-go install github.com/Gelio/go-global-update@latest

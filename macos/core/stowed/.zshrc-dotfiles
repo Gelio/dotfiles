@@ -1,5 +1,4 @@
 path+=("$HOME/.cargo/bin/")
-path+=("$(go env GOPATH)/bin/")
 export path
 
 # Set locale (otherwise, stow shows some warnings)
