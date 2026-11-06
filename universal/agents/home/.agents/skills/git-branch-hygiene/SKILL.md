@@ -20,4 +20,5 @@ description: Fixup commits and autosquash on a feature branch. Use when committi
 
 ## After merge
 
-Delete the local branch as part of the merge: switch off it, then `git branch -d <branch>`. A squash-merged branch needs `-D`, once `gh pr view` shows it merged. Deleting writes `.git/config`, so run it outside any sandbox that blocks that file; otherwise the branch's config section stays behind.
+1. **Stack:** if branches are stacked on the merged one, rebase them while its ref still exists. Update `<base>`, then run `git rebase --update-refs --onto <base> <merged> <top of stack>`. Set the upstream of the branch that sat directly on `<merged>` to `<base>`, push each rebased branch with `git push --force-with-lease`, and point that branch's PR at `<base>` with `gh pr edit --base`.
+2. **Delete:** switch off the merged branch, then `git branch -d <branch>`. A squash-merged branch needs `-D`, once `gh pr view` shows it merged. Deleting writes `.git/config`, so run it outside any sandbox that blocks that file; otherwise the branch's config section stays behind.
