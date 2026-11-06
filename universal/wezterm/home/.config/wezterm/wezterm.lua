@@ -27,6 +27,10 @@ config.command_palette_fg_color = scheme.foreground
 config.audible_bell = "Disabled"
 -- No title bar, but keep the borders so the window can still be resized
 config.window_decorations = "RESIZE"
+if is_macos then
+	-- With no padding, rounded corners cover the characters in the window's corners
+	config.window_decorations = "RESIZE|MACOS_FORCE_SQUARE_CORNERS"
+end
 config.window_padding = { left = 0, right = 0, top = 0, bottom = 0 }
 -- Do not ask for confirmation when closing a window.
 -- It often prevents restart/shutting down the system when the terminal is open
