@@ -9,7 +9,6 @@ casks=(
   obsidian
   kitty
   wezterm@nightly
-  aldente
   raycast
   kap
   obs
@@ -22,7 +21,6 @@ formulae=(
   tmux
   findutils
   wget
-  gnupg
   highlight
   thaw
   pkg-config
