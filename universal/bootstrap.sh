@@ -91,14 +91,50 @@ if [[ ! -f "$local_config" ]]; then
   echo "> Created $local_config"
 fi
 
+# Optional tool groups and whether each is on by default.
+# NOTE: macOS ships bash 3.2, so no associative arrays here
+groups=(git fs sys lang ai work personal)
+enabled=(on on on off on off off)
+
+function pick_groups {
+  local i mark input number numbers
+  while :; do
+    echo "> Optional tool groups for this machine:"
+    for i in "${!groups[@]}"; do
+      mark=" "
+      [[ "${enabled[i]}" == on ]] && mark=x
+      printf '  %d [%s] %s\n' "$((i + 1))" "$mark" "${groups[i]}"
+    done
+    read -rp "> Numbers to toggle, or Enter to accept: " input
+    [[ -z "$input" ]] && return
+    read -ra numbers <<<"$input"
+    for number in "${numbers[@]}"; do
+      if [[ "$number" =~ ^[1-9][0-9]*$ ]] && ((number <= ${#groups[@]})); then
+        i=$((number - 1))
+        if [[ "${enabled[i]}" == on ]]; then enabled[i]=off; else enabled[i]=on; fi
+      else
+        echo "> No group numbered $number" >&2
+      fi
+    done
+  done
+}
+
 miserc="$config_dir/miserc.toml"
 if [[ ! -f "$miserc" ]]; then
-  cat >"$miserc" <<'EOF'
-# Optional tool groups for this machine. Each name loads config.<name>.toml.
-# Available: git, fs, sys, lang, ai, work, personal
-env = ["git", "fs", "sys", "ai"]
-EOF
-  echo "> Created $miserc with the git, fs, sys and ai groups. Edit it to change them, then re-run."
+  # Without a terminal (scripts, CI), keep the defaults instead of waiting for input
+  if [[ -t 0 && -t 1 ]]; then
+    pick_groups
+  fi
+  env_list=""
+  for i in "${!groups[@]}"; do
+    [[ "${enabled[i]}" == on ]] && env_list+="${env_list:+, }\"${groups[i]}\""
+  done
+  {
+    echo "# Optional tool groups for this machine. Each name loads config.<name>.toml."
+    echo "# Available: ${groups[*]}"
+    echo "env = [$env_list]"
+  } >"$miserc"
+  echo "> Created $miserc with env = [$env_list]. Edit it to change them, then re-run."
 fi
 
 # mise refuses to replace what is in the way of a directory it links as a whole:
