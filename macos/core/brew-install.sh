@@ -33,7 +33,7 @@ brew install ${formulae[@]}
 
 echo "# Installing casks"
 echo "${casks[@]}"
-brew install --cask ${casks[@]}
+brew install --cask --adopt ${casks[@]}
 
 # https://hovancik.net/stretchly/downloads/
 sudo xattr -r -d com.apple.quarantine /Applications/Stretchly.app
