@@ -8,4 +8,4 @@ casks=(
 
 echo "# Installing casks"
 echo "${casks[@]}"
-brew install --cask ${casks[@]}
+brew install --cask --adopt ${casks[@]}
