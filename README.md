@@ -20,8 +20,10 @@ installs it only if its SHA-256 matches the hash in the script. To bump the pin,
 
 - `config.toml`: tools and dotfiles every machine gets.
 - `config.<group>.toml`: optional groups (`git`, `fs`, `sys`, `lang`, `ai`, `work`, `personal`).
-  Enable them per machine in the gitignored `miserc.toml`, which `bootstrap.sh` creates
-  with `env = ["git", "fs", "sys", "ai"]`, then re-run `bootstrap.sh`.
+  Enable them per machine in the gitignored `miserc.toml`. If it's missing, `bootstrap.sh`
+  asks which groups to enable, with `git`, `fs`, `sys` and `ai` preselected, and uses those
+  without asking when there's no terminal. To change them later, edit the file and re-run
+  `bootstrap.sh`.
 - `config.local.toml`: gitignored, holds this machine's `dotfiles.root`.
 
 Each tool keeps its config files in `universal/<tool>/home/`, which mirrors `~`, and is
@@ -73,6 +75,10 @@ config is linked by it anyway. Neovim keeps its own `install.sh`/`stow.sh` scrip
 `stowed/` folder.
 
 ## macOS
+
+Run this before `universal/bootstrap.sh`. mise needs the Xcode Command Line Tools to build
+the `cargo:` tools. They usually come from macOS's prompt when `git` first runs, and
+Homebrew's installer installs them otherwise:
 
 ```bash
 cd macos/core && ./install-all.sh  # Homebrew if missing, apps and core config
