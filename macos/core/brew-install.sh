@@ -10,6 +10,7 @@ casks=(
   raycast
   kap
   obs
+  handy
   linearmouse
   hovancik/stretchly/stretchly
 )
