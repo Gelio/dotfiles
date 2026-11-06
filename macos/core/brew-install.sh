@@ -33,10 +33,21 @@ brew install ${formulae[@]}
 
 echo "# Installing casks"
 echo "${casks[@]}"
-brew install --cask --adopt ${casks[@]}
+# NOTE: one at a time, because a cask fails if its app was installed outside
+# Homebrew, and that should not stop the rest of the setup
+failed_casks=()
+for cask in "${casks[@]}"; do
+  brew install --cask "$cask" || failed_casks+=("$cask")
+done
 
 # https://hovancik.net/stretchly/downloads/
-sudo xattr -r -d com.apple.quarantine /Applications/Stretchly.app
+if [[ -d /Applications/Stretchly.app ]]; then
+  sudo xattr -r -d com.apple.quarantine /Applications/Stretchly.app
+fi
 
 # NOTE: used for completions files
 mkdir -p ~/.zfunc/
+
+if ((${#failed_casks[@]})); then
+  echo "# Casks not installed: ${failed_casks[*]}"
+fi
