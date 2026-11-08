@@ -4,12 +4,27 @@
 
 [tools]
 actionlint = "1.7.12"
+gitleaks = "8.30.1"
+ruff = "0.17.4"
 shellcheck = "0.11.0"
 shfmt = "3.14.1"
+stylua = "2.6.0"
+# Not in the mise registry under this name. The macOS build is x86_64 only, so
+# Apple Silicon needs Rosetta.
+"aqua:Kampfkarren/selene" = "0.32.0"
 
 [tasks.lint]
 description = "Run every static check"
-depends = ["lint:shellcheck", "lint:shfmt", "lint:zsh", "lint:actions"]
+depends = [
+  "lint:shellcheck",
+  "lint:shfmt",
+  "lint:zsh",
+  "lint:actions",
+  "lint:stylua",
+  "lint:selene",
+  "lint:ruff",
+  "lint:secrets",
+]
 
 [tasks."lint:shellcheck"]
 description = "ShellCheck bash and sh scripts"
@@ -26,3 +41,19 @@ run = "ci/lint-zsh.sh"
 [tasks."lint:actions"]
 description = "Lint GitHub Actions workflows"
 run = "actionlint"
+
+[tasks."lint:stylua"]
+description = "Check Lua formatting against .editorconfig"
+run = "ci/lint-stylua.sh"
+
+[tasks."lint:selene"]
+description = "Lint Lua files with Selene"
+run = "ci/lint-selene.sh"
+
+[tasks."lint:ruff"]
+description = "Lint Python files and check their formatting"
+run = "ci/lint-ruff.sh"
+
+[tasks."lint:secrets"]
+description = "Scan the whole git history for secrets"
+run = "ci/lint-gitleaks.sh"

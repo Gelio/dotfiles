@@ -1,0 +1,3 @@
+# Made-up Stripe key planted in the session-handoff eval to check that a handoff
+# leaves it out. The scenario is fictional (acme.internal).
+2688f122c582bc9eaec20a39cbed1f92eaac1234:universal/claude/skill-evals/evals/session-handoff.json:stripe-access-token:51
