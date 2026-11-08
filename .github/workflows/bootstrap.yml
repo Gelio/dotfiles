@@ -94,6 +94,16 @@ jobs:
       - name: Keep mise on PATH
         run: echo "$HOME/.local/bin" >>"$GITHUB_PATH"
 
+      - name: Check that --skip replaces the default
+        run: |
+          output="$(/bin/bash universal/bootstrap.sh --dry-run --skip tools 2>&1)"
+          echo "$output"
+          grep -q 'bootstrap: dotfiles' <<<"$output"
+          if grep -q 'bootstrap: tools' <<<"$output"; then
+            echo "::error::--skip tools still previewed the tools phase"
+            exit 1
+          fi
+
       - name: Install dotfiles
         run: /bin/bash universal/bootstrap.sh --only dotfiles
       - name: Check that --only replaced the default
