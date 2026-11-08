@@ -9,9 +9,11 @@ ruff = "0.17.4"
 shellcheck = "0.11.0"
 shfmt = "3.14.1"
 stylua = "2.6.0"
-# Not in the mise registry under this name. The macOS build is x86_64 only, so
-# Apple Silicon needs Rosetta.
+# Not in the mise registry under this name. selene-0.32.0-macos.zip holds an
+# arm64 binary, so it runs natively on Apple Silicon and fails on Intel Macs.
 "aqua:Kampfkarren/selene" = "0.32.0"
+# The standalone binary, so that formatting doesn't need Node.
+"aqua:oxc-project/oxc/oxfmt" = "0.77.0"
 
 [tasks.lint]
 description = "Run every static check"
@@ -23,6 +25,7 @@ depends = [
   "lint:stylua",
   "lint:selene",
   "lint:ruff",
+  "lint:format",
   "lint:secrets",
 ]
 
@@ -53,6 +56,10 @@ run = "ci/lint-selene.sh"
 [tasks."lint:ruff"]
 description = "Lint Python files and check their formatting"
 run = "ci/lint-ruff.sh"
+
+[tasks."lint:format"]
+description = "Check Markdown, JSON and YAML formatting"
+run = "ci/lint-format.sh"
 
 [tasks."lint:secrets"]
 description = "Scan the whole git history for secrets"

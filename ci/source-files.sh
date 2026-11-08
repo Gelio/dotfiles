@@ -2,11 +2,12 @@
 # Lists the tracked source files of one language, one per line:
 #   source-files.sh lua      *.lua files
 #   source-files.sh python   *.py files and scripts with a python shebang
+#   source-files.sh format   Markdown, JSON and YAML files
 #
 # NOTE: runs on macOS bash 3.2 too
 set -euo pipefail
 
-kind="${1:?usage: source-files.sh lua|python}"
+kind="${1:?usage: source-files.sh lua|python|format}"
 cd "$(git rev-parse --show-toplevel)"
 
 excludes=(
@@ -25,6 +26,7 @@ function matches_kind {
   case "$kind" in
   lua) [[ "$file" == *.lua ]] ;;
   python) [[ "$file" == *.py ]] || declares_python "$file" ;;
+  format) [[ "$file" =~ \.(md|json|jsonc|ya?ml)$ ]] ;;
   *)
     echo "Unknown kind: $kind" >&2
     exit 2

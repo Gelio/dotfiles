@@ -1,0 +1,33 @@
+{
+  "printWidth": 80,
+  "overrides": [
+    {
+      // Markdown only, because proseWrap splits long YAML strings
+      "files": ["*.md"],
+      "options": { "proseWrap": "always" }
+    }
+  ],
+  // Here rather than in ci/lint-format.sh, so that saving in the editor skips
+  // them too. The * before file names is for conform.nvim, which formats a
+  // temporary .conform.<random>.<name> next to the file.
+  "ignorePatterns": [
+    "*SKILL.md",
+
+    // Written by the apps that read them
+    "macos/core/stowed/.config/karabiner/*karabiner.json",
+    "macos/core/stowed/.config/linearmouse/*linearmouse.json",
+    "macos/core/stowed/Library/Application Support/Stretchly/*config.json",
+    "ubuntu/i3/stowed/.config/safeeyes/*safeeyes.json",
+    "windows/config/*keyboard-manager-editor-settings.json",
+    "windows/config/*keyboard-manager-settings.json",
+    "windows/config/*windows-terminal-settings.json",
+    "windows/config/.glzr/zebar/*settings.json",
+
+    // Lock files
+    "universal/agents/home/.agents/*.skill-lock.json",
+    "universal/neovim/config/nvim/*lazy-lock.json",
+
+    // Vendored
+    "windows/config/.glzr/zebar/sakyasumedh.aurora@1.0.0-modified/"
+  ]
+}
