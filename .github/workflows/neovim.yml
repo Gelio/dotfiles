@@ -1,0 +1,54 @@
+name: Neovim
+
+on:
+  pull_request:
+    paths: &paths
+      - .github/actions/setup-neovim/**
+      - .github/workflows/neovim.yml
+      - ci/neovim-*
+      - universal/neovim/**
+  # Caches saved here are the ones pull requests can read
+  push:
+    branches: [main]
+    paths: *paths
+
+permissions:
+  contents: read
+
+jobs:
+  startup:
+    name: startup from lazy-lock.json
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      NVIM_SKIP_INSTALLS: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-neovim
+
+      - name: Restore the plugin cache
+        id: plugin-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.XDG_DATA_HOME }}/nvim/lazy
+          key: &plugin-cache-key neovim-plugins-${{ runner.os }}-${{ hashFiles('universal/neovim/config/nvim/lazy-lock.json') }}
+      - name: Restore plugins from lazy-lock.json
+        if: steps.plugin-cache.outputs.cache-hit != 'true'
+        run: nvim --headless '+Lazy! restore' +qa
+      - name: Check that plugins match lazy-lock.json
+        run: nvim -l ci/neovim-check-plugins.lua
+      # Saved here, so that a config that fails to start doesn't throw away the
+      # download
+      - name: Save the plugin cache
+        if: steps.plugin-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.XDG_DATA_HOME }}/nvim/lazy
+          key: *plugin-cache-key
+
+      - name: Check startup
+        run: nvim -l ci/neovim-startup-check.lua
+      - name: Check that starting didn't change lazy-lock.json
+        run: git diff --exit-code -- universal/neovim/config/nvim/lazy-lock.json
