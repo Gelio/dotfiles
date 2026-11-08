@@ -2,6 +2,10 @@
 -- `nvim -l ci/neovim-startup-check.lua`, with the XDG variables already pointing
 -- at the config and at folders that hold the restored plugins.
 --
+-- With a Lua script as the argument, the started Neovim runs that script
+-- instead of force-loading the plugins, and the same rule applies to it. The
+-- script fails by raising an error.
+--
 -- Fails on `E123:`-style errors, tracebacks, and vim.notify at WARN or above,
 -- unless the text matches the allowlist. Exit codes don't help here: Neovim
 -- exits 0 after most startup errors.
@@ -12,9 +16,11 @@
 local allowlist = {}
 
 local failure_patterns = { "%f[%w]E%d+:", "stack traceback:" }
-local timeout_ms = 120000
-
 local script_dir = vim.fs.dirname(vim.fs.abspath(arg[0]))
+local run_script = arg[1] and vim.fs.abspath(arg[1])
+
+-- A script can install things, and keeps its own timeouts for each step
+local timeout_ms = run_script and 85 * 60 * 1000 or 120000
 
 ---@type string[]
 local failures = {}
@@ -55,21 +61,32 @@ end
 
 local function start_neovim()
 	local result_path = vim.fn.tempname()
-	local run = vim
-		.system(
-			{ "nvim", "--headless", "--cmd", "luafile " .. script_dir .. "/neovim-startup-probe.lua" },
-			{ text = true, timeout = timeout_ms, env = { NVIM_STARTUP_CHECK_RESULT = result_path } }
-		)
-		:wait()
 
-	print(run.stdout)
-	print(run.stderr)
+	-- Streamed as it comes, because a script can run for a long time
+	---@type string[]
+	local output = {}
+	local function collect_output(_, data)
+		if data then
+			output[#output + 1] = data
+			io.write(data)
+		end
+	end
+
+	local run = vim
+		.system({ "nvim", "--headless", "--cmd", "luafile " .. script_dir .. "/neovim-startup-probe.lua" }, {
+			text = true,
+			timeout = timeout_ms,
+			env = { NVIM_STARTUP_CHECK_RESULT = result_path, NVIM_STARTUP_CHECK_SCRIPT = run_script },
+			stdout = collect_output,
+			stderr = collect_output,
+		})
+		:wait()
+	io.write("\n")
 
 	if run.code ~= 0 then
 		failures[#failures + 1] = "Neovim exited with code " .. run.code
 	end
-	scan_output("output", run.stdout)
-	scan_output("output", run.stderr)
+	scan_output("output", table.concat(output))
 
 	-- Missing means that Neovim quit or hung before the probe finished
 	if vim.fn.filereadable(result_path) == 0 then

@@ -1,7 +1,7 @@
 -- Runs inside the Neovim that ci/neovim-startup-check.lua starts, before
--- init.lua. Records every vim.notify call, force-loads the lazy-loaded plugins,
--- and writes what it saw to $NVIM_STARTUP_CHECK_RESULT. Judging that is the
--- job of the check script.
+-- init.lua. Records every vim.notify call, force-loads the lazy-loaded plugins
+-- or runs $NVIM_STARTUP_CHECK_SCRIPT, and writes what it saw to
+-- $NVIM_STARTUP_CHECK_RESULT. Judging that is the job of the check script.
 
 local result_path = assert(vim.env.NVIM_STARTUP_CHECK_RESULT, "NVIM_STARTUP_CHECK_RESULT is not set")
 
@@ -90,6 +90,12 @@ local function write_result(probe_error)
 end
 
 local function run()
+	if vim.env.NVIM_STARTUP_CHECK_SCRIPT then
+		dofile(vim.env.NVIM_STARTUP_CHECK_SCRIPT)
+		settle()
+		return
+	end
+
 	-- lazy.nvim waits for UIEnter to fire VeryLazy, which never happens without a UI
 	vim.api.nvim_exec_autocmds("UIEnter", { modeline = false })
 	settle()

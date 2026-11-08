@@ -1,0 +1,48 @@
+name: Neovim daily install
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+  # Tests changes to this job. Other Neovim pull requests only run neovim.yml.
+  pull_request:
+    paths:
+      - .github/workflows/neovim-daily.yml
+      - ci/neovim-install-all.lua
+      - ci/neovim-startup-check.lua
+      - ci/neovim-startup-probe.lua
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    name: install plugins, Mason packages and Treesitter parsers
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    # NVIM_SKIP_INSTALLS stays unset, and the plugin folder isn't cached: a
+    # cache hit leaves plugins not dirty, so lazy.nvim wouldn't run their builds
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-neovim
+
+      - name: Install the Treesitter CLI
+        run: npm install --global tree-sitter-cli@0.26.3
+
+      - name: Install plugins from lazy-lock.json
+        run: nvim --headless '+Lazy! restore' +qa
+      - name: Check that plugins match lazy-lock.json
+        run: nvim --headless -c 'luafile ci/neovim-check-plugins.lua' -c 'cquit 2'
+
+      - name: Install everything and check the results
+        run: nvim -l ci/neovim-startup-check.lua ci/neovim-install-all.lua
+      - name: Check startup
+        run: nvim -l ci/neovim-startup-check.lua
+      - name: Check that installing didn't change lazy-lock.json
+        run: git diff --exit-code -- universal/neovim/config/nvim/lazy-lock.json
+
+      - name: Show the end of mason.log
+        if: failure()
+        run: tail -n 100 "$XDG_STATE_HOME/nvim/mason.log" || true
