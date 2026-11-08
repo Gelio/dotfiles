@@ -1,0 +1,121 @@
+name: Bootstrap
+
+on:
+  pull_request:
+    paths: &paths
+      - .github/workflows/bootstrap.yml
+      - ci/check-bootstrap-*.sh
+      - ci/check-mise-pin.sh
+      - universal/bootstrap.sh
+      - universal/mise/**
+  push:
+    branches: [main]
+    paths: *paths
+
+permissions:
+  contents: read
+
+jobs:
+  pins:
+    name: pin hashes and group list
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check pin hashes against the release
+        run: ci/check-mise-pin.sh
+      - name: Check that a changed hash fails the check
+        run: |
+          copy="$RUNNER_TEMP/bootstrap.sh"
+          for platform in linux-x64 linux-arm64 macos-x64 macos-arm64; do
+            pinned="$(sed -nE "s/^ *$platform\) expected_sha=([0-9a-f]{64}) ;;$/\1/p" universal/bootstrap.sh)"
+            if [[ "$pinned" == 0* ]]; then changed="1${pinned:1}"; else changed="0${pinned:1}"; fi
+            sed "s/$pinned/$changed/" universal/bootstrap.sh >"$copy"
+
+            # Exit 2 means the check didn't run, which proves nothing
+            code=0
+            output="$(ci/check-mise-pin.sh "$copy" 2>&1)" || code=$?
+            echo "$output"
+            if [[ "$code" -ne 1 ]] || ! grep -q "^Hash mismatch for $platform:" <<<"$output"; then
+              echo "::error::Changing the $platform hash should fail the check with a mismatch, got exit $code"
+              exit 1
+            fi
+            echo "Changed $platform hash failed the check as intended"
+          done
+      - name: Check the group list
+        run: ci/check-bootstrap-groups.sh
+
+  fresh:
+    name: fresh ${{ matrix.os }} ${{ matrix.setup }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        setup: [default-groups, all-groups, no-groups]
+        include:
+          - setup: default-groups
+            miserc: ""
+            enabled: git fs sys ai
+          - setup: all-groups
+            miserc: 'env = ["git", "fs", "sys", "lang", "ai", "work", "personal"]'
+            enabled: git fs sys lang ai work personal
+          - setup: no-groups
+            miserc: "env = []"
+            enabled: ""
+    env:
+      # For mise's lookups of `latest` versions
+      GITHUB_TOKEN: ${{ github.token }}
+      ENABLED: ${{ matrix.enabled }}
+      MISERC: ${{ matrix.miserc }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check that the runner has no mise
+        run: |
+          /bin/bash --version | head -1
+          if command -v mise; then
+            echo "::error::mise is already installed, so this would not test installing it"
+            exit 1
+          fi
+      - name: Pre-create miserc.toml
+        if: matrix.miserc != ''
+        run: echo "$MISERC" >universal/mise/config/miserc.toml
+
+      - name: Dry run
+        run: /bin/bash universal/bootstrap.sh --dry-run
+      - name: Check that the dry run applied no dotfiles
+        run: test ! -e "$HOME/.bashrc.d"
+      # bootstrap.sh adds this to PATH only for itself, and without it the next
+      # run would install mise again
+      - name: Keep mise on PATH
+        run: echo "$HOME/.local/bin" >>"$GITHUB_PATH"
+
+      - name: Check that --skip replaces the default
+        run: |
+          output="$(/bin/bash universal/bootstrap.sh --dry-run --skip tools 2>&1)"
+          echo "$output"
+          grep -q 'bootstrap: dotfiles' <<<"$output"
+          if grep -q 'bootstrap: tools' <<<"$output"; then
+            echo "::error::--skip tools still previewed the tools phase"
+            exit 1
+          fi
+
+      - name: Install dotfiles
+        run: /bin/bash universal/bootstrap.sh --only dotfiles
+      - name: Check that --only replaced the default
+        run: test ! -e "$HOME/.local/share/mise/installs/ripgrep"
+      - name: Check the result
+        run: ci/check-bootstrap-result.sh "$ENABLED"
+
+      - name: Record the edited files
+        run: cksum "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.gitconfig" | tee "$RUNNER_TEMP/first-run"
+      - name: Run again
+        run: /bin/bash universal/bootstrap.sh --only dotfiles
+      - name: Check the result of the repeat run
+        run: ci/check-bootstrap-result.sh "$ENABLED"
+      - name: Check that the repeat run changed no edited files
+        run: cksum "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.gitconfig" | diff "$RUNNER_TEMP/first-run" -
