@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 layout="N/A"
 if [ "$SENDER" == "space_change" ]; then
