@@ -25,9 +25,7 @@
         "objects.githubusercontent.com",
         "raw.githubusercontent.com"
       ],
-      "allowUnixSockets": [
-        "~/.ssh/agent.sock"
-      ],
+      "allowUnixSockets": ["~/.ssh/agent.sock"],
       "allowLocalBinding": true
     },
     "filesystem": {
@@ -42,14 +40,8 @@
         "~/.bun/install/cache",
         "~/.cache/gh"
       ],
-      "denyWrite": [
-        "~/projects/dotfiles/windows/stowed-wsl/.local/bin"
-      ],
-      "denyRead": [
-        "~/.gnupg",
-        "~/.aws",
-        "~/.config/gh/hosts.yml"
-      ]
+      "denyWrite": ["~/projects/dotfiles/windows/stowed-wsl/.local/bin"],
+      "denyRead": ["~/.gnupg", "~/.aws", "~/.config/gh/hosts.yml"]
     },
     "excludedCommands": [
       "gh",
