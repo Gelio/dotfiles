@@ -70,7 +70,8 @@ local function get_all_values_deep(top_level_table)
 		for _, value_or_tbl in pairs(tbl) do
 			if type(value_or_tbl) == "table" then
 				walk_table(value_or_tbl)
-			else
+			elseif type(value_or_tbl) == "string" then
+				-- Skips non-string options, such as stop_after_first
 				values[value_or_tbl] = true
 			end
 		end
