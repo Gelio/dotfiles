@@ -4,8 +4,8 @@
     {
       // Markdown only, because proseWrap splits long YAML strings
       "files": ["*.md"],
-      "options": { "proseWrap": "always" }
-    }
+      "options": { "proseWrap": "always" },
+    },
   ],
   // Here rather than in ci/lint-format.sh, so that saving in the editor skips
   // them too. The * before file names is for conform.nvim, which formats a
@@ -28,6 +28,6 @@
     "universal/neovim/config/nvim/*lazy-lock.json",
 
     // Vendored
-    "windows/config/.glzr/zebar/sakyasumedh.aurora@1.0.0-modified/"
-  ]
+    "windows/config/.glzr/zebar/sakyasumedh.aurora@1.0.0-modified/",
+  ],
 }

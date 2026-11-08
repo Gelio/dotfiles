@@ -25,12 +25,12 @@ hooks.
 
 ## Layout
 
-| Source | Installed as |
-| --- | --- |
-| `home/.agents/skills/<name>/` | `~/.agents/skills/<name>/` (Codex reads this directly) |
-| `home/.claude/skills/<name>` | `~/.claude/skills/<name>`, a link to the shared skill |
-| `home/.agents/.skill-lock.json` | Third-party skill selections (`npx skills`) |
-| `personal/` | Linked into `~` only with the `personal` group: instructions for a personal Claude subscription, such as reading plan usage limits |
+| Source                          | Installed as                                                                                                                       |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `home/.agents/skills/<name>/`   | `~/.agents/skills/<name>/` (Codex reads this directly)                                                                             |
+| `home/.claude/skills/<name>`    | `~/.claude/skills/<name>`, a link to the shared skill                                                                              |
+| `home/.agents/.skill-lock.json` | Third-party skill selections (`npx skills`)                                                                                        |
+| `personal/`                     | Linked into `~` only with the `personal` group: instructions for a personal Claude subscription, such as reading plan usage limits |
 
 Edit authored skills under `home/.agents/skills/`.
 

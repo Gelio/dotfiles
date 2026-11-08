@@ -291,7 +291,8 @@ keybindings:
 
   # Put workspaces back on their monitors after sleep/lock scrambles them.
   # Runs the glazewm-gather-workspaces script from WSL.
-  - commands: ["shell-exec --hide-window wsl.exe -e bash -lc glazewm-gather-workspaces"]
+  - commands:
+      ["shell-exec --hide-window wsl.exe -e bash -lc glazewm-gather-workspaces"]
     bindings: ["alt+shift+g"]
 
   # Move focused window to a workspace defined in `workspaces` config.
