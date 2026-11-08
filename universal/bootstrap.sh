@@ -7,6 +7,11 @@ universal_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 config_dir="$universal_dir/mise/config"
 mise_link="$HOME/.config/mise"
 
+# Run from outside the repo, so mise doesn't read its root mise.toml: that
+# config isn't trusted on a new machine, and its lint tools aren't meant for
+# every machine.
+cd "$HOME"
+
 # Pinned mise release, installed only when mise is missing. Afterwards
 # `mise self-update` upgrades it. Hashes come from the release's SHASUMS256.txt:
 # https://github.com/jdx/mise/releases/download/v<version>/SHASUMS256.txt
