@@ -9,7 +9,7 @@ formulae=(
 
 echo "# Installing formulae"
 echo "${formulae[@]}"
-brew install ${formulae[@]}
+brew install "${formulae[@]}"
 
 # NOTE: cargo comes from mise, so run universal/bootstrap.sh first
 cargo install --git https://github.com/Gelio/yabaictl

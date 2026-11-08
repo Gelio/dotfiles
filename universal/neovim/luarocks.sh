@@ -27,4 +27,5 @@ cd luarocks-$LUAROCKS_VERSION
 make
 sudo make install
 
+# shellcheck disable=SC2016 # written to .bashrc unexpanded, on purpose
 echo 'export PATH="$PATH:~/.luarocks/bin"' >>~/.bashrc

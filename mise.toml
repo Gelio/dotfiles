@@ -1,0 +1,28 @@
+# Tools and tasks for working on this repo. `mise run lint` runs the same
+# checks locally and in CI. universal/mise/config is the separate, per-machine
+# mise config that bootstrap links to ~/.config/mise.
+
+[tools]
+actionlint = "1.7.12"
+shellcheck = "0.11.0"
+shfmt = "3.14.1"
+
+[tasks.lint]
+description = "Run every static check"
+depends = ["lint:shellcheck", "lint:shfmt", "lint:zsh", "lint:actions"]
+
+[tasks."lint:shellcheck"]
+description = "ShellCheck bash and sh scripts"
+run = "ci/lint-shellcheck.sh"
+
+[tasks."lint:shfmt"]
+description = "Check bash and sh formatting against .editorconfig"
+run = "ci/lint-shfmt.sh"
+
+[tasks."lint:zsh"]
+description = "Parse zsh files with zsh -n"
+run = "ci/lint-zsh.sh"
+
+[tasks."lint:actions"]
+description = "Lint GitHub Actions workflows"
+run = "actionlint"

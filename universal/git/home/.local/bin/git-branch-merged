@@ -63,31 +63,31 @@ delete=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    -u | --upstream)
-      [ $# -ge 2 ] || die "option $1 requires an argument"
-      upstream=$2
-      shift 2
-      ;;
-    -d | --delete)
-      delete=1
-      shift
-      ;;
-    -h | --help)
-      usage
-      exit 0
-      ;;
-    --)
-      shift
-      break
-      ;;
-    -*)
-      die "unknown option: $1"
-      ;;
-    *)
-      [ -z "$branch" ] || die "unexpected extra argument: $1"
-      branch=$1
-      shift
-      ;;
+  -u | --upstream)
+    [ $# -ge 2 ] || die "option $1 requires an argument"
+    upstream=$2
+    shift 2
+    ;;
+  -d | --delete)
+    delete=1
+    shift
+    ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  --)
+    shift
+    break
+    ;;
+  -*)
+    die "unknown option: $1"
+    ;;
+  *)
+    [ -z "$branch" ] || die "unexpected extra argument: $1"
+    branch=$1
+    shift
+    ;;
   esac
 done
 

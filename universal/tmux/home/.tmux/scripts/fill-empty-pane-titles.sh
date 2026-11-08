@@ -31,15 +31,15 @@ set -euo pipefail
 # work done: the loop body never runs and the host name is never computed.
 host=""
 tmux list-panes -a -F '#{?#{==:#{pane_title},},#{pane_id},}' |
-	while read -r pane_id; do
-		if [ -n "$pane_id" ]; then
-			# tmux's default pane title is the short host name; matching it
-			# keeps a filled pane indistinguishable from a fresh one. Computed
-			# lazily (at most once) only when there's actually a blank to fill.
-			[ -n "$host" ] || host="$(tmux display-message -p '#{host_short}')"
-			tmux select-pane -t "$pane_id" -T "$host"
-		fi
-	done
+  while read -r pane_id; do
+    if [ -n "$pane_id" ]; then
+      # tmux's default pane title is the short host name; matching it
+      # keeps a filled pane indistinguishable from a fresh one. Computed
+      # lazily (at most once) only when there's actually a blank to fill.
+      [ -n "$host" ] || host="$(tmux display-message -p '#{host_short}')"
+      tmux select-pane -t "$pane_id" -T "$host"
+    fi
+  done
 
 # Print nothing: this runs as a status-right "#()" component and must stay
 # visually empty.

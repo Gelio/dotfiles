@@ -29,7 +29,7 @@ formulae=(
 
 echo "# Installing formulae"
 echo "${formulae[@]}"
-brew install ${formulae[@]}
+brew install "${formulae[@]}"
 
 echo "# Installing casks"
 echo "${casks[@]}"
