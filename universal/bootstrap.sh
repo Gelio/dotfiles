@@ -10,7 +10,7 @@ mise_link="$HOME/.config/mise"
 # Pinned mise release, installed only when mise is missing. Afterwards
 # `mise self-update` upgrades it. Hashes come from the release's SHASUMS256.txt:
 # https://github.com/jdx/mise/releases/download/v<version>/SHASUMS256.txt
-mise_version="2026.10.4"
+mise_version="2026.11.4"
 
 function install_mise {
   local os arch platform expected_sha actual_sha download
@@ -32,10 +32,10 @@ function install_mise {
   esac
   platform="$os-$arch"
   case "$platform" in
-  linux-x64) expected_sha=2b8ce21f550872807bcaabf45b6bc5c64bfbd6dc3bf49dd4e67de700ef3ceb75 ;;
-  linux-arm64) expected_sha=9013ce1d7d9bbbf65254cda178562f5450c474a705907c18b77e6b678bb10041 ;;
-  macos-x64) expected_sha=9f58d924a4d7b47aeb1610cd981beca2125907b2591d805237efbca8aae4308e ;;
-  macos-arm64) expected_sha=5c530143fc750e8a98c9a36be8d361e5dd953fa0b004d58f7577783f7cf2ac24 ;;
+  linux-x64) expected_sha=0296d9cba9324106d4e0962bb94a2072902f3658813aeb3b09504947bb8ddc2b ;;
+  linux-arm64) expected_sha=219d1daa41d110ed004b6a9c4029000046b23b3498f45d17c7897a166177e80b ;;
+  macos-x64) expected_sha=f16f34e9dc498ce23af603ef0066638258d9659896b84087ff1ce1585c012238 ;;
+  macos-arm64) expected_sha=21c269cd3c88e31c56aad7f7ccd9916b6fa78683937d93e5d17129b783d6f962 ;;
   esac
 
   download="$(mktemp)"
