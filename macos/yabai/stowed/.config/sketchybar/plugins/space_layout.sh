@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -eo pipefail
 
 layout="N/A"
 if [ "$SENDER" == "space_change" ]; then

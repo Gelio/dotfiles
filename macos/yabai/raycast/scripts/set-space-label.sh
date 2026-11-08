@@ -11,6 +11,8 @@
 # @raycast.argument1 { "type": "text", "placeholder": "stable-index", "optional": true }
 # @raycast.argument2 { "type": "text", "placeholder": "description", "optional": true }
 
+set -e
+
 YABAICTL_PATH="$HOME/.cargo/bin/yabaictl"
 
 args=(set-label)

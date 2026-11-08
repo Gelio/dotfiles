@@ -10,4 +10,6 @@
 # @raycast.packageName Applications
 # @raycast.argument1 { "type": "text", "placeholder": "application name" }
 
+set -e
+
 open -n -a "$1"

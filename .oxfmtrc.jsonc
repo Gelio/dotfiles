@@ -17,7 +17,6 @@
     "macos/core/stowed/.config/karabiner/*karabiner.json",
     "macos/core/stowed/.config/linearmouse/*linearmouse.json",
     "macos/core/stowed/Library/Application Support/Stretchly/*config.json",
-    "ubuntu/i3/stowed/.config/safeeyes/*safeeyes.json",
     "windows/config/*keyboard-manager-editor-settings.json",
     "windows/config/*keyboard-manager-settings.json",
     "windows/config/*windows-terminal-settings.json",

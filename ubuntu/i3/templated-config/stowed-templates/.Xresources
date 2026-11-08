@@ -1,2 +1,0 @@
-Xcursor.size: {{ math.Mul 16 1.5 (ds "config").dpi }}
-Xft.dpi: {{ math.Mul 96 (ds "config").dpi }}
