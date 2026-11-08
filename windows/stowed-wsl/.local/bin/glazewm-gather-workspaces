@@ -106,8 +106,8 @@ while read -r name parent; do
   else
     to_left+=("$name")
   fi
-# Skips the empty placeholder workspace GlazeWM keeps on an otherwise unused
-# monitor (e.g. the laptop): moving it away only makes GlazeWM create another.
+  # Skips the empty placeholder workspace GlazeWM keeps on an otherwise unused
+  # monitor (e.g. the laptop): moving it away only makes GlazeWM create another.
 done < <(jq -r '
   .data.monitors[]
   | .id as $id
