@@ -17,3 +17,6 @@ indent_style = tab
 
 [*.lua]
 indent_style = tab
+
+[*.py]
+indent_size = 4

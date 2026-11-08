@@ -7,8 +7,7 @@
 ---@return string?
 local function find_typescript_root(source)
 	return vim.fs.root(source, function(name, path)
-		return name == "node_modules"
-			and vim.uv.fs_stat(vim.fs.joinpath(path, name, "typescript", "package.json")) ~= nil
+		return name == "node_modules" and vim.uv.fs_stat(vim.fs.joinpath(path, name, "typescript", "package.json")) ~= nil
 	end)
 end
 
