@@ -1,0 +1,53 @@
+name: Set up the pinned Neovim
+description: >
+  Installs the Neovim commit from universal/neovim/neovim-commit, building it on
+  a cache miss, and points the XDG variables at the config in this repo and at
+  temporary folders.
+
+runs:
+  using: composite
+  steps:
+    - name: Compute the build cache key
+      id: pin
+      shell: bash
+      run: |
+        script_hash="$(sha256sum ci/neovim-build.sh | cut -d ' ' -f 1)"
+        echo "build-key=neovim-build-$RUNNER_OS-$RUNNER_ARCH-$(<universal/neovim/neovim-commit)-$script_hash" >>"$GITHUB_OUTPUT"
+
+    - name: Restore the Neovim build
+      id: cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/neovim-pinned
+        key: ${{ steps.pin.outputs.build-key }}
+
+    - name: Build Neovim
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install --yes ninja-build gettext cmake curl build-essential
+        ci/neovim-build.sh "$HOME/neovim-pinned"
+
+    # Saved here, so that a later failing step doesn't throw away the build
+    - name: Save the Neovim build
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/neovim-pinned
+        key: ${{ steps.pin.outputs.build-key }}
+
+    - name: Add Neovim to PATH and set the XDG variables
+      shell: bash
+      run: |
+        echo "$HOME/neovim-pinned/bin" >>"$GITHUB_PATH"
+        {
+          echo "XDG_CONFIG_HOME=$GITHUB_WORKSPACE/universal/neovim/config"
+          echo "XDG_DATA_HOME=$RUNNER_TEMP/nvim/data"
+          echo "XDG_STATE_HOME=$RUNNER_TEMP/nvim/state"
+          echo "XDG_CACHE_HOME=$RUNNER_TEMP/nvim/cache"
+        } >>"$GITHUB_ENV"
+
+    - name: Show the Neovim version
+      shell: bash
+      run: '"$HOME/neovim-pinned/bin/nvim" --version'

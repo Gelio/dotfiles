@@ -41,12 +41,14 @@ local function filter_only_available_servers(servers)
 	end, servers)
 end
 
-require("mason-lspconfig").setup({
-	ensure_installed = filter_only_available_servers(enabled_lsp_clients),
-	-- NOTE: prevents mason-lspconfig from automatically enabling some LSP clients
-	-- that are installed by mason-tool-installer (like buf)
-	automatic_enable = false,
-})
+if not require("skip-installs") then
+	require("mason-lspconfig").setup({
+		ensure_installed = filter_only_available_servers(enabled_lsp_clients),
+		-- NOTE: prevents mason-lspconfig from automatically enabling some LSP clients
+		-- that are installed by mason-tool-installer (like buf)
+		automatic_enable = false,
+	})
+end
 
 vim.lsp.config("*", utils.base_config)
 
@@ -90,10 +92,24 @@ local function get_formatters_to_install()
 	return get_all_values_deep(require("lsp.conform-nvim").formatters_by_ft)
 end
 
+---@return string[]
+local function get_mason_packages_to_install()
+	-- NOTE: formatters and linters can be names that only conform or nvim-lint
+	-- know, like trim_whitespace. Compare against the list of names because
+	-- `has_package` logs "Cannot find package" for each of those.
+	local mason_packages = require("mason-registry").get_all_package_names()
+
+	return vim.tbl_filter(function(tool_name)
+		return vim.tbl_contains(mason_packages, tool_name)
+	end, vim.list_extend(get_formatters_to_install(), get_linters_to_install()))
+end
+
+local skip_installs = require("skip-installs")
+-- NOTE: setup still has to run when skipping. The plugin checks for updates on
+-- VimEnter, which contacts the Mason registry unless run_on_start is off.
 require("mason-tool-installer").setup({
-	ensure_installed = vim.tbl_filter(function(tool_name)
-		return require("mason-registry").has_package(tool_name)
-	end, vim.list_extend(get_formatters_to_install(), get_linters_to_install())),
+	ensure_installed = skip_installs and {} or get_mason_packages_to_install(),
+	run_on_start = not skip_installs,
 })
 
 vim.diagnostic.config({
