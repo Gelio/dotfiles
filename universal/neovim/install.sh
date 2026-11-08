@@ -38,7 +38,7 @@ function main {
 
     if [[ "$skip_pull" == false ]]; then
       echo "  Checking out the pinned commit $pinned_commit"
-      git fetch origin "$pinned_commit"
+      git cat-file -e "$pinned_commit^{commit}" 2>/dev/null || git fetch origin "$pinned_commit"
       git checkout --detach "$pinned_commit"
     else
       echo "  Skipped checking out the pinned commit"
@@ -56,6 +56,7 @@ function main {
     echo "* neovim repository not found in $HOME/.local/neovim, cloning..."
     git clone https://github.com/neovim/neovim.git
     cd neovim
+    git cat-file -e "$pinned_commit^{commit}" 2>/dev/null || git fetch origin "$pinned_commit"
     git checkout --detach "$pinned_commit"
 
     echo "* Installing build prerequisites"
