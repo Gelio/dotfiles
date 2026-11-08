@@ -33,9 +33,9 @@ end
 
 if #failures > 0 then
 	table.sort(failures)
-	io.stdout:write(table.concat(failures, "\n"), "\n")
+	print(table.concat(failures, "\n"))
 	vim.cmd.cquit(1)
 end
 
-io.stdout:write(("All %d enabled plugins match lazy-lock.json\n"):format(checked))
+print(("All %d enabled plugins match lazy-lock.json"):format(checked))
 vim.cmd.qall({ bang = true })

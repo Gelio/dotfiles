@@ -11,7 +11,9 @@ local settle_ms = 1000
 -- Everything else is force-loaded, because a bare start only runs the config
 -- of plugins that aren't lazy-loaded, and those are most of the config.
 ---@type table<string, string> Plugin name to the reason it can't be loaded here
-local never_force_load = {}
+local never_force_load = {
+	["nvim-dap-ui"] = "Needs nvim-nio, which the config doesn't install, so :DapUI is broken until that's added",
+}
 
 ---@type { message: string, level: integer }[]
 local notifications = {}
