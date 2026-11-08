@@ -13,10 +13,10 @@ Set MISE_MERGE_ALLOW_LOSS=1 to apply anyway.
 
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
 import tomllib
+from pathlib import Path
 
 LOADERS = {".json": json.loads, ".toml": tomllib.loads}
 

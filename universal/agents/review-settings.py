@@ -13,8 +13,8 @@ diffed by value, and `hooks` is walked matcher by matcher and command by command
 """
 
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 SETTINGS = Path.home() / ".claude/settings.json"

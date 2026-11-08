@@ -2,11 +2,11 @@
 """Restore third-party skills recorded in the skills CLI's global lockfile."""
 
 import argparse
-from collections import defaultdict
 import json
-from pathlib import Path
 import shlex
 import subprocess
+from collections import defaultdict
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 
