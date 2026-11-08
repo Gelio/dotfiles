@@ -24,8 +24,17 @@ import re
 import sys
 
 VALID_TYPES = {
-    "feat", "fix", "docs", "style", "refactor", "perf",
-    "test", "build", "ci", "chore", "revert",
+    "feat",
+    "fix",
+    "docs",
+    "style",
+    "refactor",
+    "perf",
+    "test",
+    "build",
+    "ci",
+    "chore",
+    "revert",
 }
 
 SUBJECT_RE = re.compile(r"^(\w+)(?:\(([^)]+)\))?!?: .+$")
@@ -63,13 +72,10 @@ def main() -> int:
 
     match = SUBJECT_RE.match(subject)
     if not match:
-        issues.append(
-            f"Subject must match `<type>(<scope>): <desc>`: {subject!r}"
-        )
+        issues.append(f"Subject must match `<type>(<scope>): <desc>`: {subject!r}")
     elif match.group(1) not in VALID_TYPES:
         issues.append(
-            f"Unknown type `{match.group(1)}`. "
-            f"Valid: {', '.join(sorted(VALID_TYPES))}"
+            f"Unknown type `{match.group(1)}`. Valid: {', '.join(sorted(VALID_TYPES))}"
         )
 
     # Body checks only apply when a body actually exists.
@@ -82,7 +88,11 @@ def main() -> int:
             issues.append("Missing blank line after subject")
         for i, line in enumerate(body, start=3):
             s = line.strip()
-            if len(line) > 72 and not s.startswith("http") and not re.match(r"^\[.+\]:\s*http", s):
+            if (
+                len(line) > 72
+                and not s.startswith("http")
+                and not re.match(r"^\[.+\]:\s*http", s)
+            ):
                 issues.append(f"Body line {i} is {len(line)} chars (max 72): {line!r}")
 
     if issues:
