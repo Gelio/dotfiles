@@ -107,6 +107,14 @@ if not vim.uv.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+if require("skip-installs") then
+	-- Every kind of plugin build goes through this task: `build` in a spec,
+	-- a build.lua file and rockspecs
+	require("lazy.manage.task.plugin").build.skip = function()
+		return true
+	end
+end
+
 require("commands").setup()
 require("lazy").setup("plugins", {
 	change_detection = {
