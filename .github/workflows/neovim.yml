@@ -37,7 +37,10 @@ jobs:
       - name: Restore plugins from lazy-lock.json
         if: steps.plugin-cache.outputs.cache-hit != 'true'
         run: nvim --headless '+Lazy! restore' +qa
+      # A cache hit was checked before it was saved. Skipping this also leaves
+      # a config that can't start to be reported by the startup check.
       - name: Check that plugins match lazy-lock.json
+        if: steps.plugin-cache.outputs.cache-hit != 'true'
         run: nvim --headless -c 'luafile ci/neovim-check-plugins.lua' -c 'cquit 2'
       # Saved here, so that a config that fails to start doesn't throw away the
       # download

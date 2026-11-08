@@ -14,6 +14,9 @@ local settle_ms = 1000
 local never_force_load = {
 	["nvim-dap-ui"] = "Needs nvim-nio, which the config doesn't install, so :DapUI is broken until that's added",
 }
+if vim.env.NVIM_SKIP_INSTALLS == "1" then
+	never_force_load["codediff.nvim"] = "Downloads a prebuilt library from GitHub when it loads"
+end
 
 ---@type { message: string, level: integer }[]
 local notifications = {}
