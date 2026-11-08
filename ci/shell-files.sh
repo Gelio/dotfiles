@@ -11,8 +11,6 @@ kind="${1:?usage: shell-files.sh shebang|bashrc|zsh}"
 cd "$(git rev-parse --show-toplevel)"
 
 excludes=(
-  # Comes under the checks in the last stage of #19. Delete this line then.
-  ':!ubuntu/'
   # The demo config sketchybar ships, not code maintained here.
   ':!macos/yabai/stowed/.config/sketchybar/sketchybarrc'
 )

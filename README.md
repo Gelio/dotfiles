@@ -3,6 +3,12 @@
 A list of my personal dotfiles, configuration files, and scripts that install
 various applications.
 
+The Ubuntu install scripts and i3 desktop config that lived in `ubuntu/` have
+been removed. Commit `6651c717` is the last one that changed them, so
+`git ls-tree -r --name-only 6651c717 -- ubuntu/` lists them and
+`git restore --source=6651c717 -- ubuntu/` brings them back.
+`git log -- ubuntu/` shows their history.
+
 ## Universal tools (mise)
 
 CLI tools and their config files are managed by [mise](https://mise.jdx.dev).
@@ -60,7 +66,7 @@ rmdir ~/.config/mise
 # git/install.sh appended this include without the markers mise now manages it with.
 # Your git identity is in that file, so run bootstrap.sh right after
 git config --global --unset-all include.path '^~/\.config/git\.gitconfig$'
-# ubuntu/bashrc.d.sh appended a loop sourcing ~/.bashrc.d without markers. mise now
+# The old Ubuntu setup appended a loop sourcing ~/.bashrc.d without markers. mise now
 # adds its own copy, so delete the old one from ~/.bashrc or snippets load twice
 grep -n -A2 'for file in ~/.bashrc.d' ~/.bashrc
 # Same for the line macos/core/install-zsh.sh appended to ~/.zshrc. The mise block

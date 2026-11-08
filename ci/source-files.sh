@@ -10,11 +10,6 @@ set -euo pipefail
 kind="${1:?usage: source-files.sh lua|python|format}"
 cd "$(git rev-parse --show-toplevel)"
 
-excludes=(
-  # Comes under the checks in the last stage of #19. Delete this line then.
-  ':!ubuntu/'
-)
-
 function declares_python {
   local first_line=""
   IFS= read -r first_line <"$1" || true
@@ -34,7 +29,7 @@ function matches_kind {
   esac
 }
 
-git ls-files -z -- . "${excludes[@]}" |
+git ls-files -z |
   while IFS= read -r -d '' file; do
     # Symlinks point at files listed under their own path
     if [[ -f "$file" && ! -L "$file" ]] && matches_kind "$file"; then
