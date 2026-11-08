@@ -15,12 +15,42 @@ cd "$HOME"
 
 dry_run=false
 parts_chosen=false
+only_given=false
+only_dotfiles=false
+skip_dotfiles=false
+flag=""
 for arg in "$@"; do
+  value=""
   case "$arg" in
   --dry-run | -n) dry_run=true ;;
-  --only | --only=* | --skip | --skip=*) parts_chosen=true ;;
+  --only | --skip)
+    parts_chosen=true
+    flag="$arg"
+    continue
+    ;;
+  --only=* | --skip=*)
+    parts_chosen=true
+    flag="${arg%%=*}"
+    value="${arg#*=}"
+    ;;
+  *) value="$arg" ;;
   esac
+  case "$flag" in
+  --only)
+    only_given=true
+    [[ ",$value," == *,dotfiles,* ]] && only_dotfiles=true
+    ;;
+  --skip)
+    [[ ",$value," == *,dotfiles,* ]] && skip_dotfiles=true
+    ;;
+  esac
+  flag=""
 done
+
+links_dotfiles=true
+if $skip_dotfiles || { $only_given && ! $only_dotfiles; }; then
+  links_dotfiles=false
+fi
 
 if $dry_run; then
   echo "> --dry-run only previews 'mise bootstrap'. This script still sets up what it needs:"
@@ -166,17 +196,19 @@ fi
 # prompt). Move these aside right before linking, so nothing recreates them in
 # between. `mise x` installs jq first on a new machine.
 backup_suffix="pre-mise-$(date +%Y%m%d%H%M%S)"
-mise dot status --json |
-  mise x jq -- jq -r '.files[] | select(.mode == "symlink" and .state == "differs") | .target' |
-  while IFS= read -r target; do
-    target="${target/#\~/$HOME}"
-    if $dry_run; then
-      echo "> Would move $target to $target.$backup_suffix"
-    else
-      mv "$target" "$target.$backup_suffix"
-      echo "> Moved $target to $target.$backup_suffix. Delete it once you've checked it"
-    fi
-  done
+if $links_dotfiles; then
+  mise dot status --json |
+    mise x jq -- jq -r '.files[] | select(.mode == "symlink" and .state == "differs") | .target' |
+    while IFS= read -r target; do
+      target="${target/#\~/$HOME}"
+      if $dry_run; then
+        echo "> Would move $target to $target.$backup_suffix"
+      else
+        mv "$target" "$target.$backup_suffix"
+        echo "> Moved $target to $target.$backup_suffix. Delete it once you've checked it"
+      fi
+    done
+fi
 
 # --only is repeatable, so a default next to the caller's would still add its parts
 if $parts_chosen; then
