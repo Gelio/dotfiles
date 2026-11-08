@@ -9,8 +9,16 @@ CLI tools and their config files are managed by [mise](https://mise.jdx.dev).
 
 ```bash
 universal/bootstrap.sh            # installs mise, tools and their dotfiles
-universal/bootstrap.sh --dry-run  # preview
+universal/bootstrap.sh --dry-run  # preview what mise would change
 ```
+
+`--dry-run` only previews `mise bootstrap`. The script still installs mise if it's missing,
+links `~/.config/mise`, writes `config.local.toml` and `miserc.toml` if they're missing, and
+installs `jq`. It prints this list when it starts.
+
+Other arguments go to `mise bootstrap`. Passing `--only` or `--skip` replaces the default
+`--only dotfiles,tools`, so `universal/bootstrap.sh --only dotfiles` links dotfiles without
+installing tools.
 
 If mise is missing, `bootstrap.sh` downloads a pinned release binary from GitHub and
 installs it only if its SHA-256 matches the hash in the script. To bump the pin, update

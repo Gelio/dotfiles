@@ -2,7 +2,8 @@
 set -euo pipefail
 
 # Sets up mise-managed tools and their dotfiles on this machine.
-# Extra arguments are passed to `mise bootstrap`, e.g. --dry-run.
+# Extra arguments are passed to `mise bootstrap`, e.g. --dry-run or
+# --only dotfiles. It runs from $HOME, so give any paths in them as absolute.
 universal_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 config_dir="$universal_dir/mise/config"
 mise_link="$HOME/.config/mise"
@@ -11,6 +12,23 @@ mise_link="$HOME/.config/mise"
 # config isn't trusted on a new machine, and its lint tools aren't meant for
 # every machine.
 cd "$HOME"
+
+dry_run=false
+parts_chosen=false
+for arg in "$@"; do
+  case "$arg" in
+  --dry-run | -n) dry_run=true ;;
+  --only | --only=* | --skip | --skip=*) parts_chosen=true ;;
+  esac
+done
+
+if $dry_run; then
+  echo "> --dry-run only previews 'mise bootstrap'. This script still sets up what it needs:"
+  echo ">   - installs mise to ~/.local/bin if it is missing"
+  echo ">   - links ~/.config/mise to this repo"
+  echo ">   - writes config.local.toml and miserc.toml if they are missing"
+  echo ">   - installs jq through mise"
+fi
 
 # Pinned mise release, installed only when mise is missing. Afterwards
 # `mise self-update` upgrades it. Hashes come from the release's SHASUMS256.txt:
@@ -147,10 +165,6 @@ fi
 # default config the tool wrote itself (atuin's shell hook does that at every
 # prompt). Move these aside right before linking, so nothing recreates them in
 # between. `mise x` installs jq first on a new machine.
-dry_run=false
-for arg in "$@"; do
-  [[ "$arg" == --dry-run || "$arg" == -n ]] && dry_run=true
-done
 backup_suffix="pre-mise-$(date +%Y%m%d%H%M%S)"
 mise dot status --json |
   mise x jq -- jq -r '.files[] | select(.mode == "symlink" and .state == "differs") | .target' |
@@ -164,4 +178,9 @@ mise dot status --json |
     fi
   done
 
-mise bootstrap --only dotfiles,tools "$@"
+# --only is repeatable, so a default next to the caller's would still add its parts
+if $parts_chosen; then
+  mise bootstrap "$@"
+else
+  mise bootstrap --only dotfiles,tools "$@"
+fi
