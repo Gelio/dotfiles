@@ -104,11 +104,13 @@ local function get_mason_packages_to_install()
 	end, vim.list_extend(get_formatters_to_install(), get_linters_to_install()))
 end
 
-if not require("skip-installs") then
-	require("mason-tool-installer").setup({
-		ensure_installed = get_mason_packages_to_install(),
-	})
-end
+local skip_installs = require("skip-installs")
+-- NOTE: setup still has to run when skipping. The plugin checks for updates on
+-- VimEnter, which contacts the Mason registry unless run_on_start is off.
+require("mason-tool-installer").setup({
+	ensure_installed = skip_installs and {} or get_mason_packages_to_install(),
+	run_on_start = not skip_installs,
+})
 
 vim.diagnostic.config({
 	float = {
