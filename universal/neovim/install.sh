@@ -5,6 +5,8 @@ set -euo pipefail
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 pushd "$script_dir" >/dev/null
 
+pinned_commit="$(<neovim-commit)"
+
 clean_before_build=false
 skip_pull=false
 
@@ -35,14 +37,11 @@ function main {
     echo "* neovim repository found at $PWD"
 
     if [[ "$skip_pull" == false ]]; then
-
-      echo "  Pulling latest changes..."
-      # Pulling fails most likely when a hash is checked out, not a branch.
-      # This is normal when there are breaking changes on master and a previous
-      # commit is used to build neovim.
-      git pull || echo "Pulling latest changes failed. Continuing anyway"
+      echo "  Checking out the pinned commit $pinned_commit"
+      git fetch origin "$pinned_commit"
+      git checkout --detach "$pinned_commit"
     else
-      echo "  Skipped pulling latest changes"
+      echo "  Skipped checking out the pinned commit"
     fi
 
     # Sometimes there are ninja build permissions errors because some files
@@ -57,6 +56,7 @@ function main {
     echo "* neovim repository not found in $HOME/.local/neovim, cloning..."
     git clone https://github.com/neovim/neovim.git
     cd neovim
+    git checkout --detach "$pinned_commit"
 
     echo "* Installing build prerequisites"
     install_build_prerequisites
