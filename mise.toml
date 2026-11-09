@@ -29,6 +29,10 @@ depends = [
   "lint:secrets",
 ]
 
+[tasks."hooks:install"]
+description = "Run the lint checks before every git push from this clone"
+run = "ci/install-hooks.sh"
+
 [tasks."lint:shellcheck"]
 description = "ShellCheck bash and sh scripts"
 run = "ci/lint-shellcheck.sh"
