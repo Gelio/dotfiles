@@ -20,8 +20,20 @@ brew install "${formulae[@]}"
 
 echo "# Installing casks"
 echo "${casks[@]}"
-brew install --cask "${casks[@]}"
+# NOTE: one at a time, because a cask fails if its app was installed outside
+# Homebrew, and that should not stop the config from being linked
+failed_casks=()
+for cask in "${casks[@]}"; do
+  brew install --cask "$cask" || failed_casks+=("$cask")
+done
 
-stow -v --no-folding -t "$HOME" --adopt stowed
+# NOTE: no --adopt: GlazeWM writes a default config on first launch, and
+# adopting it would replace this repo's config. Stow reports it as a
+# conflict instead; delete ~/.glzr/glazewm/config.yaml and rerun.
+stow -v --no-folding -t "$HOME" stowed
+
+if ((${#failed_casks[@]})); then
+  echo "# Casks not installed: ${failed_casks[*]}"
+fi
 
 echo "Open GlazeWM and grant it Accessibility in System Settings → Privacy & Security."
