@@ -3,8 +3,8 @@
 # mise config that bootstrap links to ~/.config/mise.
 
 [tools]
-actionlint = "1.7.12"
 gitleaks = "8.30.1"
+jactionlint = "2.5.0"
 ruff = "0.17.4"
 shellcheck = "0.11.0"
 shfmt = "3.14.1"
@@ -47,7 +47,9 @@ run = "ci/lint-zsh.sh"
 
 [tasks."lint:actions"]
 description = "Lint GitHub Actions workflows"
-run = "actionlint"
+# correctness: actionlint's checks plus bug detectors, without the default
+# profile's security and policy rules
+run = "jactionlint --profile correctness"
 
 [tasks."lint:stylua"]
 description = "Check Lua formatting against .editorconfig"
