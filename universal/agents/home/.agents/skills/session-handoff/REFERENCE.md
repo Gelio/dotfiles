@@ -20,7 +20,7 @@ Whether these are gitignored is the repo's call; keep its ignore rules as they a
 
 ## Lookups
 
-- Workstreams and their status: `grep -H '^\*\*Status:\*\*' .claude/tracking/*.md`. A status starting with `done` closes the workstream.
+- Workstreams and their status: `grep -H '^\*\*Status:\*\*' .claude/tracking/*.md`. A status starting with `done` closes the workstream. A missing `.claude/tracking/` means no trackers yet.
 - Workstreams that have handoffs but no tracker predate trackers: `grep -h '^workstream: ' .claude/handoffs/*.md | sort -u`, minus the tracked ones.
 - Newest handoff of a workstream: `grep -lx 'workstream: <name>' .claude/handoffs/*.md | sort | tail -1`.
 
