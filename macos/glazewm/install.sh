@@ -33,18 +33,28 @@ done
 # conflict instead; delete ~/.glzr/glazewm/config.yaml and rerun.
 stow -v --no-folding -t "$HOME" stowed
 
-# Writes a LaunchAgent that runs the given command at login and keeps it
-# running, and (re)loads it. Written rather than stowed, because launchd needs
-# absolute paths and may skip a symlinked plist.
-install_agent() {
-  local label=$1 plist arg args=""
-  shift
-  plist="$HOME/Library/LaunchAgents/$label.plist"
-  for arg in "$@"; do
-    args+="    <string>$arg</string>"$'\n'
-  done
-  mkdir -p "$(dirname "$plist")" "$HOME/Library/Logs"
-  cat >"$plist" <<EOF
+# Removes the LaunchAgents and scripts of an earlier version of this module.
+for old in glazewm-karabiner-sync glazewm-wake; do
+  old_plist="$HOME/Library/LaunchAgents/com.github.gelio.$old.plist"
+  if [[ -f "$old_plist" ]]; then
+    launchctl bootout "gui/$(id -u)/com.github.gelio.$old" 2>/dev/null || true
+    rm "$old_plist"
+  fi
+  # Stow leaves links to removed files behind.
+  if [[ -L "$HOME/.local/bin/$old" && ! -e "$HOME/.local/bin/$old" ]]; then
+    rm "$HOME/.local/bin/$old"
+  fi
+done
+
+# One LaunchAgent runs glazewm-helper at login and keeps it running. It's
+# written rather than stowed, because launchd needs absolute paths and may skip
+# a symlinked plist. Endpoint security on a managed Mac can flag writing and
+# loading a LaunchAgent, so this only happens when the plist changes or the
+# agent isn't loaded.
+label=com.github.gelio.glazewm-helper
+plist="$HOME/Library/LaunchAgents/$label.plist"
+new_plist=$(
+  cat <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -53,7 +63,8 @@ install_agent() {
   <string>$label</string>
   <key>ProgramArguments</key>
   <array>
-$args  </array>
+    <string>$HOME/.local/bin/glazewm-helper</string>
+  </array>
   <key>RunAtLoad</key>
   <true/>
   <key>KeepAlive</key>
@@ -63,27 +74,23 @@ $args  </array>
 </dict>
 </plist>
 EOF
+)
+if [[ "$(cat "$plist" 2>/dev/null)" == "$new_plist" ]] &&
+  launchctl print "gui/$(id -u)/$label" >/dev/null 2>&1; then
+  echo "# $label is up to date"
+else
+  mkdir -p "$(dirname "$plist")" "$HOME/Library/Logs"
+  printf '%s\n' "$new_plist" >"$plist"
   launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
   # bootout returns before the old service is gone, and bootstrap fails until
   # it is, so retry for a few seconds.
-  local tries=0
+  tries=0
   until launchctl bootstrap "gui/$(id -u)" "$plist"; do
     ((++tries < 5)) || exit 1
     sleep 1
   done
-}
-
-# Turns the Karabiner rule on while GlazeWM runs, and off while it's paused or
-# not running.
-install_agent com.github.gelio.glazewm-karabiner-sync \
-  "$HOME/.local/bin/glazewm-karabiner-sync"
-
-# Runs glazewm-wake on system wakeup (-w) and display wakeup (-W): waking
-# from system sleep sends only the first.
-install_agent com.github.gelio.glazewm-wake \
-  "$(brew --prefix)/sbin/sleepwatcher" -V \
-  -w "$HOME/.local/bin/glazewm-wake" \
-  -W "$HOME/.local/bin/glazewm-wake"
+  echo "# $label (re)loaded"
+fi
 
 if ((${#failed_casks[@]})); then
   echo "# Casks not installed: ${failed_casks[*]}"

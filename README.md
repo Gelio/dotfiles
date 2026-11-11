@@ -131,10 +131,12 @@ Karabiner turns Left Option+key into Option+Command+key for the keys GlazeWM
 binds, and GlazeWM binds those. The rule is off while GlazeWM isn't running.
 Other Left Option combinations, like Left Option+arrows, reach apps unchanged.
 
-`install.sh` also sets up two LaunchAgents. One keeps that Karabiner rule in
-step with GlazeWM. The other runs sleepwatcher, because waking from sleep clears
-the Karabiner setting and hides Zebar's bars, and restores both. If macOS asks,
-allow them as background items.
+`install.sh` also sets up a LaunchAgent, `glazewm-helper`. It keeps that
+Karabiner rule in step with GlazeWM, and through sleepwatcher restores the rule
+and Zebar's bars on wake (waking from sleep clears one and hides the other).
+`install.sh` only rewrites and reloads it when it changes, because endpoint
+security on a managed Mac may flag that as persistence. If macOS asks, allow it
+as a background item.
 
 yabai, skhd and SketchyBar are optional, because they depend on each other and
 yabai's scripting addition needs SIP partially disabled:
