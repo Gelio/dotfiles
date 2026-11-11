@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Runs on display wakeup, which includes waking from system sleep, via
+# sleepwatcher (see macos/glazewm/install.sh). Waking from system sleep clears
+# Karabiner's glazewm_running variable, which turns off the Left Option
+# bindings, and Zebar's bars vanish after any display sleep.
+set -uo pipefail
+
+pgrep -ix glazewm >/dev/null || exit 0
+
+"/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli" \
+  --set-variables '{"glazewm_running":1}'
+
+# Zebar ignores SIGTERM and SIGINT on macOS.
+pkill -KILL -ix zebar
+sleep 1
+open -a Zebar

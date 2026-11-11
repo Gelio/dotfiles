@@ -104,8 +104,10 @@ window_rules:
       # Ignores any Zebar windows.
       - window_process: { regex: "^[Zz]ebar$" }
 
-      # Ignores Handy's dictation overlay, so it doesn't reshuffle the layout.
-      - window_process: { regex: "^[Hh]andy$" }
+      # Ignores Control Center's windows, such as the microphone-in-use
+      # indicator that appears while dictating, so they don't reshuffle the
+      # layout.
+      - window_process: { equals: "Control Center" }
 
       # Ignores picture-in-picture windows for browsers.
       - window_title: { regex: "[Pp]icture.in.[Pp]icture" }
