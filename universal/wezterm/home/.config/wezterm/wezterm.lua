@@ -100,6 +100,25 @@ if is_macos then
 	for _, key in ipairs(macos_keys) do
 		table.insert(config.keys, key)
 	end
+
+	-- With no title bar, Cmd+drag moves the window. The default binding stops working
+	-- once tmux turns on mouse reporting, because the mouse events then go to tmux.
+	-- mouse_reporting = true makes these apply while it is on. tmux never sees Cmd,
+	-- so this takes nothing from it. Down is a Nop so tmux doesn't get a lone press.
+	config.mouse_bindings = {
+		{
+			event = { Down = { streak = 1, button = "Left" } },
+			mods = "SUPER",
+			mouse_reporting = true,
+			action = act.Nop,
+		},
+		{
+			event = { Drag = { streak = 1, button = "Left" } },
+			mods = "SUPER",
+			mouse_reporting = true,
+			action = act.StartWindowDrag,
+		},
+	}
 end
 
 if is_windows then
