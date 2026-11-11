@@ -17,8 +17,7 @@ trap 'rmdir "$lock"' EXIT
 # Gives Karabiner time to finish waking up before setting its variable.
 sleep 3
 
-"/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli" \
-  --set-variables '{"glazewm_running":1}'
+"$(dirname "$0")/glazewm-karabiner-sync" --once
 
 # Zebar ignores SIGTERM and SIGINT on macOS.
 pkill -KILL -ix zebar

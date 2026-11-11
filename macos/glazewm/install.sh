@@ -63,10 +63,16 @@ cat >"$plist" <<EOF
 </plist>
 EOF
 launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
-launchctl bootstrap "gui/$(id -u)" "$plist"
+# bootout returns before the old service is gone, and bootstrap fails until
+# it is, so retry for a few seconds.
+tries=0
+until launchctl bootstrap "gui/$(id -u)" "$plist"; do
+  ((++tries < 5)) || exit 1
+  sleep 1
+done
 
 if ((${#failed_casks[@]})); then
   echo "# Casks not installed: ${failed_casks[*]}"
 fi
 
-echo "Open GlazeWM and grant it Accessibility in System Settings → Privacy & Security."
+echo "Open GlazeWM and grant it Accessibility in System Settings → Privacy & Security (on macOS 27: Device Control and Data Access)."

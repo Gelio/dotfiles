@@ -115,8 +115,9 @@ Bitwarden and Rambox are optional, for personal Macs:
 cd macos/personal && ./install.sh
 ```
 
-GlazeWM tiles windows with the same bindings as on Windows, plus Zebar for the
-bar and JankyBorders for focus borders. It doesn't need SIP disabled:
+GlazeWM tiles windows with mostly the same bindings as on Windows (no arrow
+keys, no terminal or gather-workspaces binding), plus Zebar for the bar and
+JankyBorders for focus borders. It doesn't need SIP disabled:
 
 ```bash
 cd macos/glazewm && ./install.sh  # installs them, links GlazeWM's config
@@ -126,8 +127,10 @@ Then open GlazeWM and grant it Accessibility (on macOS 27: Privacy & Security â†
 Device Control and Data Access). If it then manages no windows, turn that toggle
 off and on again. Its bindings use Left Option only, so Right Option still types
 Polish letters. GlazeWM can't tell the two Option keys apart, so while it runs,
-Karabiner turns Left Option+key into Option+Command+key, and GlazeWM binds
-those.
+Karabiner turns Left Option+key into Option+Command+key for the keys GlazeWM
+binds, and GlazeWM binds those. The rule is off while GlazeWM is paused or not
+running. Other Left Option combinations, like Left Option+arrows, reach apps
+unchanged.
 
 Waking from sleep clears that Karabiner setting and hides Zebar's bars, so
 `install.sh` also sets up sleepwatcher to restore both on wake. If macOS asks,

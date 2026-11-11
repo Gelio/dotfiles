@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Keeps Karabiner's glazewm_running variable in step with GlazeWM: 1 while it
+# runs, 0 while it's paused, and 0 once it exits or crashes. While the
+# variable is 1, Karabiner turns Left Option+<key> into Option+Command+<key>,
+# which apps would get as shortcuts (Option+Shift+Command+Q logs out at once)
+# if GlazeWM weren't there to take them.
+#
+# GlazeWM starts this at startup. With --once, it sets the variable once and
+# exits (used by glazewm-wake).
+set -uo pipefail
+
+PATH="/opt/homebrew/bin:$PATH"
+karabiner_cli="/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli"
+
+set_variable() {
+  "$karabiner_cli" --set-variables "{\"glazewm_running\":$1}"
+}
+
+running() {
+  pgrep -ix glazewm >/dev/null
+}
+
+sync_once() {
+  if ! running; then
+    set_variable 0
+  elif glazewm query paused | grep -Eq '"data": *true'; then
+    set_variable 0
+  else
+    set_variable 1
+  fi
+}
+
+if [[ "${1:-}" == "--once" ]]; then
+  sync_once
+  exit
+fi
+
+# Follows pause changes until GlazeWM exits. The subscription also ends if
+# its IPC connection drops, so resubscribe while GlazeWM still runs.
+while running; do
+  sync_once
+  glazewm sub --events pause_changed 2>/dev/null | while read -r _; do
+    sync_once
+  done
+  sleep 1
+done
+set_variable 0

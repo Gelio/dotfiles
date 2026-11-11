@@ -1,5 +1,6 @@
 # macOS copy of windows/config/.glzr/glazewm/config.yaml. Keep the bindings
-# in sync, but bind alt+cmd where Windows binds alt.
+# in sync, but bind alt+cmd where Windows binds alt, and leave out the arrow
+# keys, so Left Option+arrows keep moving by word.
 #
 # Both Option keys type Polish letters on macOS, so the bindings must leave
 # Right Option alone, and GlazeWM can't tell the two apart (it treats lalt
@@ -11,10 +12,12 @@
 general:
   # Commands to run when the WM has started. This is useful for running a
   # script or launching another application.
-  # Turns on the Karabiner rule, and starts Zebar and JankyBorders, which
-  # replaces `window_effects` borders (Windows-only).
+  # Starts glazewm-karabiner-sync, which turns the Karabiner rule on (and off
+  # while paused or after a crash), and Zebar and JankyBorders, which replaces
+  # `window_effects` borders (Windows-only). shell-exec doesn't expand `~` or
+  # `$HOME` on macOS, so sh does.
   startup_commands:
-    - 'shell-exec /Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli --set-variables {"glazewm_running":1}'
+    - "shell-exec /bin/sh -c $HOME/.local/bin/glazewm-karabiner-sync"
     - "shell-exec open -a Zebar"
     - "shell-exec borders active_color=0xff8dbcff inactive_color=0xffa1a1a1 width=8.0"
 
@@ -125,17 +128,17 @@ window_rules:
         window_title: { not_regex: "(^GNU|GIMP$)" }
 
 binding_modes:
-  # When enabled, the focused window can be resized via arrow keys or HJKL.
+  # When enabled, the focused window can be resized via HJKL.
   - name: "resize"
     keybindings:
       - commands: ["resize --width -2%"]
-        bindings: ["h", "left"]
+        bindings: ["h"]
       - commands: ["resize --width +2%"]
-        bindings: ["l", "right"]
+        bindings: ["l"]
       - commands: ["resize --height -2%"]
-        bindings: ["k", "up"]
+        bindings: ["k"]
       - commands: ["resize --height +2%"]
-        bindings: ["j", "down"]
+        bindings: ["j"]
       # Press enter/escape to return to default keybindings.
       - commands: ["wm-disable-binding-mode --name resize"]
         bindings: ["escape", "enter"]
@@ -143,23 +146,23 @@ binding_modes:
 keybindings:
   # Shift focus in a given direction.
   - commands: ["focus --direction left"]
-    bindings: ["alt+cmd+h", "alt+cmd+left"]
+    bindings: ["alt+cmd+h"]
   - commands: ["focus --direction right"]
-    bindings: ["alt+cmd+l", "alt+cmd+right"]
+    bindings: ["alt+cmd+l"]
   - commands: ["focus --direction up"]
-    bindings: ["alt+cmd+k", "alt+cmd+up"]
+    bindings: ["alt+cmd+k"]
   - commands: ["focus --direction down"]
-    bindings: ["alt+cmd+j", "alt+cmd+down"]
+    bindings: ["alt+cmd+j"]
 
   # Move focused window in a given direction.
   - commands: ["move --direction left"]
-    bindings: ["alt+cmd+shift+h", "alt+cmd+shift+left"]
+    bindings: ["alt+cmd+shift+h"]
   - commands: ["move --direction right"]
-    bindings: ["alt+cmd+shift+l", "alt+cmd+shift+right"]
+    bindings: ["alt+cmd+shift+l"]
   - commands: ["move --direction up"]
-    bindings: ["alt+cmd+shift+k", "alt+cmd+shift+up"]
+    bindings: ["alt+cmd+shift+k"]
   - commands: ["move --direction down"]
-    bindings: ["alt+cmd+shift+j", "alt+cmd+shift+down"]
+    bindings: ["alt+cmd+shift+j"]
 
   - commands: ["wm-enable-binding-mode --name resize"]
     bindings: ["alt+cmd+r"]
