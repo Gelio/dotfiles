@@ -361,7 +361,8 @@ i.nf {
 .battery {
   color: var(--green);
 }
-.battery.low {
+.battery.low,
+.battery.error {
   color: var(--red);
 }
 .battery.charging i.bolt {
