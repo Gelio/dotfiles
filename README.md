@@ -99,11 +99,15 @@ Tools to build the `cargo:` tools. They usually come from macOS's prompt when
 `git` first runs, and Homebrew's installer installs them otherwise:
 
 ```bash
-cd macos/core && ./install-all.sh  # Homebrew if missing, apps and core config
+cd macos/core && ./install-all.sh  # Homebrew if missing, apps, core config and settings
 ```
 
 Raycast's script directories aren't set by a script. In Raycast's settings,
 under Extensions, add `macos/raycast/scripts` as a script directory.
+
+`install-all.sh` also turns off the input source shortcuts (Ctrl+Space and
+Ctrl+Option+Space), so Ctrl+Space reaches the terminal. Turn them back on in
+System Settings → Keyboard → Keyboard Shortcuts → Input Sources.
 
 Bitwarden and Rambox are optional, for personal Macs:
 
