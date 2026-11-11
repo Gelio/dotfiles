@@ -116,8 +116,8 @@ cd macos/personal && ./install.sh
 ```
 
 GlazeWM tiles windows with mostly the same bindings as on Windows (no arrow
-keys, no terminal or gather-workspaces binding), plus Zebar for the bar and
-JankyBorders for focus borders. It doesn't need SIP disabled:
+keys, no pause, terminal or gather-workspaces binding), plus Zebar for the bar
+and JankyBorders for focus borders. It doesn't need SIP disabled:
 
 ```bash
 cd macos/glazewm && ./install.sh  # installs them, links GlazeWM's config
@@ -128,9 +128,8 @@ Device Control and Data Access). If it then manages no windows, turn that toggle
 off and on again. Its bindings use Left Option only, so Right Option still types
 Polish letters. GlazeWM can't tell the two Option keys apart, so while it runs,
 Karabiner turns Left Option+key into Option+Command+key for the keys GlazeWM
-binds, and GlazeWM binds those. The rule is off while GlazeWM is paused or not
-running. Other Left Option combinations, like Left Option+arrows, reach apps
-unchanged.
+binds, and GlazeWM binds those. The rule is off while GlazeWM isn't running.
+Other Left Option combinations, like Left Option+arrows, reach apps unchanged.
 
 `install.sh` also sets up two LaunchAgents. One keeps that Karabiner rule in
 step with GlazeWM. The other runs sleepwatcher, because waking from sleep clears

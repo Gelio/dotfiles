@@ -167,10 +167,8 @@ keybindings:
   - commands: ["wm-enable-binding-mode --name resize"]
     bindings: ["alt+cmd+r"]
 
-  # Disables window management and all other keybindings until alt+cmd+shift+p
-  # is pressed again.
-  - commands: ["wm-toggle-pause"]
-    bindings: ["alt+cmd+shift+p"]
+  # No wm-toggle-pause: Karabiner's rule would have to stay on while paused,
+  # and then apps would get Option+Command shortcuts.
 
   # Change tiling direction. This determines where new tiling windows will
   # be inserted.

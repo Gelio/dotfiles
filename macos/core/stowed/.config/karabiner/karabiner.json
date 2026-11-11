@@ -450,15 +450,6 @@
                             {
                                 "conditions": [{ "name": "glazewm_running", "type": "variable_if", "value": 1 }],
                                 "from": {
-                                    "key_code": "p",
-                                    "modifiers": { "mandatory": ["left_option", "shift"] }
-                                },
-                                "to": [{ "key_code": "p", "modifiers": ["left_option", "left_command", "shift"] }],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [{ "name": "glazewm_running", "type": "variable_if", "value": 1 }],
-                                "from": {
                                     "key_code": "v",
                                     "modifiers": { "mandatory": ["left_option"] }
                                 },
