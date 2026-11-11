@@ -12,16 +12,16 @@
 general:
   # Commands to run when the WM has started. This is useful for running a
   # script or launching another application.
-  # Starts glazewm-karabiner-sync, which turns the Karabiner rule on (and off
-  # while paused or after a crash), and Zebar and JankyBorders, which replaces
-  # `window_effects` borders (Windows-only). shell-exec doesn't expand `~` or
-  # `$HOME` on macOS, so sh does.
+  # Starts Zebar and JankyBorders, which replaces `window_effects` borders
+  # (Windows-only). The Karabiner rule is turned on by the
+  # glazewm-karabiner-sync LaunchAgent, within a few seconds of GlazeWM
+  # starting.
   startup_commands:
-    - "shell-exec /bin/sh -c $HOME/.local/bin/glazewm-karabiner-sync"
     - "shell-exec open -a Zebar"
     - "shell-exec borders active_color=0xff8dbcff inactive_color=0xffa1a1a1 width=8.0"
 
-  # Commands to run just before the WM is shutdown.
+  # Commands to run just before the WM is shutdown. Turns the Karabiner rule
+  # off right away, rather than at glazewm-karabiner-sync's next check.
   shutdown_commands:
     - 'shell-exec /Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli --set-variables {"glazewm_running":0}'
     # Zebar ignores SIGTERM and SIGINT on macOS.

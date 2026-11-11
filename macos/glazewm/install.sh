@@ -33,13 +33,18 @@ done
 # conflict instead; delete ~/.glzr/glazewm/config.yaml and rerun.
 stow -v --no-folding -t "$HOME" stowed
 
-# Runs glazewm-wake on system wakeup (-w) and display wakeup (-W): waking
-# from system sleep sends only the first. Written rather than stowed, because
-# launchd needs absolute paths and may skip a symlinked plist.
-label=com.github.gelio.glazewm-wake
-plist="$HOME/Library/LaunchAgents/$label.plist"
-mkdir -p "$(dirname "$plist")"
-cat >"$plist" <<EOF
+# Writes a LaunchAgent that runs the given command at login and keeps it
+# running, and (re)loads it. Written rather than stowed, because launchd needs
+# absolute paths and may skip a symlinked plist.
+install_agent() {
+  local label=$1 plist arg args=""
+  shift
+  plist="$HOME/Library/LaunchAgents/$label.plist"
+  for arg in "$@"; do
+    args+="    <string>$arg</string>"$'\n'
+  done
+  mkdir -p "$(dirname "$plist")" "$HOME/Library/Logs"
+  cat >"$plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -48,28 +53,37 @@ cat >"$plist" <<EOF
   <string>$label</string>
   <key>ProgramArguments</key>
   <array>
-    <string>$(brew --prefix)/sbin/sleepwatcher</string>
-    <string>-V</string>
-    <string>-w</string>
-    <string>$HOME/.local/bin/glazewm-wake</string>
-    <string>-W</string>
-    <string>$HOME/.local/bin/glazewm-wake</string>
-  </array>
+$args  </array>
   <key>RunAtLoad</key>
   <true/>
   <key>KeepAlive</key>
   <true/>
+  <key>StandardErrorPath</key>
+  <string>$HOME/Library/Logs/$label.log</string>
 </dict>
 </plist>
 EOF
-launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
-# bootout returns before the old service is gone, and bootstrap fails until
-# it is, so retry for a few seconds.
-tries=0
-until launchctl bootstrap "gui/$(id -u)" "$plist"; do
-  ((++tries < 5)) || exit 1
-  sleep 1
-done
+  launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
+  # bootout returns before the old service is gone, and bootstrap fails until
+  # it is, so retry for a few seconds.
+  local tries=0
+  until launchctl bootstrap "gui/$(id -u)" "$plist"; do
+    ((++tries < 5)) || exit 1
+    sleep 1
+  done
+}
+
+# Turns the Karabiner rule on while GlazeWM runs, and off while it's paused or
+# not running.
+install_agent com.github.gelio.glazewm-karabiner-sync \
+  "$HOME/.local/bin/glazewm-karabiner-sync"
+
+# Runs glazewm-wake on system wakeup (-w) and display wakeup (-W): waking
+# from system sleep sends only the first.
+install_agent com.github.gelio.glazewm-wake \
+  "$(brew --prefix)/sbin/sleepwatcher" -V \
+  -w "$HOME/.local/bin/glazewm-wake" \
+  -W "$HOME/.local/bin/glazewm-wake"
 
 if ((${#failed_casks[@]})); then
   echo "# Casks not installed: ${failed_casks[*]}"

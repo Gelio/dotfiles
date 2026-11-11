@@ -5,7 +5,12 @@
 # bindings, and Zebar's bars vanish after any display sleep.
 set -uo pipefail
 
-pgrep -ix glazewm >/dev/null || exit 0
+app_running() {
+  # The app itself: `pgrep -x glazewm` would also match the CLI.
+  pgrep -f "^/Applications/GlazeWM.app/Contents/MacOS/glazewm" >/dev/null
+}
+
+app_running || exit 0
 
 # Both wakeup events can fire for one wake; run once.
 lock="${TMPDIR:-/tmp}/glazewm-wake.lock"
@@ -24,4 +29,4 @@ pkill -KILL -ix zebar
 sleep 1
 # GlazeWM's shutdown command kills Zebar, so don't bring it back if GlazeWM
 # exited meanwhile.
-pgrep -ix glazewm >/dev/null && open -a Zebar
+app_running && open -a Zebar
