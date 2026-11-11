@@ -1,0 +1,256 @@
+# macOS copy of windows/config/.glzr/glazewm/config.yaml. Keep the bindings
+# in sync, but use lalt rather than alt: both Option keys type Polish letters
+# on macOS, so Right Option must stay free for "ł", "ń" and the like.
+general:
+  # Commands to run when the WM has started. This is useful for running a
+  # script or launching another application.
+  # Starts Zebar and JankyBorders, which replaces `window_effects` borders
+  # (Windows-only).
+  startup_commands:
+    - "shell-exec open -a Zebar"
+    - "shell-exec borders active_color=0xff8dbcff inactive_color=0xffa1a1a1 width=4.0"
+
+  # Commands to run just before the WM is shutdown.
+  shutdown_commands:
+    - "shell-exec pkill -ix zebar"
+    - "shell-exec pkill -x borders"
+
+  # Commands to run after the WM config is reloaded.
+  config_reload_commands: []
+
+  # Whether to automatically focus windows underneath the cursor.
+  focus_follows_cursor: false
+
+  # Whether to switch back and forth between the previously focused
+  # workspace when focusing the current workspace.
+  toggle_workspace_on_refocus: false
+
+  cursor_jump:
+    # Whether to automatically move the cursor on the specified trigger.
+    enabled: true
+
+    # Trigger for cursor jump:
+    # - 'monitor_focus': Jump when focus changes between monitors.
+    # - 'window_focus': Jump when focus changes between windows.
+    trigger: "window_focus"
+
+  # How windows should be hidden when switching workspaces. On macOS, this
+  # is always 'place_in_corner'.
+  hide_method: "place_in_corner"
+
+gaps:
+  # Whether to scale the gaps with the DPI of the monitor.
+  scale_with_dpi: true
+
+  # Gap between adjacent windows.
+  inner_gap: "10px"
+
+  # Gap between windows and the screen edge.
+  outer_gap:
+    top: "50px"
+    right: "10px"
+    bottom: "10px"
+    left: "10px"
+
+window_behavior:
+  # New windows are created in this state whenever possible.
+  # Allowed values: 'tiling', 'floating'.
+  initial_state: "tiling"
+
+  # Sets the default options for when a new window is created. This also
+  # changes the defaults for when the state change commands, like
+  # `set-floating`, are used without any flags.
+  state_defaults:
+    floating:
+      # Whether to center floating windows by default.
+      centered: true
+
+      # Whether to show floating windows as always on top.
+      shown_on_top: false
+
+    fullscreen:
+      # Maximize the window if possible. If the window doesn't have a
+      # maximize button, then it'll be fullscreen'ed normally instead.
+      maximized: false
+
+      # Whether to show fullscreen windows as always on top.
+      shown_on_top: false
+
+workspaces:
+  - name: "1"
+  - name: "2"
+  - name: "3"
+  - name: "4"
+  - name: "5"
+  - name: "6"
+  - name: "7"
+  - name: "8"
+  - name: "9"
+
+# On macOS, `window_process` is the app's name, as shown in the menu bar.
+window_rules:
+  - commands: ["ignore"]
+    match:
+      # Ignores any Zebar windows.
+      - window_process: { regex: "^[Zz]ebar$" }
+
+      # Ignores picture-in-picture windows for browsers.
+      - window_title: { regex: "[Pp]icture.in.[Pp]icture" }
+
+  - commands: ["set-floating"]
+    match:
+      - window_process: { equals: "Okta Verify" }
+      - window_process: { equals: "Calculator" }
+      - window_process: { equals: "System Settings" }
+      - window_process: { equals: "Kap" }
+      # Only GIMP's main window tiles; its dialogs float.
+      # https://github.com/koekeishiya/yabai/issues/710#issuecomment-1680564266
+      - window_process: { equals: "GIMP" }
+        window_title: { not_regex: "(^GNU|GIMP$)" }
+
+binding_modes:
+  # When enabled, the focused window can be resized via arrow keys or HJKL.
+  - name: "resize"
+    keybindings:
+      - commands: ["resize --width -2%"]
+        bindings: ["h", "left"]
+      - commands: ["resize --width +2%"]
+        bindings: ["l", "right"]
+      - commands: ["resize --height -2%"]
+        bindings: ["k", "up"]
+      - commands: ["resize --height +2%"]
+        bindings: ["j", "down"]
+      # Press enter/escape to return to default keybindings.
+      - commands: ["wm-disable-binding-mode --name resize"]
+        bindings: ["escape", "enter"]
+
+keybindings:
+  # Shift focus in a given direction.
+  - commands: ["focus --direction left"]
+    bindings: ["lalt+h", "lalt+left"]
+  - commands: ["focus --direction right"]
+    bindings: ["lalt+l", "lalt+right"]
+  - commands: ["focus --direction up"]
+    bindings: ["lalt+k", "lalt+up"]
+  - commands: ["focus --direction down"]
+    bindings: ["lalt+j", "lalt+down"]
+
+  # Move focused window in a given direction.
+  - commands: ["move --direction left"]
+    bindings: ["lalt+shift+h", "lalt+shift+left"]
+  - commands: ["move --direction right"]
+    bindings: ["lalt+shift+l", "lalt+shift+right"]
+  - commands: ["move --direction up"]
+    bindings: ["lalt+shift+k", "lalt+shift+up"]
+  - commands: ["move --direction down"]
+    bindings: ["lalt+shift+j", "lalt+shift+down"]
+
+  - commands: ["wm-enable-binding-mode --name resize"]
+    bindings: ["lalt+r"]
+
+  # Disables window management and all other keybindings until lalt+shift+p
+  # is pressed again.
+  - commands: ["wm-toggle-pause"]
+    bindings: ["lalt+shift+p"]
+
+  # Change tiling direction. This determines where new tiling windows will
+  # be inserted.
+  - commands: ["toggle-tiling-direction"]
+    bindings: ["lalt+v"]
+
+  # Change focus from tiling windows -> floating -> fullscreen.
+  - commands: ["wm-cycle-focus"]
+    bindings: ["lalt+space"]
+
+  # Change the focused window to be floating.
+  - commands: ["toggle-floating --centered"]
+    bindings: ["lalt+shift+space"]
+
+  # Change the focused window to be tiling.
+  - commands: ["toggle-tiling"]
+    bindings: ["lalt+t"]
+
+  # Change the focused window to be fullscreen.
+  - commands: ["toggle-fullscreen"]
+    bindings: ["lalt+f"]
+
+  # Minimize focused window.
+  - commands: ["toggle-minimized"]
+    bindings: ["lalt+m"]
+
+  # Close focused window.
+  - commands: ["close"]
+    bindings: ["lalt+shift+q"]
+
+  # Kill GlazeWM process safely.
+  - commands: ["wm-exit"]
+    bindings: ["lalt+shift+e"]
+
+  # Re-evaluate configuration file.
+  - commands: ["wm-reload-config"]
+    bindings: ["lalt+shift+r"]
+
+  # Redraw all windows.
+  - commands: ["wm-redraw"]
+    bindings: ["lalt+shift+w"]
+
+  # Open a new WezTerm window.
+  - commands: ["shell-exec open -na WezTerm"]
+    bindings: ["lalt+enter"]
+
+  # Focus the next/previous active workspace defined in `workspaces` config.
+  - commands: ["focus --next-active-workspace-on-monitor"]
+    bindings: ["lalt+n"]
+  - commands: ["focus --prev-active-workspace-on-monitor"]
+    bindings: ["lalt+p"]
+
+  # Change focus to a workspace defined in `workspaces` config.
+  - commands: ["focus --workspace 1"]
+    bindings: ["lalt+1"]
+  - commands: ["focus --workspace 2"]
+    bindings: ["lalt+2"]
+  - commands: ["focus --workspace 3"]
+    bindings: ["lalt+3"]
+  - commands: ["focus --workspace 4"]
+    bindings: ["lalt+4"]
+  - commands: ["focus --workspace 5"]
+    bindings: ["lalt+5"]
+  - commands: ["focus --workspace 6"]
+    bindings: ["lalt+6"]
+  - commands: ["focus --workspace 7"]
+    bindings: ["lalt+7"]
+  - commands: ["focus --workspace 8"]
+    bindings: ["lalt+8"]
+  - commands: ["focus --workspace 9"]
+    bindings: ["lalt+9"]
+
+  # Move the focused window's parent workspace to a monitor in a given
+  # direction. Same keys as skhd's `move-space` bindings.
+  - commands: ["move-workspace --direction left"]
+    bindings: ["ctrl+lalt+h"]
+  - commands: ["move-workspace --direction right"]
+    bindings: ["ctrl+lalt+l"]
+  - commands: ["move-workspace --direction up"]
+    bindings: ["ctrl+lalt+k"]
+  - commands: ["move-workspace --direction down"]
+    bindings: ["ctrl+lalt+j"]
+
+  # Move focused window to a workspace defined in `workspaces` config.
+  - commands: ["move --workspace 1"]
+    bindings: ["lalt+shift+1"]
+  - commands: ["move --workspace 2"]
+    bindings: ["lalt+shift+2"]
+  - commands: ["move --workspace 3"]
+    bindings: ["lalt+shift+3"]
+  - commands: ["move --workspace 4"]
+    bindings: ["lalt+shift+4"]
+  - commands: ["move --workspace 5"]
+    bindings: ["lalt+shift+5"]
+  - commands: ["move --workspace 6"]
+    bindings: ["lalt+shift+6"]
+  - commands: ["move --workspace 7"]
+    bindings: ["lalt+shift+7"]
+  - commands: ["move --workspace 8"]
+    bindings: ["lalt+shift+8"]
+  - commands: ["move --workspace 9"]
+    bindings: ["lalt+shift+9"]

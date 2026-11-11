@@ -115,6 +115,16 @@ Bitwarden and Rambox are optional, for personal Macs:
 cd macos/personal && ./install.sh
 ```
 
+GlazeWM tiles windows with the same bindings as on Windows, plus Zebar for the
+bar and JankyBorders for focus borders. It doesn't need SIP disabled:
+
+```bash
+cd macos/glazewm && ./install.sh  # installs them, links GlazeWM's config
+```
+
+Then open GlazeWM and grant it Accessibility. Its bindings use Left Option only,
+so Right Option still types Polish letters.
+
 yabai, skhd and SketchyBar are optional, because they depend on each other and
 yabai's scripting addition needs SIP partially disabled:
 
