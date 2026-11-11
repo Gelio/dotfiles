@@ -22,4 +22,6 @@ sleep 3
 # Zebar ignores SIGTERM and SIGINT on macOS.
 pkill -KILL -ix zebar
 sleep 1
-open -a Zebar
+# GlazeWM's shutdown command kills Zebar, so don't bring it back if GlazeWM
+# exited meanwhile.
+pgrep -ix glazewm >/dev/null && open -a Zebar

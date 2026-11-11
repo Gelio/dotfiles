@@ -5,43 +5,65 @@
 # which apps would get as shortcuts (Option+Shift+Command+Q logs out at once)
 # if GlazeWM weren't there to take them.
 #
-# GlazeWM starts this at startup. With --once, it sets the variable once and
-# exits (used by glazewm-wake).
+# GlazeWM starts this at startup. With --once, it syncs the variable and exits
+# (used by glazewm-wake).
 set -uo pipefail
 
 PATH="/opt/homebrew/bin:$PATH"
 karabiner_cli="/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli"
 
-set_variable() {
-  "$karabiner_cli" --set-variables "{\"glazewm_running\":$1}"
-}
+# The value last written successfully, so a failed write is retried.
+written=""
 
 running() {
   pgrep -ix glazewm >/dev/null
 }
 
-sync_once() {
-  if ! running; then
-    set_variable 0
-  elif glazewm query paused | grep -Eq '"data": *true'; then
-    set_variable 0
+# 1 only when GlazeWM runs and reports that it isn't paused. Anything else,
+# including a failed query, gives 0.
+wanted() {
+  if running && glazewm query paused 2>/dev/null | grep -Eq '"data": *false'; then
+    echo 1
   else
-    set_variable 1
+    echo 0
   fi
 }
 
+sync_once() {
+  local value
+  value=$(wanted)
+  [[ "$value" == "$written" ]] && return 0
+  "$karabiner_cli" --set-variables "{\"glazewm_running\":$value}" &&
+    written=$value
+}
+
+# Retries for a few seconds, e.g. while Karabiner is still waking up.
+sync_with_retries() {
+  for _ in 1 2 3 4 5; do
+    sync_once && return 0
+    sleep 1
+  done
+  return 1
+}
+
 if [[ "${1:-}" == "--once" ]]; then
-  sync_once
+  sync_with_retries
   exit
 fi
 
-# Follows pause changes until GlazeWM exits. The subscription also ends if
-# its IPC connection drops, so resubscribe while GlazeWM still runs.
+# Syncs on every pause change, and every 5 seconds as well: that covers a
+# change before the subscription starts, a failed query and a failed write.
+# The subscription ends if GlazeWM exits or its IPC connection drops, so
+# resubscribe while GlazeWM still runs.
 while running; do
-  sync_once
-  glazewm sub --events pause_changed 2>/dev/null | while read -r _; do
+  glazewm sub --events pause_changed 2>/dev/null | while true; do
+    read -r -t 5 _
+    status=$?
     sync_once
+    # 0: an event, over 128: the timeout, anything else: the stream ended.
+    ((status == 0 || status > 128)) || break
   done
   sleep 1
 done
-set_variable 0
+written=""
+sync_with_retries
