@@ -504,10 +504,10 @@
                             {
                                 "conditions": [{ "name": "glazewm_running", "type": "variable_if", "value": 1 }],
                                 "from": {
-                                    "key_code": "q",
+                                    "key_code": "c",
                                     "modifiers": { "mandatory": ["left_option", "shift"] }
                                 },
-                                "to": [{ "key_code": "q", "modifiers": ["left_option", "left_command", "shift"] }],
+                                "to": [{ "key_code": "c", "modifiers": ["left_option", "left_command", "shift"] }],
                                 "type": "basic"
                             },
                             {

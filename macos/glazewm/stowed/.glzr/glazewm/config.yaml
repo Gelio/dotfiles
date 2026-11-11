@@ -194,9 +194,11 @@ keybindings:
   - commands: ["toggle-minimized"]
     bindings: ["alt+cmd+m"]
 
-  # Close focused window.
+  # Close focused window. Not alt+cmd+shift+q as on Windows: if GlazeWM runs
+  # but misses the key (no Accessibility, a password field), the app gets
+  # Option+Shift+Command+Q, which logs out at once.
   - commands: ["close"]
-    bindings: ["alt+cmd+shift+q"]
+    bindings: ["alt+cmd+shift+c"]
 
   # Kill GlazeWM process safely.
   - commands: ["wm-exit"]
