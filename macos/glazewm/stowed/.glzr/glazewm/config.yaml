@@ -5,8 +5,9 @@
 # Right Option alone, and GlazeWM can't tell the two apart (it treats lalt
 # as either). So Karabiner turns Left Option+<key> into Option+Command+<key>
 # while the `glazewm_running` variable is set (the "GlazeWM" rule in
-# macos/core/stowed/.config/karabiner/karabiner.json). A key bound here must
-# be in that rule too.
+# macos/core/stowed/.config/karabiner/karabiner.json). That rule has one entry
+# per binding here, with the same modifiers, so other Left Option combinations
+# reach apps unchanged: keep the two in sync.
 general:
   # Commands to run when the WM has started. This is useful for running a
   # script or launching another application.
