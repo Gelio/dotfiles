@@ -1,7 +1,8 @@
 ---
 # An STD for neovim API
 # https://kampfkarren.github.io/selene/usage/std.html
-base: lua52
+# Neovim runs LuaJIT, which follows Lua 5.1
+base: lua51
 name: neovim
 globals:
   vim:
