@@ -36,6 +36,16 @@
         weather: { type: 'weather' },
       });
 
+      // Zebar's battery provider gives up for good when it can't find the battery
+      // at startup (e.g. right after boot), so keep retrying it while it errors.
+      let batteryRetry = null;
+      providers.raw.battery.onError(() => {
+        batteryRetry ??= setTimeout(() => {
+          batteryRetry = null;
+          providers.raw.battery.restart();
+        }, 30 * 1000);
+      });
+
       createRoot(document.getElementById('root')).render(<App />);
 
       // ───────────────────────── helpers ─────────────────────────
@@ -155,10 +165,16 @@
 
       function App() {
         const [o, setOutput] = useState(providers.outputMap);
+        const [errors, setErrors] = useState(providers.errorMap);
         const [bt, refreshBt] = useBluetooth();
 
         useEffect(() => {
-          providers.onOutput(() => setOutput(providers.outputMap));
+          const update = () => {
+            setOutput(providers.outputMap);
+            setErrors(providers.errorMap);
+          };
+          providers.onOutput(update);
+          providers.onError(update);
         }, []);
 
         const wm = o.glazewm;
@@ -401,6 +417,17 @@
                   <i className={cls('nf', batteryIcon(o.battery))}></i>
                   {o.battery.isCharging && <i className="nf nf-md-flash bolt"></i>}
                   <span className="value">{Math.round(o.battery.chargePercent)}%</span>
+                </button>
+              )}
+
+              {/* "No battery found" is the normal state on a desktop, so only flag other errors. */}
+              {!o.battery && errors.battery && !errors.battery.includes('No battery found') && (
+                <button
+                  className="chip clickable battery error"
+                  title={`Battery unavailable: ${errors.battery}\nRetrying every 30s · click: power settings`}
+                  onClick={run(open.power)}
+                >
+                  <i className="nf nf-md-battery_alert_variant_outline"></i>
                 </button>
               )}
 
