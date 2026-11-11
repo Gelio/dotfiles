@@ -123,7 +123,9 @@ cd macos/glazewm && ./install.sh  # installs them, links GlazeWM's config
 ```
 
 Then open GlazeWM and grant it Accessibility. Its bindings use Left Option only,
-so Right Option still types Polish letters.
+so Right Option still types Polish letters. GlazeWM can't tell the two Option
+keys apart, so while it runs, Karabiner turns Left Option+key into
+Option+Command+key, and GlazeWM binds those.
 
 yabai, skhd and SketchyBar are optional, because they depend on each other and
 yabai's scripting addition needs SIP partially disabled:
