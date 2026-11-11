@@ -1,5 +1,5 @@
 ---
-name: handoff
+name: session-handoff
 description: Write a permanent handoff file for the next session, and refresh the workstream's tracker if it has one.
 disable-model-invocation: true
 argument-hint: "[workstream]"
