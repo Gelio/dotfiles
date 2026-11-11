@@ -7,8 +7,8 @@
   runs the whole command sandboxed, and gh fails with
   `failed to read configuration: open …/gh/hosts.yml`.
 - So run each `gh` call as its own single-line Bash command:
-  - Pass any body, title aside, with `--body-file <file>` (write the file
-    first, in a separate call), not `--body`.
+  - Pass any body, title aside, with `--body-file <file>` (write the file first,
+    in a separate call), not `--body`.
   - Filter output with `--jq` (and `--template`) instead of piping to `jq`. For
     a file's contents, use
     `gh api -H 'Accept: application/vnd.github.raw' repos/<owner>/<repo>/contents/<path>`
