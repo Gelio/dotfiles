@@ -45,6 +45,9 @@ local function register_code_yank_user_command()
 		range = true,
 		desc = "Yank file path, line numbers, and selected code to clipboard",
 	})
+
+	-- Same key as the codeyank mapping in the Obsidian vimrc
+	vim.keymap.set({ "n", "v" }, "<Leader>cy", ":CodeYank<CR>", { desc = "Yank code context for an agent" })
 end
 
 function M.setup()
