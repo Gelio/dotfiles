@@ -33,7 +33,8 @@ done
 # conflict instead; delete ~/.glzr/glazewm/config.yaml and rerun.
 stow -v --no-folding -t "$HOME" stowed
 
-# Runs glazewm-wake on display wakeup. Written rather than stowed, because
+# Runs glazewm-wake on system wakeup (-w) and display wakeup (-W): waking
+# from system sleep sends only the first. Written rather than stowed, because
 # launchd needs absolute paths and may skip a symlinked plist.
 label=com.github.gelio.glazewm-wake
 plist="$HOME/Library/LaunchAgents/$label.plist"
@@ -49,6 +50,8 @@ cat >"$plist" <<EOF
   <array>
     <string>$(brew --prefix)/sbin/sleepwatcher</string>
     <string>-V</string>
+    <string>-w</string>
+    <string>$HOME/.local/bin/glazewm-wake</string>
     <string>-W</string>
     <string>$HOME/.local/bin/glazewm-wake</string>
   </array>

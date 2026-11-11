@@ -53,7 +53,7 @@ gaps:
   scale_with_dpi: false
 
   # Gap between adjacent windows.
-  inner_gap: "10px"
+  inner_gap: "14px"
 
   # Gap between windows and the screen edge.
   outer_gap:

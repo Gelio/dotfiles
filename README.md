@@ -129,6 +129,10 @@ Polish letters. GlazeWM can't tell the two Option keys apart, so while it runs,
 Karabiner turns Left Option+key into Option+Command+key, and GlazeWM binds
 those.
 
+Waking from sleep clears that Karabiner setting and hides Zebar's bars, so
+`install.sh` also sets up sleepwatcher to restore both on wake. If macOS asks,
+allow sleepwatcher as a background item.
+
 yabai, skhd and SketchyBar are optional, because they depend on each other and
 yabai's scripting addition needs SIP partially disabled:
 

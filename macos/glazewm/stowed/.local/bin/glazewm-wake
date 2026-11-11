@@ -1,11 +1,21 @@
 #!/usr/bin/env bash
-# Runs on display wakeup, which includes waking from system sleep, via
-# sleepwatcher (see macos/glazewm/install.sh). Waking from system sleep clears
+# Runs on system and display wakeup via sleepwatcher (see
+# macos/glazewm/install.sh). Waking from system sleep clears
 # Karabiner's glazewm_running variable, which turns off the Left Option
 # bindings, and Zebar's bars vanish after any display sleep.
 set -uo pipefail
 
 pgrep -ix glazewm >/dev/null || exit 0
+
+# Both wakeup events can fire for one wake; run once.
+lock="${TMPDIR:-/tmp}/glazewm-wake.lock"
+# A lock left by a killed run would block every later wake.
+find "$lock" -maxdepth 0 -mmin +1 -exec rmdir {} \; 2>/dev/null
+mkdir "$lock" 2>/dev/null || exit 0
+trap 'rmdir "$lock"' EXIT
+
+# Gives Karabiner time to finish waking up before setting its variable.
+sleep 3
 
 "/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli" \
   --set-variables '{"glazewm_running":1}'
