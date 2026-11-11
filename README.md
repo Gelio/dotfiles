@@ -122,10 +122,12 @@ bar and JankyBorders for focus borders. It doesn't need SIP disabled:
 cd macos/glazewm && ./install.sh  # installs them, links GlazeWM's config
 ```
 
-Then open GlazeWM and grant it Accessibility. Its bindings use Left Option only,
-so Right Option still types Polish letters. GlazeWM can't tell the two Option
-keys apart, so while it runs, Karabiner turns Left Option+key into
-Option+Command+key, and GlazeWM binds those.
+Then open GlazeWM and grant it Accessibility (on macOS 27: Privacy & Security →
+Device Control and Data Access). If it then manages no windows, turn that toggle
+off and on again. Its bindings use Left Option only, so Right Option still types
+Polish letters. GlazeWM can't tell the two Option keys apart, so while it runs,
+Karabiner turns Left Option+key into Option+Command+key, and GlazeWM binds
+those.
 
 yabai, skhd and SketchyBar are optional, because they depend on each other and
 yabai's scripting addition needs SIP partially disabled:

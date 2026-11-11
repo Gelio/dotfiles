@@ -20,7 +20,8 @@ general:
   # Commands to run just before the WM is shutdown.
   shutdown_commands:
     - 'shell-exec /Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli --set-variables {"glazewm_running":0}'
-    - "shell-exec pkill -ix zebar"
+    # Zebar ignores SIGTERM and SIGINT on macOS.
+    - "shell-exec pkill -KILL -ix zebar"
     - "shell-exec pkill -x borders"
 
   # Commands to run after the WM config is reloaded.
@@ -56,7 +57,7 @@ gaps:
 
   # Gap between windows and the screen edge.
   outer_gap:
-    top: "50px"
+    top: "56px"
     right: "10px"
     bottom: "10px"
     left: "10px"
@@ -102,6 +103,9 @@ window_rules:
     match:
       # Ignores any Zebar windows.
       - window_process: { regex: "^[Zz]ebar$" }
+
+      # Ignores Handy's dictation overlay, so it doesn't reshuffle the layout.
+      - window_process: { regex: "^[Hh]andy$" }
 
       # Ignores picture-in-picture windows for browsers.
       - window_title: { regex: "[Pp]icture.in.[Pp]icture" }
