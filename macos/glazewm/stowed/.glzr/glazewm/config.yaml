@@ -15,9 +15,11 @@ general:
   # Starts Zebar and JankyBorders, which replaces `window_effects` borders
   # (Windows-only). The Karabiner rule is turned on by the
   # glazewm-helper LaunchAgent, within a second of GlazeWM starting.
+  # JankyBorders' blacklist matches the process name, case-sensitively, so
+  # Zebar's bars are listed as `zebar`.
   startup_commands:
     - "shell-exec open -a Zebar"
-    - "shell-exec borders active_color=0xff8dbcff inactive_color=0xffa1a1a1 width=8.0"
+    - "shell-exec borders active_color=0xff8dbcff inactive_color=0xffa1a1a1 width=8.0 blacklist=zebar"
 
   # Commands to run just before the WM is shutdown. Turns the Karabiner rule
   # off right away, rather than at glazewm-helper's next check.
