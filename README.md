@@ -124,9 +124,9 @@ cd macos/glazewm && ./install.sh  # installs them, links GlazeWM's and Zebar's c
 ```
 
 Zebar uses the Windows bar's theme, but shows only workspaces, the focused
-window and the tiling direction; the macOS menu bar keeps the clock, battery
-and the rest. `install.sh` moves aside Zebar's own `settings.json` the first
-time, to `~/.glzr/zebar/settings.json.bak`.
+window and the tiling direction; the macOS menu bar keeps the clock, battery and
+the rest. `install.sh` moves aside Zebar's own `settings.json` the first time,
+to `~/.glzr/zebar/settings.json.bak`.
 
 Then open GlazeWM and grant it Accessibility (on macOS 27: Privacy & Security →
 Device Control and Data Access). If it then manages no windows, turn that toggle
