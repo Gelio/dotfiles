@@ -34,15 +34,24 @@ done
 stow -v --no-folding -t "$HOME" stowed
 
 # Zebar uses the Windows aurora pack, whose bar-macos widget shows only
-# GlazeWM's state. The pack's files are linked one by one into a real folder,
-# in case Zebar skips a linked pack folder when it looks for packs.
+# GlazeWM's state. The pack folder itself is linked: Zebar refuses to serve a
+# pack file whose real path is outside the pack folder, so per-file links
+# load a 404 page.
 zebar_dir="$HOME/.glzr/zebar"
 pack=sakyasumedh.aurora@1.0.0-modified
 pack_src="$(cd -- "$script_dir/../../windows/config/.glzr/zebar/$pack" && pwd)"
-mkdir -p "$zebar_dir/$pack"
-for f in "$pack_src"/*; do
-  ln -sfn "$f" "$zebar_dir/$pack/"
-done
+pack_dest="$zebar_dir/$pack"
+mkdir -p "$zebar_dir"
+# An earlier version of this script made a real folder of per-file links.
+# Removes only those links, and stops if anything else is in the folder.
+if [[ -d "$pack_dest" && ! -L "$pack_dest" ]]; then
+  find "$pack_dest" -mindepth 1 -maxdepth 1 -type l -delete
+  rmdir "$pack_dest" || {
+    echo "# $pack_dest has files that aren't links; move them and rerun"
+    exit 1
+  }
+fi
+ln -sfn "$pack_src" "$pack_dest"
 # Zebar writes its own settings.json on first launch, starting its starter bar.
 settings="$zebar_dir/settings.json"
 if [[ -f "$settings" && ! -L "$settings" ]]; then
