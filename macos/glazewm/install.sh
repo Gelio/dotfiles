@@ -33,6 +33,24 @@ done
 # conflict instead; delete ~/.glzr/glazewm/config.yaml and rerun.
 stow -v --no-folding -t "$HOME" stowed
 
+# Zebar uses the Windows aurora pack, whose bar-macos widget shows only
+# GlazeWM's state. The pack's files are linked one by one into a real folder,
+# in case Zebar skips a linked pack folder when it looks for packs.
+zebar_dir="$HOME/.glzr/zebar"
+pack=sakyasumedh.aurora@1.0.0-modified
+pack_src="$(cd -- "$script_dir/../../windows/config/.glzr/zebar/$pack" && pwd)"
+mkdir -p "$zebar_dir/$pack"
+for f in "$pack_src"/*; do
+  ln -sfn "$f" "$zebar_dir/$pack/"
+done
+# Zebar writes its own settings.json on first launch, starting its starter bar.
+settings="$zebar_dir/settings.json"
+if [[ -f "$settings" && ! -L "$settings" ]]; then
+  mv "$settings" "$settings.bak"
+  echo "# Moved Zebar's own settings.json to $settings.bak"
+fi
+ln -sfn "$script_dir/zebar/settings.json" "$settings"
+
 # Removes the LaunchAgents and scripts of an earlier version of this module.
 for old in glazewm-karabiner-sync glazewm-wake; do
   old_plist="$HOME/Library/LaunchAgents/com.github.gelio.$old.plist"
