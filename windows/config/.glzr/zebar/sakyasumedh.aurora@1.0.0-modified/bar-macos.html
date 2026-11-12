@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" href="./styles.css" />
+
+    <!-- Buildless React via Babel standalone (same approach as the official starter). -->
+    <script
+      src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"
+      integrity="sha256-aS0B0wnsaDByLfE16h4MDCP1fQFccysd1YWOcV+gbBo="
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!--
+      macOS version of bar.html. The macOS menu bar already shows the clock,
+      battery, network and the rest, so this shows only GlazeWM's state. It
+      needs no shell commands. The workspace, window and tiling markup is
+      copied from bar.html; keep the two in step.
+    -->
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect } from 'https://esm.sh/react@18';
+      import { createRoot } from 'https://esm.sh/react-dom@18/client';
+      import * as zebar from 'https://esm.sh/zebar@3';
+
+      document.addEventListener('contextmenu', e => e.preventDefault());
+
+      const providers = zebar.createProviderGroup({
+        glazewm: { type: 'glazewm' },
+      });
+
+      createRoot(document.getElementById('root')).render(<App />);
+
+      const cls = (...xs) => xs.filter(Boolean).join(' ');
+
+      function App() {
+        const [o, setOutput] = useState(providers.outputMap);
+
+        useEffect(() => {
+          providers.onOutput(() => setOutput(providers.outputMap));
+        }, []);
+
+        const wm = o.glazewm;
+        if (!wm) return null;
+
+        const focused = wm.focusedContainer;
+        const focusedWindow = focused?.type === 'window' ? focused : null;
+
+        return (
+          <div className="app">
+            <div className="left island">
+              <div
+                className="workspaces"
+                title="Click to focus · scroll to cycle workspaces"
+                onWheel={e =>
+                  wm.runCommand(
+                    e.deltaY > 0
+                      ? 'focus --next-active-workspace'
+                      : 'focus --prev-active-workspace',
+                  )
+                }
+              >
+                {wm.currentWorkspaces.map(ws => (
+                  <button
+                    key={ws.name}
+                    className={cls(
+                      'workspace',
+                      ws.hasFocus && 'focused',
+                      ws.isDisplayed && 'displayed',
+                    )}
+                    onClick={() => wm.runCommand(`focus --workspace ${ws.name}`)}
+                  >
+                    {ws.displayName ?? ws.name}
+                  </button>
+                ))}
+              </div>
+
+              {focusedWindow && (
+                <>
+                  <span className="sep" />
+                  <button
+                    className="chip clickable window-title"
+                    title={`${focusedWindow.title ?? ''}\nClick: toggle floating`}
+                    onClick={() => wm.runCommand('toggle-floating --centered')}
+                  >
+                    <i className="nf nf-md-application_outline"></i>
+                    <span className="process">{focusedWindow.processName}</span>
+                  </button>
+                </>
+              )}
+            </div>
+
+            <div className="right island">
+              {wm.bindingModes.map(mode => (
+                <button
+                  key={mode.name}
+                  className="chip clickable binding-mode"
+                  title="Click to exit binding mode"
+                  onClick={() =>
+                    wm.runCommand(`wm-disable-binding-mode --name ${mode.name}`)
+                  }
+                >
+                  {mode.displayName ?? mode.name}
+                </button>
+              ))}
+              <button
+                className="chip clickable wm-btn"
+                title={`Tiling: ${wm.tilingDirection} · click to toggle`}
+                onClick={() => wm.runCommand('toggle-tiling-direction')}
+              >
+                <i
+                  className={cls(
+                    'nf',
+                    wm.tilingDirection === 'horizontal'
+                      ? 'nf-md-arrow_split_vertical'
+                      : 'nf-md-arrow_split_horizontal',
+                  )}
+                ></i>
+              </button>
+            </div>
+          </div>
+        );
+      }
+    </script>
+  </body>
+</html>

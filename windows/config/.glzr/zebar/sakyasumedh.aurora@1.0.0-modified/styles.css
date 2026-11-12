@@ -90,7 +90,9 @@ i.nf {
 .center {
   justify-self: center;
 }
+/* Keeps the right island on the right in bar-macos.html, which has no center island. */
 .right {
+  grid-column: 3;
   justify-self: end;
 }
 
