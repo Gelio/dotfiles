@@ -1,0 +1,272 @@
+# macOS copy of windows/config/.glzr/glazewm/config.yaml. Keep the bindings
+# in sync, but bind alt+cmd where Windows binds alt, and leave out the arrow
+# keys, so Left Option+arrows keep moving by word.
+#
+# Both Option keys type Polish letters on macOS, so the bindings must leave
+# Right Option alone, and GlazeWM can't tell the two apart (it treats lalt
+# as either). So Karabiner turns Left Option+<key> into Option+Command+<key>
+# while the `glazewm_running` variable is set (the "GlazeWM" rule in
+# macos/core/stowed/.config/karabiner/karabiner.json). That rule has one entry
+# per binding here, with the same modifiers, so other Left Option combinations
+# reach apps unchanged: keep the two in sync.
+general:
+  # Commands to run when the WM has started. This is useful for running a
+  # script or launching another application.
+  # Starts Zebar and JankyBorders, which replaces `window_effects` borders
+  # (Windows-only). The Karabiner rule is turned on by the
+  # glazewm-helper LaunchAgent, within a second of GlazeWM starting.
+  # JankyBorders' blacklist matches the process name, case-sensitively, so
+  # Zebar's bars are listed as `zebar`.
+  startup_commands:
+    - "shell-exec open -a Zebar"
+    - "shell-exec borders active_color=0xff8dbcff inactive_color=0xffa1a1a1 width=8.0 blacklist=zebar"
+
+  # Commands to run just before the WM is shutdown. Turns the Karabiner rule
+  # off right away, rather than at glazewm-helper's next check.
+  shutdown_commands:
+    - 'shell-exec /Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli --set-variables {"glazewm_running":0}'
+    # Zebar ignores SIGTERM and SIGINT on macOS.
+    - "shell-exec pkill -KILL -ix zebar"
+    - "shell-exec pkill -x borders"
+
+  # Commands to run after the WM config is reloaded.
+  config_reload_commands: []
+
+  # Whether to automatically focus windows underneath the cursor.
+  focus_follows_cursor: false
+
+  # Whether to switch back and forth between the previously focused
+  # workspace when focusing the current workspace.
+  toggle_workspace_on_refocus: false
+
+  cursor_jump:
+    # Whether to automatically move the cursor on the specified trigger.
+    enabled: true
+
+    # Trigger for cursor jump:
+    # - 'monitor_focus': Jump when focus changes between monitors.
+    # - 'window_focus': Jump when focus changes between windows.
+    trigger: "window_focus"
+
+  # How windows should be hidden when switching workspaces. On macOS, this
+  # is always 'place_in_corner'.
+  hide_method: "place_in_corner"
+
+gaps:
+  # Whether to scale the gaps with the DPI of the monitor. Off on macOS,
+  # where sizes are already in points, so 2x scaling doubled the gaps.
+  scale_with_dpi: false
+
+  # Gap between adjacent windows.
+  inner_gap: "14px"
+
+  # Gap between windows and the screen edge.
+  outer_gap:
+    top: "56px"
+    right: "10px"
+    bottom: "10px"
+    left: "10px"
+
+window_behavior:
+  # New windows are created in this state whenever possible.
+  # Allowed values: 'tiling', 'floating'.
+  initial_state: "tiling"
+
+  # Sets the default options for when a new window is created. This also
+  # changes the defaults for when the state change commands, like
+  # `set-floating`, are used without any flags.
+  state_defaults:
+    floating:
+      # Whether to center floating windows by default.
+      centered: true
+
+      # Whether to show floating windows as always on top.
+      shown_on_top: false
+
+    fullscreen:
+      # Maximize the window if possible. If the window doesn't have a
+      # maximize button, then it'll be fullscreen'ed normally instead.
+      maximized: false
+
+      # Whether to show fullscreen windows as always on top.
+      shown_on_top: false
+
+workspaces:
+  - name: "1"
+  - name: "2"
+  - name: "3"
+  - name: "4"
+  - name: "5"
+  - name: "6"
+  - name: "7"
+  - name: "8"
+  - name: "9"
+
+# On macOS, `window_process` is the app's name, as shown in the menu bar.
+window_rules:
+  - commands: ["ignore"]
+    match:
+      # Ignores any Zebar windows.
+      - window_process: { regex: "^[Zz]ebar$" }
+
+      # Ignores Control Center's windows, such as the microphone-in-use
+      # indicator that appears while dictating, so they don't reshuffle the
+      # layout.
+      - window_process: { equals: "Control Center" }
+
+      # Ignores picture-in-picture windows for browsers.
+      - window_title: { regex: "[Pp]icture.in.[Pp]icture" }
+
+  - commands: ["set-floating"]
+    match:
+      - window_process: { equals: "Okta Verify" }
+      - window_process: { equals: "Calculator" }
+      - window_process: { equals: "System Settings" }
+      - window_process: { equals: "Kap" }
+      # Only GIMP's main window tiles; its dialogs float.
+      # https://github.com/koekeishiya/yabai/issues/710#issuecomment-1680564266
+      - window_process: { equals: "GIMP" }
+        window_title: { not_regex: "(^GNU|GIMP$)" }
+
+binding_modes:
+  # When enabled, the focused window can be resized via HJKL.
+  - name: "resize"
+    keybindings:
+      - commands: ["resize --width -2%"]
+        bindings: ["h"]
+      - commands: ["resize --width +2%"]
+        bindings: ["l"]
+      - commands: ["resize --height -2%"]
+        bindings: ["k"]
+      - commands: ["resize --height +2%"]
+        bindings: ["j"]
+      # Press enter/escape to return to default keybindings.
+      - commands: ["wm-disable-binding-mode --name resize"]
+        bindings: ["escape", "enter"]
+
+keybindings:
+  # Shift focus in a given direction.
+  - commands: ["focus --direction left"]
+    bindings: ["alt+cmd+h"]
+  - commands: ["focus --direction right"]
+    bindings: ["alt+cmd+l"]
+  - commands: ["focus --direction up"]
+    bindings: ["alt+cmd+k"]
+  - commands: ["focus --direction down"]
+    bindings: ["alt+cmd+j"]
+
+  # Move focused window in a given direction.
+  - commands: ["move --direction left"]
+    bindings: ["alt+cmd+shift+h"]
+  - commands: ["move --direction right"]
+    bindings: ["alt+cmd+shift+l"]
+  - commands: ["move --direction up"]
+    bindings: ["alt+cmd+shift+k"]
+  - commands: ["move --direction down"]
+    bindings: ["alt+cmd+shift+j"]
+
+  - commands: ["wm-enable-binding-mode --name resize"]
+    bindings: ["alt+cmd+r"]
+
+  # No wm-toggle-pause: Karabiner's rule would have to stay on while paused,
+  # and then apps would get Option+Command shortcuts.
+
+  # Change tiling direction. This determines where new tiling windows will
+  # be inserted.
+  - commands: ["toggle-tiling-direction"]
+    bindings: ["alt+cmd+v"]
+
+  # Change focus from tiling windows -> floating -> fullscreen.
+  - commands: ["wm-cycle-focus"]
+    bindings: ["alt+cmd+space"]
+
+  # Change the focused window to be floating.
+  - commands: ["toggle-floating --centered"]
+    bindings: ["alt+cmd+shift+space"]
+
+  # Change the focused window to be tiling.
+  - commands: ["toggle-tiling"]
+    bindings: ["alt+cmd+t"]
+
+  # Change the focused window to be fullscreen.
+  - commands: ["toggle-fullscreen"]
+    bindings: ["alt+cmd+f"]
+
+  # Minimize focused window.
+  - commands: ["toggle-minimized"]
+    bindings: ["alt+cmd+m"]
+
+  # Close focused window. Not alt+cmd+shift+q as on Windows: if GlazeWM runs
+  # but misses the key (no Accessibility, a password field), the app gets
+  # Option+Shift+Command+Q, which logs out at once.
+  - commands: ["close"]
+    bindings: ["alt+cmd+shift+c"]
+
+  # Kill GlazeWM process safely.
+  - commands: ["wm-exit"]
+    bindings: ["alt+cmd+shift+e"]
+
+  # Re-evaluate configuration file.
+  - commands: ["wm-reload-config"]
+    bindings: ["alt+cmd+shift+r"]
+
+  # Redraw all windows.
+  - commands: ["wm-redraw"]
+    bindings: ["alt+cmd+shift+w"]
+
+  # Focus the next/previous active workspace defined in `workspaces` config.
+  - commands: ["focus --next-active-workspace-on-monitor"]
+    bindings: ["alt+cmd+n"]
+  - commands: ["focus --prev-active-workspace-on-monitor"]
+    bindings: ["alt+cmd+p"]
+
+  # Change focus to a workspace defined in `workspaces` config.
+  - commands: ["focus --workspace 1"]
+    bindings: ["alt+cmd+1"]
+  - commands: ["focus --workspace 2"]
+    bindings: ["alt+cmd+2"]
+  - commands: ["focus --workspace 3"]
+    bindings: ["alt+cmd+3"]
+  - commands: ["focus --workspace 4"]
+    bindings: ["alt+cmd+4"]
+  - commands: ["focus --workspace 5"]
+    bindings: ["alt+cmd+5"]
+  - commands: ["focus --workspace 6"]
+    bindings: ["alt+cmd+6"]
+  - commands: ["focus --workspace 7"]
+    bindings: ["alt+cmd+7"]
+  - commands: ["focus --workspace 8"]
+    bindings: ["alt+cmd+8"]
+  - commands: ["focus --workspace 9"]
+    bindings: ["alt+cmd+9"]
+
+  # Move the focused window's parent workspace to a monitor in a given
+  # direction. Same keys as skhd's `move-space` bindings.
+  - commands: ["move-workspace --direction left"]
+    bindings: ["ctrl+alt+cmd+h"]
+  - commands: ["move-workspace --direction right"]
+    bindings: ["ctrl+alt+cmd+l"]
+  - commands: ["move-workspace --direction up"]
+    bindings: ["ctrl+alt+cmd+k"]
+  - commands: ["move-workspace --direction down"]
+    bindings: ["ctrl+alt+cmd+j"]
+
+  # Move focused window to a workspace defined in `workspaces` config.
+  - commands: ["move --workspace 1"]
+    bindings: ["alt+cmd+shift+1"]
+  - commands: ["move --workspace 2"]
+    bindings: ["alt+cmd+shift+2"]
+  - commands: ["move --workspace 3"]
+    bindings: ["alt+cmd+shift+3"]
+  - commands: ["move --workspace 4"]
+    bindings: ["alt+cmd+shift+4"]
+  - commands: ["move --workspace 5"]
+    bindings: ["alt+cmd+shift+5"]
+  - commands: ["move --workspace 6"]
+    bindings: ["alt+cmd+shift+6"]
+  - commands: ["move --workspace 7"]
+    bindings: ["alt+cmd+shift+7"]
+  - commands: ["move --workspace 8"]
+    bindings: ["alt+cmd+shift+8"]
+  - commands: ["move --workspace 9"]
+    bindings: ["alt+cmd+shift+9"]

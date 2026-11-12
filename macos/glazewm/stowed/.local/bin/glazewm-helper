@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# Background helper for GlazeWM on macOS, run all the time by one LaunchAgent
+# (see macos/glazewm/install.sh):
+#
+# - Keeps Karabiner's glazewm_running variable in step with GlazeWM: 1 while
+#   it runs, 0 while it doesn't (including after a crash). While it's 1,
+#   Karabiner turns Left Option+<key> into Option+Command+<key>, which apps
+#   would get as shortcuts (Option+Shift+Command+Q logs out at once) if
+#   GlazeWM weren't there to take them.
+# - On system or display wakeup, through sleepwatcher, runs `glazewm-helper
+#   wake`: waking from system sleep clears the variable, and Zebar's bars
+#   vanish after any display sleep.
+set -uo pipefail
+
+karabiner_cli="/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli"
+# The app itself: `pgrep -x glazewm` would also match the CLI.
+app=/Applications/GlazeWM.app/Contents/MacOS/glazewm
+
+# The value last written successfully, so a failed write is retried.
+written=""
+
+app_running() {
+  pgrep -f "^$app" >/dev/null
+}
+
+sync_once() {
+  local value=0
+  app_running && value=1
+  [[ "$value" == "$written" ]] && return 0
+  "$karabiner_cli" --set-variables "{\"glazewm_running\":$value}" &&
+    written=$value
+}
+
+wake() {
+  app_running || return 0
+
+  # Both wakeup events can fire for one wake; run once.
+  # Not local: the EXIT trap runs after this function returns.
+  lock="${TMPDIR:-/tmp}/glazewm-helper-wake.lock"
+  # A lock left by a killed run would block every later wake.
+  find "$lock" -maxdepth 0 -mmin +1 -exec rmdir {} \; 2>/dev/null
+  mkdir "$lock" 2>/dev/null || return 0
+  trap 'rmdir "$lock"' EXIT
+
+  # Gives Karabiner time to finish waking up, then retries for a few seconds.
+  sleep 3
+  for _ in 1 2 3 4 5; do
+    sync_once && break
+    sleep 1
+  done
+
+  # Zebar ignores SIGTERM and SIGINT on macOS.
+  pkill -KILL -ix zebar
+  sleep 1
+  # GlazeWM's shutdown command kills Zebar, so don't bring it back if GlazeWM
+  # exited meanwhile.
+  app_running && open -a Zebar
+}
+
+case "${1:-}" in
+wake)
+  wake
+  exit
+  ;;
+"") ;;
+*)
+  echo "usage: $0 [wake]" >&2
+  exit 2
+  ;;
+esac
+
+self="$(cd -- "$(dirname -- "$0")" && pwd)/$(basename -- "$0")"
+sleepwatcher=/opt/homebrew/sbin/sleepwatcher
+[[ -x "$sleepwatcher" ]] || sleepwatcher=/usr/local/sbin/sleepwatcher
+
+# -w: system wakeup, -W: display wakeup. Waking from system sleep sends only
+# the first. sleepwatcher runs each command with /bin/sh -c.
+"$sleepwatcher" -V -w "'$self' wake" -W "'$self' wake" &
+sleepwatcher_pid=$!
+trap 'kill "$sleepwatcher_pid" 2>/dev/null' EXIT
+
+while true; do
+  sync_once
+  # Restarts sleepwatcher if it died, by exiting: launchd starts this again.
+  kill -0 "$sleepwatcher_pid" 2>/dev/null || exit 1
+  sleep 1
+done
