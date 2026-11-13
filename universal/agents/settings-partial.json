@@ -40,7 +40,10 @@
         "~/.bun/install/cache",
         "~/.cache/gh"
       ],
-      "denyWrite": ["~/projects/dotfiles/windows/stowed-wsl/.local/bin"],
+      "denyWrite": [
+        "~/projects/dotfiles/windows/stowed-wsl/.local/bin",
+        "~/projects/dotfiles/universal/git/home"
+      ],
       "denyRead": ["~/.gnupg", "~/.aws", "~/.config/gh/hosts.yml"]
     },
     "excludedCommands": [
