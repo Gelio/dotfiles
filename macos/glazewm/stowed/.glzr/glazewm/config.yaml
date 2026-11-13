@@ -114,6 +114,11 @@ window_rules:
       # layout.
       - window_process: { equals: "Control Center" }
 
+      # Ignores Touch ID prompts, which macOS shows as a `coreautha` window,
+      # so they don't reshuffle the layout either. Admin password prompts
+      # aren't managed by GlazeWM, so they need no rule.
+      - window_process: { equals: "coreautha" }
+
       # Ignores picture-in-picture windows for browsers.
       - window_title: { regex: "[Pp]icture.in.[Pp]icture" }
 
