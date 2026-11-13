@@ -14,4 +14,4 @@ description: Commits and history on a feature branch. Use when committing on a n
 ## After merge
 
 - **Stacked branches:** while the merged branch's ref still exists, update `<base>` and run `git rebase --update-refs --onto <base> <merged> <top of stack>`. Point the bottom branch's upstream and its PR (`gh pr edit --base`) at `<base>`, and push each rebased branch with `git push --force-with-lease`.
-- **Delete** the local branch with `git branch -d`, or `-D` for a squash merge once `gh pr view` shows it merged. Deleting writes `.git/config`, so run it outside the sandbox.
+- **Delete** the local branch with `git-branch-merged -d <branch>`, after `git fetch` and switching off the branch. It deletes only a branch merged into its upstream (squash and rebase merges included), and exits 1 otherwise. Deleting writes `.git/config`, which the sandbox blocks, and only a plain `git-branch-merged -d <branch>` runs outside it: one branch per Bash call, nothing chained, no `git -C`, no `git branch -d`.

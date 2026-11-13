@@ -50,7 +50,9 @@
       "git push *",
       "git branch --set-upstream-to=*",
       "git branch --set-upstream-to *",
-      "git branch -u *"
+      "git branch -u *",
+      "git-branch-merged -d *",
+      "git-branch-merged --delete *"
     ]
   },
   "statusLine": {
