@@ -1,5 +1,7 @@
 # gh under the sandbox
 
+- Read a pasted `github.com` link (issue, PR, commit, Actions run) with `gh`,
+  not a web fetch.
 - The sandbox denies reads of `~/.config/gh/hosts.yml`, which holds the gh
   login. `gh` and `gh *` are excluded from the sandbox, but the exclusion only
   matches a plain `gh` command. Anything around it (`cd … &&`, a pipe, `;`, a
