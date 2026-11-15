@@ -2,10 +2,7 @@
 name: typescript-magician
 description: Fixing TypeScript type errors and typing code strictly. Use when TypeScript fails to compile, or when writing generics, type guards or types that replace `any`.
 metadata:
-  credits:
-    skill: typescript-magician
-    author: Matteo Collina
-    url: "https://github.com/mcollina/skills/tree/main/skills/typescript-magician"
+  credits: "Trimmed from typescript-magician by Matteo Collina, https://github.com/mcollina/skills/tree/main/skills/typescript-magician"
 ---
 
 # TypeScript types
