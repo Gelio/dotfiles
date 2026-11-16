@@ -44,6 +44,11 @@
     "path": "skills/composition-patterns",
     "commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62"
   },
+  "vercel-react-best-practices": {
+    "repo": "vercel-labs/agent-skills",
+    "path": "skills/react-best-practices",
+    "commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62"
+  },
   "web-design-guidelines": {
     "repo": "vercel-labs/agent-skills",
     "path": "skills/web-design-guidelines",
