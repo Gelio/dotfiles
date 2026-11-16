@@ -53,6 +53,15 @@ script then prints the `.oxfmtrc.jsonc` line that keeps upstream's formatting.
 To customize a vendored skill, fork it: drop its manifest entry and keep the
 upstream credit in its `metadata.credits`.
 
+### Moving off `npx skills`
+
+On a machine that installed skills with `npx skills`, `~/.agents/skills/<name>/`
+holds real folders where mise now links files. Before the next apply, delete
+those folders and their `~/.claude/skills/<name>` links for every skill in
+`vendored-skills.json` and for the dropped `grill-me`, `grill-with-docs`,
+`improve-codebase-architecture`, `setup-matt-pocock-skills`, `teach` and
+`retro`.
+
 ## Settings review
 
 ```bash

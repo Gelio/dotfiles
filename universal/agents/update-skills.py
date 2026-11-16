@@ -15,6 +15,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import tempfile
 import urllib.request
 from pathlib import Path, PurePosixPath
 
@@ -101,24 +102,36 @@ def main():
     for name in names:
         skill = manifest[name]
         repo = skill["repo"]
+        commit = skill["commit"]
         if args.latest:
             if repo not in commits:
                 commits[repo] = latest_commit(repo)
-            skill["commit"] = commits[repo]
-        key = (repo, skill["commit"])
+            commit = commits[repo]
+        key = (repo, commit)
         if key not in archives:
             archives[key] = fetch_tarball(*key)
 
+        # Extract beside the skill, so a failed run leaves the old copy whole
+        staging = Path(tempfile.mkdtemp(dir=SKILLS, prefix=f".{name}-"))
+        try:
+            extract_folder(archives[key], PurePosixPath(skill["path"]), staging)
+        except BaseException:
+            shutil.rmtree(staging)
+            raise
         dest = SKILLS / name
         shutil.rmtree(dest, ignore_errors=True)
-        extract_folder(archives[key], PurePosixPath(skill["path"]), dest)
+        staging.chmod(0o755)
+        staging.rename(dest)
 
         link = CLAUDE_SKILLS / name
         if not link.is_symlink():
             link.symlink_to(Path("../../.agents/skills") / name)
-        print(f"{name}: {repo}@{skill['commit'][:12]}", flush=True)
 
-    _ = MANIFEST.write_text(json.dumps(manifest, indent=2) + "\n")
+        # Saved per skill, so a later failure can't leave a folder and its pin
+        # at different commits
+        skill["commit"] = commit
+        _ = MANIFEST.write_text(json.dumps(manifest, indent=2) + "\n")
+        print(f"{name}: {repo}@{commit[:12]}", flush=True)
 
     # Upstream's files keep upstream's formatting
     ignored = OXFMTRC.read_text()
