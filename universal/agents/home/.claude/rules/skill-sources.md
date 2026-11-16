@@ -2,12 +2,12 @@
 
 - Before editing a skill, resolve its link
   (`readlink -f ~/.claude/skills/<name>`) to see who owns it:
-  - Authored: under `~/projects/dotfiles/universal/agents/home/.agents/skills/`.
-    Edit it there.
-  - Third-party: installed by `npx skills` and listed in the dotfiles'
-    `universal/agents/home/.agents/.skill-lock.json`. Plugin skills under
-    `~/.claude/plugins/` are third-party too.
-- Don't edit a third-party skill in place: the next `npx skills update` or
-  plugin update overwrites it. Suggest an option to the user instead: vendor it
-  into `universal/agents/home/.agents/skills/` (drop its lockfile entry, keep
-  the upstream credit), send the change upstream, or leave it.
+  - Under `~/projects/dotfiles/universal/agents/home/.agents/skills/` and listed
+    in the dotfiles' `universal/agents/vendored-skills.json`: vendored from
+    upstream. `update-skills.py` overwrites the folder with upstream's copy.
+  - Under that folder and not in the manifest: authored. Edit it there.
+  - Plugin skills under `~/.claude/plugins/`: third-party, overwritten by the
+    next plugin update.
+- Don't edit a vendored or plugin skill in place. Suggest an option to the user
+  instead: fork it (drop its manifest entry, keep the upstream credit in its
+  `metadata.credits`), send the change upstream, or leave it.
