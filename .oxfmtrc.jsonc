@@ -23,10 +23,20 @@
     "windows/config/.glzr/zebar/*settings.json",
 
     // Lock files
-    "universal/agents/home/.agents/*.skill-lock.json",
     "universal/neovim/config/nvim/*lazy-lock.json",
 
     // Vendored
+    "universal/agents/home/.agents/skills/codebase-design/",
+    "universal/agents/home/.agents/skills/diagnosing-bugs/",
+    "universal/agents/home/.agents/skills/domain-modeling/",
+    "universal/agents/home/.agents/skills/frontend-design/",
+    "universal/agents/home/.agents/skills/grilling/",
+    "universal/agents/home/.agents/skills/pr/",
+    "universal/agents/home/.agents/skills/prototype/",
+    "universal/agents/home/.agents/skills/research/",
+    "universal/agents/home/.agents/skills/vercel-composition-patterns/",
+    "universal/agents/home/.agents/skills/web-design-guidelines/",
+    "universal/agents/home/.agents/skills/writing-for-agents/",
     "windows/config/.glzr/zebar/sakyasumedh.aurora@1.0.0-modified/",
   ],
 }

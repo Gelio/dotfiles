@@ -9,7 +9,7 @@ Enable the `ai` group in `mise/config/miserc.toml` and run `bootstrap.sh` (or
 
 The `agents` dotfile group in `mise/config/config.ai.toml` links each file of
 `home/` that is in git into `~`. A new file is linked by the next apply after
-`git add`. Third-party skills next to the linked ones are left alone.
+`git add`.
 
 Merge entries in the same file merge `codex-hooks-partial.json` into
 `~/.codex/hooks.json` and `codex-config-partial.toml` into
@@ -25,24 +25,33 @@ hooks.
 
 ## Layout
 
-| Source                          | Installed as                                                                                                                       |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `home/.agents/skills/<name>/`   | `~/.agents/skills/<name>/` (Codex reads this directly)                                                                             |
-| `home/.claude/skills/<name>`    | `~/.claude/skills/<name>`, a link to the shared skill                                                                              |
-| `home/.agents/.skill-lock.json` | Third-party skill selections (`npx skills`)                                                                                        |
-| `personal/`                     | Linked into `~` only with the `personal` group: instructions for a personal Claude subscription, such as reading plan usage limits |
+| Source                        | Installed as                                                                                                                       |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `home/.agents/skills/<name>/` | `~/.agents/skills/<name>/` (Codex reads this directly)                                                                             |
+| `home/.claude/skills/<name>`  | `~/.claude/skills/<name>`, a link to the shared skill                                                                              |
+| `vendored-skills.json`        | Upstream repo, folder and pinned commit of each vendored skill                                                                     |
+| `personal/`                   | Linked into `~` only with the `personal` group: instructions for a personal Claude subscription, such as reading plan usage limits |
 
 Edit authored skills under `home/.agents/skills/`.
 
-## Third-party skills
+## Vendored skills
+
+Third-party skills are copied into `home/.agents/skills/` and committed, so
+installing them needs nothing beyond the mise apply above.
+`vendored-skills.json` records where each came from.
 
 ```bash
-python3 bootstrap-skills.py            # print restore commands from the lockfile
-python3 bootstrap-skills.py --apply
-npx skills update -g
+./update-skills.py --latest            # move every pin to upstream's latest commit
+./update-skills.py --latest grilling   # just one skill
+./update-skills.py                     # re-copy at the pinned commits
 ```
 
-Restoring fetches current upstream content; lockfile hashes are not pins.
+Review the result with `git diff` before committing: it shows upstream's changes
+and any local edits the update overwrote. A new skill needs a manifest entry
+(`repo`, `path` of its folder, empty `commit`) and a run with `--latest`; the
+script then prints the `.oxfmtrc.jsonc` line that keeps upstream's formatting.
+To customize a vendored skill, fork it: drop its manifest entry and keep the
+upstream credit in its `metadata.credits`.
 
 ## Settings review
 
