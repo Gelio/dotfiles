@@ -10,6 +10,8 @@
 # - On system or display wakeup, through sleepwatcher, runs `glazewm-helper
 #   wake`: waking from system sleep clears the variable, and Zebar's bars
 #   vanish after any display sleep.
+# - Rewrites the variable about once a minute, because Karabiner keeps it only
+#   in memory: restarting Karabiner's core service (an update, say) unsets it.
 set -uo pipefail
 
 karabiner_cli="/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli"
@@ -79,7 +81,13 @@ sleepwatcher=/opt/homebrew/sbin/sleepwatcher
 sleepwatcher_pid=$!
 trap 'kill "$sleepwatcher_pid" 2>/dev/null' EXIT
 
+refreshed=$SECONDS
 while true; do
+  # Forgets the last write about once a minute, so this rewrites it.
+  if ((SECONDS - refreshed >= 60)); then
+    written=""
+    refreshed=$SECONDS
+  fi
   sync_once
   # Restarts sleepwatcher if it died, by exiting: launchd starts this again.
   kill -0 "$sleepwatcher_pid" 2>/dev/null || exit 1
