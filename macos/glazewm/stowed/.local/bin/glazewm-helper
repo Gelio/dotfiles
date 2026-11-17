@@ -30,8 +30,11 @@ app=/Applications/GlazeWM.app/Contents/MacOS/glazewm
 written=""
 # The value last logged, so the minutely rewrite doesn't fill the log.
 logged=""
-# GlazeWM's monitor events write the time of the latest one here.
-display_changed="${TMPDIR:-/tmp}/glazewm-helper-display-changed"
+# Private to this user, unlike a shared /tmp, for the wake lock and the time
+# of GlazeWM's latest monitor event.
+state_dir="$HOME/Library/Caches/glazewm-helper"
+mkdir -p "$state_dir" && chmod 700 "$state_dir"
+display_changed="$state_dir/display-changed"
 
 log() {
   echo "$(date '+%Y-%m-%d %H:%M:%S') glazewm-helper[$$]: $*" >&2
@@ -64,7 +67,7 @@ wake() {
 
   # Both wakeup events can fire for one wake; run once.
   # Not local: the EXIT trap runs after this function returns.
-  lock="${TMPDIR:-/tmp}/glazewm-helper-wake.lock"
+  lock="$state_dir/wake.lock"
   # A lock left by a killed run would block every later wake.
   find "$lock" -maxdepth 0 -mmin +1 -exec rmdir {} \; 2>/dev/null
   if ! mkdir "$lock" 2>/dev/null; then
@@ -184,6 +187,11 @@ while true; do
   # monitors may have changed after that wake restarted it.
   changed_at=""
   [[ -s "$display_changed" ]] && read -r changed_at <"$display_changed"
+  # Arithmetic would evaluate anything else in the file as code.
+  if [[ -n "$changed_at" && ! "$changed_at" =~ ^[0-9]+$ ]]; then
+    changed_at=""
+    rm -f "$display_changed"
+  fi
   if [[ -n "$changed_at" ]] && (($(date +%s) - changed_at >= 5)); then
     (wake "monitor added or removed")
     (($? == 75)) || rm -f "$display_changed"
