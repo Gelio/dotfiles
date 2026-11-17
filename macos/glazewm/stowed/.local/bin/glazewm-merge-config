@@ -59,6 +59,7 @@ if ((${#present[@]} == 1)); then
 else
   command -v yq >/dev/null || fail "yq not found; run macos/glazewm/install.sh"
   # *+ merges maps deeply and appends lists.
+  # shellcheck disable=SC2016 # $layer is yq's variable
   if ! err="$(yq eval-all '. as $layer ireduce ({}; . *+ $layer)' "${present[@]}" 2>&1 >"$tmp")"; then
     fail "${err:-yq failed}"
   fi
