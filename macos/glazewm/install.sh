@@ -96,6 +96,8 @@ new_plist=$(
   <true/>
   <key>KeepAlive</key>
   <true/>
+  <key>StandardOutPath</key>
+  <string>$HOME/Library/Logs/$label.log</string>
   <key>StandardErrorPath</key>
   <string>$HOME/Library/Logs/$label.log</string>
 </dict>
