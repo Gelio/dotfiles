@@ -15,6 +15,16 @@ on:
 permissions:
   contents: read
 
+# Cancels a pull request's older runs. Runs on main all finish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# bash, unlike the default shell, runs with pipefail
+defaults:
+  run:
+    shell: bash
+
 jobs:
   startup:
     name: startup from lazy-lock.json
@@ -26,7 +36,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/actions/setup-neovim
+      - uses: $/.github/actions/setup-neovim
 
       - name: Restore the plugin cache
         id: plugin-cache
