@@ -13,6 +13,8 @@ casks=(
 formulae=(
   FelixKratz/formulae/borders
   sleepwatcher
+  # glazewm-merge-config merges config.local.yaml with yq
+  yq
 )
 
 echo "# Installing formulae"
@@ -28,10 +30,16 @@ for cask in "${casks[@]}"; do
   brew install --cask "$cask" || failed_casks+=("$cask")
 done
 
-# NOTE: no --adopt: GlazeWM writes a default config on first launch, and
-# adopting it would replace this repo's config. Stow reports it as a
-# conflict instead; delete ~/.glzr/glazewm/config.yaml and rerun.
+# NOTE: no --adopt, which would replace this repo's files with what's in
+# $HOME.
 stow -v --no-folding -t "$HOME" stowed
+
+# GlazeWM reads ~/.glzr/glazewm/config.yaml, built from the stowed
+# config.shared.yaml and an optional, machine-local config.local.yaml. This
+# replaces GlazeWM's default config, written on first launch, and the stow
+# link an earlier version of this script made there. GlazeWM rebuilds it
+# itself after that, on startup and on reload.
+"$HOME/.local/bin/glazewm-merge-config"
 
 # Zebar uses the Windows aurora pack, whose bar-macos widget shows only
 # GlazeWM's state. The pack folder itself is linked: Zebar refuses to serve a
