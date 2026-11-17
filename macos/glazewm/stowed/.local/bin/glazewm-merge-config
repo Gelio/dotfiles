@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# Builds GlazeWM's config, ~/.glzr/glazewm/config.yaml, from layers in that
+# folder, because GlazeWM reads one file and has no includes:
+#
+#   config.shared.yaml  this repo's config, linked by stow
+#   config.local.yaml   optional, this machine's additions, not in the repo
+#
+# Later layers are merged into earlier ones: maps merge key by key, lists
+# (window_rules, keybindings, startup_commands, ...) are appended to, and
+# other values replace. Without config.local.yaml, config.yaml is a plain copy
+# of config.shared.yaml.
+#
+# If config.yaml changes and GlazeWM runs, this reloads it. GlazeWM runs this
+# at startup and after every config reload, so an edit to either layer takes
+# effect on the next reload: GlazeWM first reloads the old config.yaml, this
+# writes the new one, and the second reload loads it. That one finds nothing
+# to change, so it stops there.
+#
+# NOTE: GlazeWM starts this with a minimal PATH, without Homebrew or mise.
+set -euo pipefail
+
+export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/share/mise/shims:$PATH"
+
+dir="$HOME/.glzr/glazewm"
+target="$dir/config.yaml"
+layers=("$dir/config.shared.yaml" "$dir/config.local.yaml")
+# The app itself, as in glazewm-helper: there may be no CLI on PATH.
+app=/Applications/GlazeWM.app/Contents/MacOS/glazewm
+
+# Shows errors as a notification too, since GlazeWM drops this script's
+# output.
+fail() {
+  echo "glazewm-merge-config: $1" >&2
+  if command -v osascript >/dev/null; then
+    osascript \
+      -e 'on run argv' \
+      -e 'display notification (item 1 of argv) with title "GlazeWM config not rebuilt"' \
+      -e 'end run' \
+      "$1" >/dev/null 2>&1 || true
+  fi
+  exit 1
+}
+
+[[ -f "${layers[0]}" ]] || fail "${layers[0]} is missing; run macos/glazewm/install.sh"
+
+present=()
+for layer in "${layers[@]}"; do
+  [[ -f "$layer" ]] && present+=("$layer")
+done
+
+# Written next to config.yaml, then moved over it, so GlazeWM never reads a
+# half-written file, and so an old stow link at config.yaml is replaced
+# rather than written through.
+tmp="$(mktemp "$dir/.config.yaml.XXXXXX")"
+trap 'rm -f "$tmp"' EXIT
+
+if ((${#present[@]} == 1)); then
+  cp "${present[0]}" "$tmp"
+else
+  command -v yq >/dev/null || fail "yq not found; run macos/glazewm/install.sh"
+  # *+ merges maps deeply and appends lists.
+  if ! err="$(yq eval-all '. as $layer ireduce ({}; . *+ $layer)' "${present[@]}" 2>&1 >"$tmp")"; then
+    fail "${err:-yq failed}"
+  fi
+fi
+
+if [[ -f "$target" && ! -L "$target" ]] && cmp -s "$tmp" "$target"; then
+  exit 0
+fi
+chmod 644 "$tmp"
+mv -f "$tmp" "$target"
+echo "glazewm-merge-config: wrote $target"
+
+if pgrep -f "^$app" >/dev/null; then
+  "$app" command wm-reload-config
+fi
