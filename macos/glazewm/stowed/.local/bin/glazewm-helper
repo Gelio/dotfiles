@@ -10,6 +10,9 @@
 # - On system or display wakeup, through sleepwatcher, runs `glazewm-helper
 #   wake`: waking from system sleep clears the variable, and Zebar's bars
 #   vanish after any display sleep.
+# - Runs the same wake action when GlazeWM reports a monitor added or removed,
+#   once monitors have settled: Zebar loses its bars then too, and a display
+#   that drops out and reconnects isn't a display wakeup to sleepwatcher.
 # - Rewrites the variable about once a minute, because Karabiner keeps it only
 #   in memory: restarting Karabiner's core service (an update, say) unsets it.
 #
@@ -29,6 +32,8 @@ written=""
 failing=""
 # The value last logged, so the minutely rewrite doesn't fill the log.
 logged=""
+# GlazeWM's monitor events write the time of the latest one here.
+display_changed="${TMPDIR:-/tmp}/glazewm-helper-display-changed"
 
 log() {
   echo "$(date '+%Y-%m-%d %H:%M:%S') glazewm-helper[$$]: $*" >&2
@@ -61,7 +66,7 @@ sync_once() {
   fi
 }
 
-# $1: what triggered it, for the log.
+# $1: what triggered it, for the log. Returns 75 when another wake is running.
 wake() {
   log "wake ($1)"
   if ! app_running; then
@@ -76,7 +81,7 @@ wake() {
   find "$lock" -maxdepth 0 -mmin +1 -exec rmdir {} \; 2>/dev/null
   if ! mkdir "$lock" 2>/dev/null; then
     log "wake: another wake is running, skipping"
-    return 0
+    return 75
   fi
   trap 'rmdir "$lock"' EXIT
 
@@ -137,7 +142,34 @@ sleepwatcher=/opt/homebrew/sbin/sleepwatcher
   -D "'$self' log 'display dim'" \
   -U "'$self' log 'display undim'" &
 sleepwatcher_pid=$!
-trap 'kill "$sleepwatcher_pid" 2>/dev/null' EXIT
+
+# Logs each monitor event from GlazeWM and records its time.
+on_monitor_events() {
+  local line event re='"eventType":"([a-z_]+)"'
+  while IFS= read -r line; do
+    event=unknown
+    [[ "$line" =~ $re ]] && event=${BASH_REMATCH[1]}
+    log "GlazeWM: $event"
+    date +%s >"$display_changed"
+  done
+}
+
+# Subscribes to GlazeWM's monitor events through its CLI, which exits when
+# GlazeWM does. exec -a renames it so that app_running doesn't take it for
+# GlazeWM itself. GlazeWM sends monitor_updated after every wake and on
+# unrelated changes like unplugging a USB device, so this leaves it out.
+start_monitor_watch() {
+  exec -a glazewm-helper-sub "$app" sub -e monitor_added monitor_removed \
+    > >(on_monitor_events) &
+  monitor_watch_pid=$!
+}
+
+monitor_watch_pid=""
+# Retries the subscription at most every 10 seconds: it fails until GlazeWM's
+# IPC server is up, and each failure logs an error.
+monitor_watch_retry=0
+rm -f "$display_changed"
+trap 'kill "$sleepwatcher_pid" $monitor_watch_pid 2>/dev/null' EXIT
 
 refreshed=$SECONDS
 # After a failed write, waits 10 seconds before the next try, so a Karabiner
@@ -157,5 +189,22 @@ while true; do
     log "sleepwatcher exited, exiting so launchd restarts this"
     exit 1
   fi
+
+  if app_running && ! kill -0 "$monitor_watch_pid" 2>/dev/null &&
+    ((SECONDS >= monitor_watch_retry)); then
+    start_monitor_watch
+    monitor_watch_retry=$((SECONDS + 10))
+  fi
+  # Monitors can drop out and reconnect several times in a row, so this waits
+  # until 5 seconds pass without a monitor event. While a sleepwatcher wake
+  # runs, it waits for that to finish, then restarts Zebar again anyway: the
+  # monitors may have changed after that wake restarted it.
+  changed_at=""
+  [[ -s "$display_changed" ]] && read -r changed_at <"$display_changed"
+  if [[ -n "$changed_at" ]] && (($(date +%s) - changed_at >= 5)); then
+    (wake "monitor added or removed")
+    (($? == 75)) || rm -f "$display_changed"
+  fi
+
   sleep 1
 done
