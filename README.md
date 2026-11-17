@@ -132,9 +132,13 @@ Then open GlazeWM and grant it Accessibility (on macOS 27: Privacy & Security â†
 Device Control and Data Access). If it then manages no windows, turn that toggle
 off and on again. Its bindings use Left Option only, so Right Option still types
 Polish letters. GlazeWM can't tell the two Option keys apart, so while it runs,
-Karabiner turns Left Option+key into Option+Command+key for the keys GlazeWM
-binds, and GlazeWM binds those. The rule is off while GlazeWM isn't running.
-Other Left Option combinations, like Left Option+arrows, reach apps unchanged.
+Karabiner turns Left Option+key into Control+Option+Command+key for the keys
+GlazeWM binds, and GlazeWM binds those. Few apps use Control+Option+Command
+shortcuts, so a key GlazeWM misses (before Accessibility is granted, or in a
+password field) does no harm. Left Option+Control+H/J/K/L, which move a
+workspace to another monitor, become Control+Option+Command+arrows, so they
+don't collide with focus. The rule is off while GlazeWM isn't running. Other
+Left Option combinations, like Left Option+arrows, reach apps unchanged.
 
 `install.sh` also sets up a LaunchAgent, `glazewm-helper`. It keeps that
 Karabiner rule in step with GlazeWM, and through sleepwatcher restores the rule
