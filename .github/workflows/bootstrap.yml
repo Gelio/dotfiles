@@ -17,7 +17,7 @@ permissions:
 
 # Cancels a pull request's older runs. Runs on main all finish.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # bash, unlike the default shell, runs with pipefail
