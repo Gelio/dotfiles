@@ -119,6 +119,18 @@ window_rules:
       # aren't managed by GlazeWM, so they need no rule.
       - window_process: { equals: "coreautha" }
 
+      # Ignores the Screen Recording permission prompt, shown when an app
+      # such as Zoom starts sharing the screen.
+      - window_process: { equals: "universalAccessAuthWarn" }
+
+      # Only Zoom's main window and the meeting window tile. Its pop-ups (My
+      # Notes, AI Companion, notices) are ignored rather than floated, since
+      # floating centers them and Zoom places them next to its controls.
+      # GlazeWM reports the process as `Zoom`, though the menu bar shows
+      # `zoom.us`, so this matches both.
+      - window_process: { regex: "^(Zoom|zoom\\.us)$" }
+        window_title: { not_regex: "^Zoom( Meeting| Workplace)?$" }
+
       # Ignores picture-in-picture windows for browsers.
       - window_title: { regex: "[Pp]icture.in.[Pp]icture" }
 
