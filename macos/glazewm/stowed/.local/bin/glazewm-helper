@@ -12,6 +12,11 @@
 #   vanish after any display sleep.
 # - Rewrites the variable about once a minute, because Karabiner keeps it only
 #   in memory: restarting Karabiner's core service (an update, say) unsets it.
+#
+# The LaunchAgent sends both output streams to
+# ~/Library/Logs/com.github.gelio.glazewm-helper.log. The helper logs what it
+# does with timestamps, and sleepwatcher logs each event it sees, after the
+# command it ran for it.
 set -uo pipefail
 
 karabiner_cli="/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli"
@@ -22,6 +27,8 @@ app=/Applications/GlazeWM.app/Contents/MacOS/glazewm
 written=""
 # Set while writes fail, so only the first failure and the recovery are logged.
 failing=""
+# The value last logged, so the minutely rewrite doesn't fill the log.
+logged=""
 
 log() {
   echo "$(date '+%Y-%m-%d %H:%M:%S') glazewm-helper[$$]: $*" >&2
@@ -43,6 +50,8 @@ sync_once() {
       log "Karabiner writes work again"
       failing=""
     fi
+    [[ "$value" == "$logged" ]] || log "set glazewm_running to $value"
+    logged=$value
   else
     status=$?
     [[ -n "$failing" ]] ||
@@ -52,15 +61,23 @@ sync_once() {
   fi
 }
 
+# $1: what triggered it, for the log.
 wake() {
-  app_running || return 0
+  log "wake ($1)"
+  if ! app_running; then
+    log "wake: GlazeWM isn't running, nothing to do"
+    return 0
+  fi
 
   # Both wakeup events can fire for one wake; run once.
   # Not local: the EXIT trap runs after this function returns.
   lock="${TMPDIR:-/tmp}/glazewm-helper-wake.lock"
   # A lock left by a killed run would block every later wake.
   find "$lock" -maxdepth 0 -mmin +1 -exec rmdir {} \; 2>/dev/null
-  mkdir "$lock" 2>/dev/null || return 0
+  if ! mkdir "$lock" 2>/dev/null; then
+    log "wake: another wake is running, skipping"
+    return 0
+  fi
   trap 'rmdir "$lock"' EXIT
 
   # Gives Karabiner time to finish waking up, then retries for a few seconds.
@@ -75,20 +92,32 @@ wake() {
   sleep 1
   # GlazeWM's shutdown command kills Zebar, so don't bring it back if GlazeWM
   # exited meanwhile.
-  app_running && open -a Zebar
+  if app_running; then
+    log "wake: restarting Zebar"
+    open -a Zebar
+  else
+    log "wake: GlazeWM exited meanwhile, not restarting Zebar"
+  fi
 }
 
 case "${1:-}" in
 wake)
-  wake
+  wake "${2:-unknown}"
+  exit
+  ;;
+log)
+  shift
+  log "$*"
   exit
   ;;
 "") ;;
 *)
-  echo "usage: $0 [wake]" >&2
+  echo "usage: $0 [wake <reason> | log <message>]" >&2
   exit 2
   ;;
 esac
+
+log "started"
 
 self="$(cd -- "$(dirname -- "$0")" && pwd)/$(basename -- "$0")"
 sleepwatcher=/opt/homebrew/sbin/sleepwatcher
@@ -96,7 +125,17 @@ sleepwatcher=/opt/homebrew/sbin/sleepwatcher
 
 # -w: system wakeup, -W: display wakeup. Waking from system sleep sends only
 # the first. sleepwatcher runs each command with /bin/sh -c.
-"$sleepwatcher" -V -w "'$self' wake" -W "'$self' wake" &
+# -s, -S, -D and -U (system sleep, display sleep, dim and undim) only log, to
+# show which events a display wake came as. sleepwatcher runs the -W command
+# only when the display was off; when it was only dimmed, it runs -U instead.
+# -V prints each event to stdout, and -s waits for its command before sleeping.
+"$sleepwatcher" -V \
+  -w "'$self' wake 'system wakeup'" \
+  -W "'$self' wake 'display wakeup'" \
+  -s "'$self' log 'system sleep'" \
+  -S "'$self' log 'display sleep'" \
+  -D "'$self' log 'display dim'" \
+  -U "'$self' log 'display undim'" &
 sleepwatcher_pid=$!
 trap 'kill "$sleepwatcher_pid" 2>/dev/null' EXIT
 
@@ -114,6 +153,9 @@ while true; do
     sync_once || retry_at=$((SECONDS + 10))
   fi
   # Restarts sleepwatcher if it died, by exiting: launchd starts this again.
-  kill -0 "$sleepwatcher_pid" 2>/dev/null || exit 1
+  if ! kill -0 "$sleepwatcher_pid" 2>/dev/null; then
+    log "sleepwatcher exited, exiting so launchd restarts this"
+    exit 1
+  fi
   sleep 1
 done
