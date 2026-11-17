@@ -15,10 +15,21 @@ on:
 permissions:
   contents: read
 
+# Cancels a pull request's older runs. Runs on main all finish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# bash, unlike the default shell, runs with pipefail
+defaults:
+  run:
+    shell: bash
+
 jobs:
   pins:
     name: pin hashes and group list
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -53,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-24.04, macos-26]
         setup: [default-groups, all-groups, no-groups]
         include:
           - setup: default-groups
