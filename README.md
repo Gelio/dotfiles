@@ -136,6 +136,24 @@ Karabiner turns Left Option+key into Option+Command+key for the keys GlazeWM
 binds, and GlazeWM binds those. The rule is off while GlazeWM isn't running.
 Other Left Option combinations, like Left Option+arrows, reach apps unchanged.
 
+GlazeWM reads a single file, so `~/.glzr/glazewm/config.yaml` is built by
+`glazewm-merge-config` from the shared `config.shared.yaml` (linked from this
+repo) and an optional `config.local.yaml` next to it, for rules that belong to
+one Mac only. The local file's lists, such as `window_rules` and `keybindings`,
+are appended to the shared ones, and its other keys override them:
+
+```yaml
+# ~/.glzr/glazewm/config.local.yaml
+window_rules:
+  - commands: ["set-floating"]
+    match:
+      - window_process: { equals: "Some App" }
+```
+
+Edit those two files, not `config.yaml`: GlazeWM rebuilds it on startup and on
+reload (Left Option+Shift+R), and reloads once more if it changed. If a file
+doesn't parse, a notification says so and the last good config stays.
+
 `install.sh` also sets up a LaunchAgent, `glazewm-helper`. It keeps that
 Karabiner rule in step with GlazeWM, and through sleepwatcher restores the rule
 and Zebar's bars on wake (waking from sleep clears one and hides the other).
