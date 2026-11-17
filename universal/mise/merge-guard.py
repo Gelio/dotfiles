@@ -7,8 +7,11 @@
 A merge entry sets the keys of its source in the target. Arrays are replaced
 whole and scalars are overwritten, so anything added to them in the live file
 (an agent's "always allow", a hand edit) would be lost. Lists each such value
-and exits non-zero; adopt it into the source or delete it from the live file.
-Set MISE_MERGE_ALLOW_LOSS=1 to apply anyway.
+and exits non-zero; adopt it into the source, keep it in the machine's overlay
+(see merge_local.py) or delete it from the live file. Set
+MISE_MERGE_ALLOW_LOSS=1 to apply anyway.
+
+The source counts as combined with its overlay, as the entry applies it.
 """
 
 import json
@@ -17,6 +20,8 @@ import subprocess
 import sys
 import tomllib
 from pathlib import Path
+
+import merge_local
 
 LOADERS = {".json": json.loads, ".toml": tomllib.loads}
 
@@ -60,7 +65,7 @@ def main() -> int:
             live = load(target.read_text())
         except ValueError:
             continue  # mise refuses to write a target it can't parse
-        source = load(Path(edit["origin"]["source"]).read_text())
+        source = merge_local.effective(Path(edit["origin"]["source"]), target)
         for loss in losses(source, live, ""):
             if not found:
                 print("mise merge entries would discard live values:", file=sys.stderr)
@@ -72,7 +77,9 @@ def main() -> int:
         print("MISE_MERGE_ALLOW_LOSS=1: applying anyway", file=sys.stderr)
         return 0
     print(
-        "Adopt them into the source or delete them from the live file, or re-run with MISE_MERGE_ALLOW_LOSS=1.",
+        "Adopt them into the source, keep them for this machine in the overlay"
+        f" ({merge_local.local_root()}/<path under ~>), or delete them from the"
+        " live file. Or re-run with MISE_MERGE_ALLOW_LOSS=1.",
         file=sys.stderr,
     )
     return 1
