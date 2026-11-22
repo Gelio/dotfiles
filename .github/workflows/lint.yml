@@ -20,7 +20,7 @@ jobs:
       # zsh isn't on the runner by default, and lint:zsh fails in CI without it
       - name: Install zsh
         run: sudo apt-get update && sudo apt-get install --yes zsh
-      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - uses: jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a # v5.2.10
         with:
           version: 2026.11.4
       - run: mise run lint
