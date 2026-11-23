@@ -140,6 +140,26 @@ workspace to another monitor, become Control+Option+Command+arrows, so they
 don't collide with focus. The rule is off while GlazeWM isn't running. Other
 Left Option combinations, like Left Option+arrows, reach apps unchanged.
 
+Zoom's global shortcut Control+Option+Command+H (show or hide the floating
+meeting controls) is the same as Left Option+H, so turn it off in Zoom's
+Settings → Keyboard Shortcuts.
+
+Karabiner doesn't notice changes to a linked `karabiner.json`, such as after a
+pull. Recreate the link to make it reload:
+
+```bash
+ln -sfh "$(readlink ~/.config/karabiner/karabiner.json)" ~/.config/karabiner/karabiner.json
+tail -2 /var/log/karabiner/core_service.log  # "core_configuration is updated"
+```
+
+When a change touches both the Karabiner rule and GlazeWM's bindings, update
+them in an order that never has Karabiner sending a key GlazeWM doesn't bind
+yet: moving to the Control+Option+Command keys, reload Karabiner first, then
+GlazeWM (from its tray menu, since its reload key changes too). Going back,
+reload GlazeWM first, then Karabiner. In the wrong order, Left Option+H or +M
+reaches apps as Option+Command+H or +M for a moment, which hides other apps or
+minimizes all windows.
+
 `install.sh` also sets up a LaunchAgent, `glazewm-helper`. It keeps that
 Karabiner rule in step with GlazeWM, and through sleepwatcher restores the rule
 and Zebar's bars on wake (waking from sleep clears one and hides the other).
