@@ -16,8 +16,14 @@
 # writes the new one, and the second reload loads it. That one finds nothing
 # to change, so it stops there.
 #
-# NOTE: GlazeWM starts this with a minimal PATH, without Homebrew or mise.
+# This checks only that the layers parse as YAML, not that GlazeWM accepts
+# the result: GlazeWM has no command to validate a config. If GlazeWM rejects a value (say, a misspelled command), its
+# reload fails before config_reload_commands, so fixing the file and reloading
+# doesn't recover, and GlazeWM won't start. Fix the file and run this by hand.
 set -euo pipefail
+
+# GlazeWM gets PATH from the login shell when not started from a terminal.
+# Homebrew and mise are added in case that PATH lacks them.
 
 export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/share/mise/shims:$PATH"
 
