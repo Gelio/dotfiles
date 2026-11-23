@@ -52,6 +52,18 @@ app_running() {
   pgrep -f "^$app" >/dev/null
 }
 
+# Prints the time of GlazeWM's latest monitor event, or nothing.
+monitor_changed_at() {
+  local t=""
+  [[ -s "$display_changed" ]] && read -r t <"$display_changed"
+  # Arithmetic would evaluate anything else in the file as code.
+  if [[ -n "$t" && ! "$t" =~ ^[0-9]+$ ]]; then
+    rm -f "$display_changed"
+    t=""
+  fi
+  echo "$t"
+}
+
 sync_once() {
   local value=0 out status
   app_running && value=1
@@ -77,6 +89,7 @@ sync_once() {
 
 # $1: what triggered it, for the log. Returns 75 when another wake is running.
 wake() {
+  local started=$SECONDS changed_at restarted_at latest
   log "wake ($1)"
   if ! app_running; then
     log "wake: GlazeWM isn't running, nothing to do"
@@ -101,9 +114,31 @@ wake() {
   [[ -n "$synced" ]] ||
     log "wake: gave up setting glazewm_running, the main loop rewrites it within a minute"
 
+  # About 5 seconds after a system wake, GlazeWM rescans the monitors and, with
+  # an external display, reports it removed and added. Restarting Zebar before
+  # that would mean restarting it again after it. So a sleepwatcher wake waits
+  # 8 seconds from its start for such events, then until 5 seconds pass without
+  # one, 20 seconds at most (the wake lock goes stale after a minute).
+  if [[ "$1" != "monitor added or removed" ]]; then
+    while ((SECONDS - started < 20)); do
+      changed_at=$(monitor_changed_at)
+      if [[ -n "$changed_at" ]]; then
+        (($(date +%s) - changed_at >= 5)) && break
+      elif ((SECONDS - started >= 8)); then
+        break
+      fi
+      sleep 1
+    done
+  fi
+
   # Zebar ignores SIGTERM and SIGINT on macOS.
+  restarted_at=$(date +%s)
   pkill -KILL -ix zebar
   sleep 1
+  # Zebar starts after every monitor event up to now, so those need no wake of
+  # their own. A later one keeps the file, for the main loop to wake again.
+  latest=$(monitor_changed_at)
+  [[ -n "$latest" ]] && ((latest <= restarted_at)) && rm -f "$display_changed"
   # GlazeWM's shutdown command kills Zebar, so don't bring it back if GlazeWM
   # exited meanwhile.
   if app_running; then
@@ -207,16 +242,10 @@ while true; do
   fi
   # Monitors can drop out and reconnect several times in a row, so this waits
   # until 5 seconds pass without a monitor event. While a sleepwatcher wake
-  # runs, it waits for that to finish, then restarts Zebar again anyway: the
-  # monitors may have changed after that wake restarted it.
+  # runs, it waits for that to finish. That wake clears the events its Zebar
+  # restart covers, so only a later one restarts Zebar again.
   clear_stale_lock
-  changed_at=""
-  [[ -s "$display_changed" ]] && read -r changed_at <"$display_changed"
-  # Arithmetic would evaluate anything else in the file as code.
-  if [[ -n "$changed_at" && ! "$changed_at" =~ ^[0-9]+$ ]]; then
-    changed_at=""
-    rm -f "$display_changed"
-  fi
+  changed_at=$(monitor_changed_at)
   if [[ -n "$changed_at" && ! -d "$wake_lock" ]] &&
     (($(date +%s) - changed_at >= 5)); then
     (wake "monitor added or removed")
