@@ -4,9 +4,9 @@
 #
 # - Keeps Karabiner's glazewm_running variable in step with GlazeWM: 1 while
 #   it runs, 0 while it doesn't (including after a crash). While it's 1,
-#   Karabiner turns Left Option+<key> into Option+Command+<key>, which apps
-#   would get as shortcuts (Option+Shift+Command+Q logs out at once) if
-#   GlazeWM weren't there to take them.
+#   Karabiner turns Left Option+<key> into Control+Option+Command+<key>. Few
+#   apps use those shortcuts, but an app would still get them if GlazeWM
+#   weren't there to take them.
 # - On system or display wakeup, through sleepwatcher, runs `glazewm-helper
 #   wake`: waking from system sleep clears the variable, and Zebar's bars
 #   vanish after any display sleep.
@@ -37,9 +37,15 @@ logged=""
 state_dir="$HOME/Library/Caches/glazewm-helper"
 mkdir -p "$state_dir" && chmod 700 "$state_dir"
 display_changed="$state_dir/display-changed"
+wake_lock="$state_dir/wake.lock"
 
 log() {
   echo "$(date '+%Y-%m-%d %H:%M:%S') glazewm-helper[$$]: $*" >&2
+}
+
+# A lock left by a killed wake would block every later one.
+clear_stale_lock() {
+  find "$wake_lock" -maxdepth 0 -mmin +1 -exec rmdir {} \; 2>/dev/null
 }
 
 app_running() {
@@ -77,23 +83,23 @@ wake() {
     return 0
   fi
 
-  # Both wakeup events can fire for one wake; run once.
-  # Not local: the EXIT trap runs after this function returns.
-  lock="$state_dir/wake.lock"
-  # A lock left by a killed run would block every later wake.
-  find "$lock" -maxdepth 0 -mmin +1 -exec rmdir {} \; 2>/dev/null
-  if ! mkdir "$lock" 2>/dev/null; then
+  # A monitor change can come during a sleepwatcher wake; run one at a time.
+  clear_stale_lock
+  if ! mkdir "$wake_lock" 2>/dev/null; then
     log "wake: another wake is running, skipping"
     return 75
   fi
-  trap 'rmdir "$lock"' EXIT
+  trap 'rmdir "$wake_lock"' EXIT
 
   # Gives Karabiner time to finish waking up, then retries for a few seconds.
   sleep 3
+  local synced=""
   for _ in 1 2 3 4 5; do
-    sync_once && break
+    sync_once && synced=1 && break
     sleep 1
   done
+  [[ -n "$synced" ]] ||
+    log "wake: gave up setting glazewm_running, the main loop rewrites it within a minute"
 
   # Zebar ignores SIGTERM and SIGINT on macOS.
   pkill -KILL -ix zebar
@@ -133,17 +139,18 @@ sleepwatcher=/opt/homebrew/sbin/sleepwatcher
 
 # -w: system wakeup, -W: display wakeup. Waking from system sleep sends only
 # the first. sleepwatcher runs each command with /bin/sh -c.
-# -s, -S, -D and -U (system sleep, display sleep, dim and undim) only log, to
-# show which events a display wake came as. sleepwatcher runs the -W command
-# only when the display was off; when it was only dimmed, it runs -U instead.
+# -s, -S and -D (system sleep, display sleep and dim) only log, to show what
+# came before a wake. sleepwatcher counts power-off messages, dim first, so a
+# display that turns off in one step logs as a dim. -E (undim) stays unset:
+# sleepwatcher would run it instead of -W when it thinks the display was only
+# dimmed, which includes such a display wake.
 # -V prints each event to stdout, and -s waits for its command before sleeping.
 "$sleepwatcher" -V \
   -w "'$self' wake 'system wakeup'" \
   -W "'$self' wake 'display wakeup'" \
   -s "'$self' log 'system sleep'" \
   -S "'$self' log 'display sleep'" \
-  -D "'$self' log 'display dim'" \
-  -U "'$self' log 'display undim'" &
+  -D "'$self' log 'display dim'" &
 sleepwatcher_pid=$!
 
 # Logs each monitor event from GlazeWM and records its time.
@@ -202,6 +209,7 @@ while true; do
   # until 5 seconds pass without a monitor event. While a sleepwatcher wake
   # runs, it waits for that to finish, then restarts Zebar again anyway: the
   # monitors may have changed after that wake restarted it.
+  clear_stale_lock
   changed_at=""
   [[ -s "$display_changed" ]] && read -r changed_at <"$display_changed"
   # Arithmetic would evaluate anything else in the file as code.
@@ -209,9 +217,15 @@ while true; do
     changed_at=""
     rm -f "$display_changed"
   fi
-  if [[ -n "$changed_at" ]] && (($(date +%s) - changed_at >= 5)); then
+  if [[ -n "$changed_at" && ! -d "$wake_lock" ]] &&
+    (($(date +%s) - changed_at >= 5)); then
     (wake "monitor added or removed")
-    (($? == 75)) || rm -f "$display_changed"
+    if (($? != 75)); then
+      # Keeps an event that came during the wake, for a wake of its own.
+      latest=""
+      [[ -s "$display_changed" ]] && read -r latest <"$display_changed"
+      [[ "$latest" == "$changed_at" ]] && rm -f "$display_changed"
+    fi
   fi
 
   sleep 1
