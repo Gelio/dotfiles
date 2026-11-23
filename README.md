@@ -132,9 +132,33 @@ Then open GlazeWM and grant it Accessibility (on macOS 27: Privacy & Security â†
 Device Control and Data Access). If it then manages no windows, turn that toggle
 off and on again. Its bindings use Left Option only, so Right Option still types
 Polish letters. GlazeWM can't tell the two Option keys apart, so while it runs,
-Karabiner turns Left Option+key into Option+Command+key for the keys GlazeWM
-binds, and GlazeWM binds those. The rule is off while GlazeWM isn't running.
-Other Left Option combinations, like Left Option+arrows, reach apps unchanged.
+Karabiner turns Left Option+key into Control+Option+Command+key for the keys
+GlazeWM binds, and GlazeWM binds those. Few apps use Control+Option+Command
+shortcuts, so a key GlazeWM misses (before Accessibility is granted, or in a
+password field) does no harm. Left Option+Control+H/J/K/L, which move a
+workspace to another monitor, become Control+Option+Command+arrows, so they
+don't collide with focus. The rule is off while GlazeWM isn't running. Other
+Left Option combinations, like Left Option+arrows, reach apps unchanged.
+
+Zoom's global shortcut Control+Option+Command+H (show or hide the floating
+meeting controls) is the same as Left Option+H, so turn it off in Zoom's
+Settings â†’ Keyboard Shortcuts.
+
+Karabiner doesn't notice changes to a linked `karabiner.json`, such as after a
+pull. Recreate the link to make it reload:
+
+```bash
+ln -sfh "$(readlink ~/.config/karabiner/karabiner.json)" ~/.config/karabiner/karabiner.json
+tail -2 /var/log/karabiner/core_service.log  # "core_configuration is updated"
+```
+
+When a change touches both the Karabiner rule and GlazeWM's bindings, update
+them in an order that never has Karabiner sending a key GlazeWM doesn't bind
+yet: moving to the Control+Option+Command keys, reload Karabiner first, then
+GlazeWM (from its tray menu, since its reload key changes too). Going back,
+reload GlazeWM first, then Karabiner. In the wrong order, Left Option+H or +M
+reaches apps as Option+Command+H or +M for a moment, which hides other apps or
+minimizes all windows.
 
 GlazeWM reads a single file, so `~/.glzr/glazewm/config.yaml` is built by
 `glazewm-merge-config` from the shared `config.shared.yaml` (linked from this
