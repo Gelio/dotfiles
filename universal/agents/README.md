@@ -51,12 +51,15 @@ Each merge entry's source is a `.tera` template next to its partial. When the
 overlay exists, the template runs `mise/merge_local.py`, which combines the two
 before mise merges the result into the target: objects merge key by key, arrays
 get the overlay's items that the partial lacks appended after the partial's own,
-and other overlay values replace the partial's. Without an overlay the template
-renders the partial unchanged. `mise dot diff` and `mise dot status` show the
-combined result, and `merge-guard.py` and `review-settings.py` count overlay
-entries as known. `review-settings.py` can also move a live entry into the
-overlay (`[l]ocal`). Deleting an entry from an overlay doesn't delete it from
-the live file, as with a partial.
+and other overlay values replace the partial's. A hook group
+(`{"matcher": …, "hooks": […]}`) joins the partial's group with the same
+matcher, so its hooks are appended to that group's. An empty or invalid overlay
+stops `mise dot apply` with an error that names the file. Without an overlay the
+template renders the partial unchanged. `mise dot diff` and `mise dot status`
+show the combined result, and `merge-guard.py` and `review-settings.py` count
+overlay entries as known. `review-settings.py` can also move a live entry into
+the overlay (`[l]ocal`). Deleting an entry from an overlay doesn't delete it
+from the live file, as with a partial.
 
 ## Layout
 

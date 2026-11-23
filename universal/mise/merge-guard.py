@@ -38,7 +38,15 @@ def losses(source: object, live: object, path: str):
                 yield from losses(value, live[key], f"{path}.{key}" if path else key)
     elif isinstance(source, list) and isinstance(live, list):
         for item in live:
-            if item not in source:
+            group = None
+            if merge_local.is_hook_group(item):
+                group = merge_local.matching_group(source, item)
+            if group is not None:
+                # Hook groups are matched by matcher, as merge_local combines
+                # them, so hooks within a group can be in any order
+                label = f"{path}[matcher={compact(item.get('matcher', ''))}]"
+                yield from losses(group, item, label)
+            elif item not in source:
                 yield f"{path}: drops {compact(item)}"
     elif source != live:
         yield f"{path}: replaces {compact(live)} with {compact(source)}"
@@ -65,7 +73,12 @@ def main() -> int:
             live = load(target.read_text())
         except ValueError:
             continue  # mise refuses to write a target it can't parse
-        source = merge_local.effective(Path(edit["origin"]["source"]), target)
+        try:
+            source = merge_local.effective(Path(edit["origin"]["source"]), target)
+        except merge_local.InvalidFile as error:
+            # mise can't render the entry either, so no apply goes through
+            print(f"{edit['path']}: can't apply: {error}", file=sys.stderr)
+            return 1
         for loss in losses(source, live, ""):
             if not found:
                 print("mise merge entries would discard live values:", file=sys.stderr)
