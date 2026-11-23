@@ -19,9 +19,24 @@
     "path": "skills/frontend-design",
     "commit": "1780c5e5a552fd4d1c9d6a7b0cab26b0c2bef064"
   },
+  "grill-me": {
+    "repo": "mattpocock/skills",
+    "path": "skills/productivity/grill-me",
+    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+  },
+  "grill-with-docs": {
+    "repo": "mattpocock/skills",
+    "path": "skills/engineering/grill-with-docs",
+    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+  },
   "grilling": {
     "repo": "mattpocock/skills",
     "path": "skills/productivity/grilling",
+    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+  },
+  "improve-codebase-architecture": {
+    "repo": "mattpocock/skills",
+    "path": "skills/engineering/improve-codebase-architecture",
     "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
   },
   "pr": {
@@ -37,6 +52,16 @@
   "research": {
     "repo": "mattpocock/skills",
     "path": "skills/engineering/research",
+    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+  },
+  "retro": {
+    "repo": "mattpocock/skills",
+    "path": "skills/engineering/retro",
+    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+  },
+  "teach": {
+    "repo": "mattpocock/skills",
+    "path": "skills/productivity/teach",
     "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
   },
   "vercel-composition-patterns": {

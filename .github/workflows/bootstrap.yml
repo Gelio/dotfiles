@@ -5,7 +5,9 @@ on:
     paths: &paths
       - .github/workflows/bootstrap.yml
       - ci/check-bootstrap-*.sh
+      - ci/check-merge-overlay.sh
       - ci/check-mise-pin.sh
+      - universal/agents/*-partial.*
       - universal/bootstrap.sh
       - universal/mise/**
   push:
@@ -130,3 +132,6 @@ jobs:
         run: ci/check-bootstrap-result.sh "$ENABLED"
       - name: Check that the repeat run changed no edited files
         run: cksum "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.gitconfig" | diff "$RUNNER_TEMP/first-run" -
+      - name: Check machine-local overlays of the agents' settings
+        if: contains(matrix.enabled, 'ai')
+        run: ci/check-merge-overlay.sh

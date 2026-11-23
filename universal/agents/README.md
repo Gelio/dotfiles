@@ -17,11 +17,49 @@ Merge entries in the same file merge `codex-hooks-partial.json` into
 write themselves stay. A partial's arrays (permissions, sandbox paths, hooks)
 and scalars replace the live ones, and `mise/merge-guard.py` stops the apply
 when that would discard a live value, listing each. Adopt Claude settings with
-`review-settings.py`, edit the partial, or delete the value from the live file;
-`MISE_MERGE_ALLOW_LOSS=1` applies anyway. **Removing a key from a partial does
-not remove it from the live settings**; delete it there by hand. `mise dot diff`
-previews the changes. Restart the agents afterwards; Codex asks you to trust new
-hooks.
+`review-settings.py`, edit the partial, keep the value in a
+[machine-local overlay](#machine-local-settings), or delete it from the live
+file; `MISE_MERGE_ALLOW_LOSS=1` applies anyway. **Removing a key from a partial
+does not remove it from the live settings**; delete it there by hand.
+`mise dot diff` previews the changes. Restart the agents afterwards; Codex asks
+you to trust new hooks.
+
+## Machine-local settings
+
+Entries that belong to one machine only, such as a work proxy in the sandbox's
+`allowedDomains`, go in an overlay outside the repo, at the target's path under
+`~/.config/dotfiles/local/` (or `$XDG_CONFIG_HOME/dotfiles/local/`):
+
+| Target                    | Overlay                                          |
+| ------------------------- | ------------------------------------------------ |
+| `~/.claude/settings.json` | `~/.config/dotfiles/local/.claude/settings.json` |
+| `~/.codex/hooks.json`     | `~/.config/dotfiles/local/.codex/hooks.json`     |
+| `~/.codex/config.toml`    | `~/.config/dotfiles/local/.codex/config.toml`    |
+
+An overlay is in its target's format and holds only the additions:
+
+```json
+{
+  "sandbox": {
+    "network": { "allowedDomains": ["proxy.example.com"] },
+    "excludedCommands": ["ps *"]
+  }
+}
+```
+
+Each merge entry's source is a `.tera` template next to its partial. When the
+overlay exists, the template runs `mise/merge_local.py`, which combines the two
+before mise merges the result into the target: objects merge key by key, arrays
+get the overlay's items that the partial lacks appended after the partial's own,
+and other overlay values replace the partial's. A hook group
+(`{"matcher": …, "hooks": […]}`) joins the partial's group with the same
+matcher, so its hooks are appended to that group's. An empty or invalid overlay
+stops `mise dot apply` with an error that names the file. Without an overlay the
+template renders the partial unchanged. `mise dot diff` and `mise dot status`
+show the combined result, and `merge-guard.py` and `review-settings.py` count
+overlay entries as known. `review-settings.py` can also move a live entry into
+the overlay (`[l]ocal`). Deleting an entry from an overlay doesn't delete it
+from the live file, as with a partial.
 
 ## Layout
 
@@ -69,5 +107,5 @@ python3 review-settings.py
 ```
 
 Walks `~/.claude/settings.json` for entries missing from `settings-partial.json`
-and asks whether to adopt or permanently ignore each
-(`.settings-review-ignore.json`).
+and the machine's overlay, and asks whether to adopt each into the partial, keep
+it in the overlay, or permanently ignore it (`.settings-review-ignore.json`).

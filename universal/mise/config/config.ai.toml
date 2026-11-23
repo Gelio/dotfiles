@@ -15,8 +15,9 @@ manifest = "git"
 # The agents rewrite these files with their own state (plugins, project trust),
 # so mise owns only the keys in each partial. Arrays such as permissions and
 # hooks are replaced whole; mise/merge-guard.py stops an apply that would drop
-# live-only entries.
+# live-only entries. Each .tera template renders its partial, plus the
+# machine's overlay under ~/.config/dotfiles/local/ (mise/merge_local.py).
 [dotfiles]
-"~/.claude/settings.json/shared" = { source = "../../agents/settings-partial.json", merge = true }
-"~/.codex/hooks.json/shared" = { source = "../../agents/codex-hooks-partial.json", merge = true }
-"~/.codex/config.toml/shared" = { source = "../../agents/codex-config-partial.toml", merge = true }
+"~/.claude/settings.json/shared" = { source = "../../agents/settings-partial.json.tera", template = "tera", merge = true }
+"~/.codex/hooks.json/shared" = { source = "../../agents/codex-hooks-partial.json.tera", template = "tera", merge = true }
+"~/.codex/config.toml/shared" = { source = "../../agents/codex-config-partial.toml.tera", template = "tera", merge = true }
