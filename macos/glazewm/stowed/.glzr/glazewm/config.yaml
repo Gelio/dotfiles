@@ -80,10 +80,8 @@ window_behavior:
       # Whether to center floating windows by default.
       centered: true
 
-      # Whether to show floating windows as always on top. On, so that a
-      # floating window doesn't fall behind the tiles once a tiled window
-      # takes focus: wm-cycle-focus brings back only the last-focused one.
-      shown_on_top: true
+      # Whether to show floating windows as always on top.
+      shown_on_top: false
 
     fullscreen:
       # Maximize the window if possible. If the window doesn't have a
