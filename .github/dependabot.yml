@@ -1,6 +1,10 @@
 version: 2
 updates:
   - package-ecosystem: github-actions
-    directory: /
+    # The workflows, and the composite actions, which use actions too
+    directories: ["/", "/.github/actions/**/*"]
     schedule:
       interval: weekly
+    # Gives a compromised release time to be found and pulled
+    cooldown:
+      default-days: 7

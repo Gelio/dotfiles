@@ -15,6 +15,16 @@ on:
 permissions:
   contents: read
 
+# Cancels a pull request's older runs. Scheduled runs all finish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# bash, unlike the default shell, runs with pipefail
+defaults:
+  run:
+    shell: bash
+
 jobs:
   install:
     name: install plugins, Mason packages and Treesitter parsers
@@ -26,10 +36,23 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/actions/setup-neovim
+      - uses: $/.github/actions/setup-neovim
 
+      # The release binary, checked against its hash, rather than the npm
+      # package, whose dependencies npm would resolve anew on every run
       - name: Install the Treesitter CLI
-        run: npm install --global tree-sitter-cli@0.26.3
+        env:
+          VERSION: 0.26.3
+          SHA256: 4f65c8d9ba32a3e37198302569b3306f037f12d8313e3f28cdf1b80c9f2b3a3a
+        run: |
+          archive="$RUNNER_TEMP/tree-sitter.gz"
+          curl --fail --silent --show-error --location --output "$archive" \
+            "https://github.com/tree-sitter/tree-sitter/releases/download/v$VERSION/tree-sitter-linux-x64.gz"
+          echo "$SHA256  $archive" | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/bin"
+          gunzip --stdout "$archive" >"$RUNNER_TEMP/bin/tree-sitter"
+          chmod +x "$RUNNER_TEMP/bin/tree-sitter"
+          echo "$RUNNER_TEMP/bin" >>"$GITHUB_PATH"
 
       - name: Install plugins from lazy-lock.json
         run: nvim --headless '+Lazy! restore' +qa

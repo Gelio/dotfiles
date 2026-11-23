@@ -47,9 +47,8 @@ run = "ci/lint-zsh.sh"
 
 [tasks."lint:actions"]
 description = "Lint GitHub Actions workflows"
-# correctness: actionlint's checks plus bug detectors, without the default
-# profile's security and policy rules
-run = "jactionlint --profile correctness"
+# The profile and the rules turned off are in .github/jactionlint.yaml
+run = "jactionlint"
 
 [tasks."lint:stylua"]
 description = "Check Lua formatting against .editorconfig"

@@ -1,0 +1,16 @@
+# Configuration of jactionlint, which `mise run lint:actions` runs.
+# https://jactionlint.jdx.dev/configuration
+profile: pedantic
+
+rules:
+  # Style only: GitHub evaluates a bare if: condition the same way.
+  require-expression-wrapping: off
+
+paths:
+  # Worktrees of Claude Code sessions, untracked and only on some machines.
+  # Their composite actions would otherwise be reported once per worktree.
+  ".claude/worktrees/**":
+    ignore: [".*"]
+  # dependabot-missing-actions-update asks to add their composite actions too
+  ".github/dependabot.yml":
+    ignore: ['"/\.claude/worktrees/']
