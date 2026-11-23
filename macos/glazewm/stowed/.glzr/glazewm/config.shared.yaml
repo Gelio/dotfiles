@@ -23,6 +23,9 @@ general:
   # JankyBorders' blacklist matches the process name, case-sensitively, so
   # Zebar's bars are listed as `zebar`.
   startup_commands:
+    # Rebuilds config.yaml in case a layer changed while GlazeWM was off (see
+    # config_reload_commands), and reloads it if so.
+    - "shell-exec /bin/sh -c $HOME/.local/bin/glazewm-merge-config"
     - "shell-exec open -a Zebar"
     - "shell-exec borders active_color=0xff8dbcff inactive_color=0xffa1a1a1 width=8.0 blacklist=zebar"
 
@@ -35,7 +38,14 @@ general:
     - "shell-exec pkill -x borders"
 
   # Commands to run after the WM config is reloaded.
-  config_reload_commands: []
+  # GlazeWM reads ~/.glzr/glazewm/config.yaml, which glazewm-merge-config
+  # builds from this file, config.shared.yaml, and the optional, machine-local
+  # config.local.yaml next to it. Edit those two, not config.yaml. After a
+  # reload, this rebuilds config.yaml and, if it changed, reloads again, so
+  # edits to either file take effect on reload. shell-exec doesn't expand ~ or
+  # $HOME, so sh does.
+  config_reload_commands:
+    - "shell-exec /bin/sh -c $HOME/.local/bin/glazewm-merge-config"
 
   # Whether to automatically focus windows underneath the cursor.
   focus_follows_cursor: false

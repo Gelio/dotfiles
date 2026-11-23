@@ -160,6 +160,30 @@ reload GlazeWM first, then Karabiner. In the wrong order, Left Option+H or +M
 reaches apps as Option+Command+H or +M for a moment, which hides other apps or
 minimizes all windows.
 
+GlazeWM reads a single file, so `~/.glzr/glazewm/config.yaml` is built by
+`glazewm-merge-config` from the shared `config.shared.yaml` (linked from this
+repo) and an optional `config.local.yaml` next to it, for rules that belong to
+one Mac only. The local file's lists, such as `window_rules` and `keybindings`,
+are appended to the shared ones, and its other keys override them:
+
+```yaml
+# ~/.glzr/glazewm/config.local.yaml
+window_rules:
+  - commands: ["set-floating"]
+    match:
+      - window_process: { equals: "Some App" }
+```
+
+Edit those two files, not `config.yaml`: GlazeWM rebuilds it on startup and on
+reload (Left Option+Shift+R), and reloads once more if it changed. Keybindings
+in the local file need the same modifiers as the shared file's, as its header
+explains. If a file doesn't parse, a notification says so and the last good
+config stays. A file that parses but holds a value GlazeWM rejects (a misspelled
+command, say) is a different case: GlazeWM shows an error, keeps its loaded
+config, and stops rebuilding on reload. To recover, fix the file and run
+`~/.local/bin/glazewm-merge-config` by hand. It reloads GlazeWM if it's running.
+Otherwise start GlazeWM afterwards.
+
 `install.sh` also sets up a LaunchAgent, `glazewm-helper`. It keeps that
 Karabiner rule in step with GlazeWM, and through sleepwatcher restores the rule
 and Zebar's bars on wake (waking from sleep clears one and hides the other).

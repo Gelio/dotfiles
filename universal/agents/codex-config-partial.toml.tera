@@ -1,0 +1,9 @@
+{#- The source of the ~/.codex/config.toml merge entry: codex-config-partial.toml,
+    combined with this machine's overlay when it has one (see
+    mise/merge_local.py). exec() and read_file() run in ~/.config/mise. -#}
+{% set overlay = xdg_config_home ~ "/dotfiles/local/.codex/config.toml" -%}
+{% if overlay is file -%}
+{{ exec(command=(mise_bin | quote) ~ " x uv -- uv run --quiet --script ../merge_local.py ../../agents/codex-config-partial.toml " ~ (overlay | quote)) }}
+{%- else -%}
+{{ read_file(path="../../agents/codex-config-partial.toml") }}
+{%- endif %}

@@ -1,0 +1,9 @@
+{#- The source of the ~/.claude/settings.json merge entry: settings-partial.json,
+    combined with this machine's overlay when it has one (see
+    mise/merge_local.py). exec() and read_file() run in ~/.config/mise. -#}
+{% set overlay = xdg_config_home ~ "/dotfiles/local/.claude/settings.json" -%}
+{% if overlay is file -%}
+{{ exec(command=(mise_bin | quote) ~ " x uv -- uv run --quiet --script ../merge_local.py ../../agents/settings-partial.json " ~ (overlay | quote)) }}
+{%- else -%}
+{{ read_file(path="../../agents/settings-partial.json") }}
+{%- endif %}

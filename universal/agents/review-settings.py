@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 """Review ~/.claude/settings.json for items to adopt into settings-partial.json.
 
-For each live value the partial doesn't already contribute, prompt:
+For each live value that neither the partial nor this machine's overlay
+(~/.config/dotfiles/local/.claude/settings.json, see mise/merge_local.py)
+already contributes, prompt:
   [a]dopt  - write the item into settings-partial.json
+  [l]ocal  - write the item into the overlay, for this machine only
   [s]kip   - skip for this run (ask again next time)
   [i]gnore - add to .settings-review-ignore.json (never ask again)
   [q]uit   - stop reviewing and save what's been chosen so far
 
-The mise merge entry replaces arrays whole, so adopt live-only items before
-`mise dot apply` (mise/merge-guard.py lists them and stops the apply). Objects are walked per leaf, arrays are
-diffed by value, and `hooks` is walked matcher by matcher and command by command.
+The mise merge entry replaces arrays whole, so adopt or localize live-only items
+before `mise dot apply` (mise/merge-guard.py lists them and stops the apply).
+Objects are walked per leaf, arrays are diffed by value, and `hooks` is walked
+matcher by matcher and command by command.
 """
 
 import json
@@ -17,8 +21,12 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT.parent / "mise"))
+import merge_local
+
 SETTINGS = Path.home() / ".claude/settings.json"
 PARTIAL = ROOT / "settings-partial.json"
+OVERLAY = merge_local.overlay_path(SETTINGS)
 IGNORE = ROOT / ".settings-review-ignore.json"
 
 
@@ -76,11 +84,12 @@ def hook_candidates(partial: dict, live: dict):
         for matcher in matchers:
             pattern = matcher.get("matcher", "")
             label = f"hooks.{event}[matcher={compact(pattern)}]"
-            existing = next(
-                (m for m in partial.get(event, []) if m.get("matcher", "") == pattern),
-                None,
-            )
-            if existing is None:
+            # The overlay can add a second matcher with the same pattern
+            same = [
+                m for m in partial.get(event, []) if m.get("matcher", "") == pattern
+            ]
+            existing = [h for m in same for h in m.get("hooks", [])]
+            if not same:
                 yield (
                     label,
                     f"Add hook matcher  {label}",
@@ -91,7 +100,7 @@ def hook_candidates(partial: dict, live: dict):
                 )
                 continue
             for hook in matcher.get("hooks", []):
-                if any(same_hook(h, hook) for h in existing["hooks"]):
+                if any(same_hook(h, hook) for h in existing):
                     continue
                 key = {k: hook[k] for k in ("type", "command", "if") if hook.get(k)}
                 yield (
@@ -128,13 +137,15 @@ def main():
     live = json.loads(SETTINGS.read_text())
     # The partial was removed pending a rewrite; adopting recreates it.
     partial = json.loads(PARTIAL.read_text()) if PARTIAL.exists() else {}
+    overlay = json.loads(OVERLAY.read_text()) if OVERLAY.exists() else {}
     ignored = json.loads(IGNORE.read_text()) if IGNORE.exists() else []
-    candidates = [c for c in find_candidates(partial, live) if c[0] not in ignored]
+    known = merge_local.combine(partial, overlay)
+    candidates = [c for c in find_candidates(known, live) if c[0] not in ignored]
     if not candidates:
         print("No new items to review.")
         return
     print(f"Found {len(candidates)} item(s) to review.\n")
-    adopted, new_ignores = 0, []
+    adopted, localized, new_ignores = 0, 0, []
     for index, (key, heading, body, apply) in enumerate(candidates, 1):
         print(f"\n── [{index}/{len(candidates)}] {heading}")
         print(json.dumps(body, indent=2, ensure_ascii=False))
@@ -142,30 +153,39 @@ def main():
         while True:
             try:
                 answer = (
-                    input("[a]dopt / [s]kip / [i]gnore / [q]uit > ").strip().lower()[:1]
+                    input("[a]dopt / [l]ocal / [s]kip / [i]gnore / [q]uit > ")
+                    .strip()
+                    .lower()[:1]
                 )
             except EOFError:
                 answer = "q"
-            if answer in ("a", "s", "i", "q", ""):
+            if answer in ("a", "l", "s", "i", "q", ""):
                 break
-            print("  (use a/s/i/q)")
+            print("  (use a/l/s/i/q)")
         if answer == "q":
             break
         if answer == "a":
             apply(partial)
             adopted += 1
+        elif answer == "l":
+            apply(overlay)
+            localized += 1
         elif answer == "i":
             new_ignores.append(key)
     if adopted:
         PARTIAL.write_text(json.dumps(partial, indent=2, ensure_ascii=False) + "\n")
         print(f"\nAdopted {adopted} item(s) into {PARTIAL}")
+    if localized:
+        OVERLAY.parent.mkdir(parents=True, exist_ok=True)
+        OVERLAY.write_text(json.dumps(overlay, indent=2, ensure_ascii=False) + "\n")
+        print(f"\nKept {localized} item(s) for this machine in {OVERLAY}")
     if new_ignores:
         IGNORE.write_text(
             json.dumps(sorted({*ignored, *new_ignores}), indent=2, ensure_ascii=False)
             + "\n"
         )
         print(f"Added {len(new_ignores)} path(s) to {IGNORE}")
-    if not adopted and not new_ignores:
+    if not adopted and not localized and not new_ignores:
         print("\nNo changes written.")
 
 

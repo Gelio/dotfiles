@@ -37,3 +37,4 @@ jobs:
         with:
           version: 2026.11.4
       - run: mise run lint
+      - run: mise run test
