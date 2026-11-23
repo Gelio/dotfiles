@@ -24,9 +24,19 @@
     "path": "skills/productivity/grill-me",
     "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
   },
+  "grill-with-docs": {
+    "repo": "mattpocock/skills",
+    "path": "skills/engineering/grill-with-docs",
+    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+  },
   "grilling": {
     "repo": "mattpocock/skills",
     "path": "skills/productivity/grilling",
+    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+  },
+  "improve-codebase-architecture": {
+    "repo": "mattpocock/skills",
+    "path": "skills/engineering/improve-codebase-architecture",
     "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
   },
   "pr": {
