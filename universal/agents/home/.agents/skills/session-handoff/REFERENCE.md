@@ -31,6 +31,10 @@ are.
 
 ## Lookups
 
+`workstreams` (in `~/.local/bin`) lists every workstream with its newest handoff
+date and Status, most recently touched first, hiding `done` ones; `--all`
+includes them, `--names` prints only names. The raw lookups behind it:
+
 - Workstreams and their status:
   `grep -H '^\*\*Status:\*\*' .claude/tracking/*.md`. A status starting with
   `done` closes the workstream. A missing `.claude/tracking/` means no trackers
