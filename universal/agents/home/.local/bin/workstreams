@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+"""List session-handoff workstreams, most recently touched first.
+
+Reads .claude/tracking/ and .claude/handoffs/ in the main worktree (see the
+session-handoff skill's REFERENCE.md). Hides workstreams whose Status starts
+with `done` unless --all is given. Colors output on a terminal unless NO_COLOR
+is set.
+"""
+
+import argparse
+import os
+import re
+import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+
+HANDOFF_NAME = re.compile(r"^(\d{4}-\d{2}-\d{2})-(\d{2})(\d{2})-.+\.md$")
+
+BOLD, DIM, GREEN, YELLOW, RESET = (
+    "\033[1m",
+    "\033[2m",
+    "\033[32m",
+    "\033[33m",
+    "\033[0m",
+)
+
+
+def main_worktree_root() -> Path:
+    try:
+        common = subprocess.run(
+            ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        sys.exit("workstreams: not inside a git repository")
+    return Path(common).parent
+
+
+def read_status(tracker: Path) -> str:
+    for line in tracker.read_text(encoding="utf-8").splitlines():
+        if line.startswith("**Status:**"):
+            return line.removeprefix("**Status:**").strip()
+    return "(no Status line)"
+
+
+def newest_handoffs(handoffs_dir: Path) -> dict[str, tuple[str, str]]:
+    """Map workstream -> (date 'YYYY-MM-DD HH:MM', filename) of its newest handoff."""
+    newest: dict[str, tuple[str, str]] = {}
+    if not handoffs_dir.is_dir():
+        return newest
+    for path in sorted(handoffs_dir.glob("*.md")):
+        match = HANDOFF_NAME.match(path.name)
+        if not match:
+            continue
+        date = f"{match[1]} {match[2]}:{match[3]}"
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line.startswith("workstream: "):
+                name = line.removeprefix("workstream: ").strip()
+                if name not in newest or date > newest[name][0]:
+                    newest[name] = (date, path.name)
+                break
+    return newest
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument(
+        "-a", "--all", action="store_true", help="include done workstreams"
+    )
+    parser.add_argument(
+        "--names", action="store_true", help="print only the names, one per line"
+    )
+    parser.add_argument(
+        "--color",
+        choices=["auto", "always", "never"],
+        default="auto",
+        help="auto colors on a terminal unless NO_COLOR is set",
+    )
+    args = parser.parse_args()
+    if args.color == "auto":
+        color = sys.stdout.isatty() and not os.environ.get("NO_COLOR")
+    else:
+        color = args.color == "always"
+
+    def paint(code: str, text: str) -> str:
+        return f"{code}{text}{RESET}" if color else text
+
+    claude_dir = main_worktree_root() / ".claude"
+    tracking_dir = claude_dir / "tracking"
+    handoffs = newest_handoffs(claude_dir / "handoffs")
+
+    rows = []  # (sort key, name, last, status, done)
+    trackers = sorted(tracking_dir.glob("*.md")) if tracking_dir.is_dir() else []
+    tracked = set()
+    for tracker in trackers:
+        name = tracker.stem
+        tracked.add(name)
+        status = read_status(tracker)
+        done = status.lower().startswith("done")
+        mtime = datetime.fromtimestamp(os.path.getmtime(tracker))
+        last = handoffs.get(name, (mtime.strftime("%Y-%m-%d %H:%M"), ""))[0]
+        rows.append((last, name, last, status, done))
+    for name, (last, _) in handoffs.items():
+        if name not in tracked:
+            rows.append((last, name, last, "(no tracker; predates trackers)", False))
+
+    shown = [r for r in rows if args.all or not r[4]]
+    shown.sort(key=lambda r: r[0], reverse=True)
+
+    if args.names:
+        for row in shown:
+            print(row[1])
+        return
+
+    if not shown:
+        hidden = len(rows) - len(shown)
+        extra = f" ({hidden} done; --all shows them)" if hidden else ""
+        print(paint(DIM, f"No active workstreams in {claude_dir}{extra}"))
+        return
+
+    width = max(len(r[1]) for r in shown)
+    for _, name, last, status, done in shown:
+        if done:
+            status = paint(DIM, status)
+        elif status.startswith("("):
+            status = paint(YELLOW, status)
+        else:
+            head, sep, rest = status.partition(" ")
+            status = paint(GREEN, head) + sep + rest
+        print(f"{paint(BOLD, f'{name:<{width}}')}  {paint(DIM, last)}  {status}")
+    hidden = len(rows) - len(shown)
+    if hidden:
+        print(paint(DIM, f"({hidden} done hidden; --all shows them)"))
+
+
+if __name__ == "__main__":
+    main()
