@@ -187,7 +187,10 @@ Otherwise start GlazeWM afterwards.
 `install.sh` also sets up a LaunchAgent, `glazewm-helper`. It keeps that
 Karabiner rule in step with GlazeWM (restoring it within a minute when Karabiner
 restarts), and through sleepwatcher restores the rule and Zebar's bars on wake
-(waking from sleep clears one and hides the other). `install.sh` only rewrites
+(waking from sleep clears one and hides the other). It also restarts Zebar a few
+seconds after GlazeWM reports a monitor added or removed, because the bars
+vanish then too. It logs what it does, and the sleep and wake events it sees, to
+`~/Library/Logs/com.github.gelio.glazewm-helper.log`. `install.sh` only rewrites
 and reloads it when it changes, because endpoint security on a managed Mac may
 flag that as persistence. If macOS asks, allow it as a background item.
 
