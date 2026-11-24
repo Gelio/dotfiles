@@ -15,6 +15,9 @@ under Extensions, add `macos/raycast/scripts` as a script directory.
 Ctrl+Option+Space), so Ctrl+Space reaches the terminal. Turn them back on in
 System Settings → Keyboard → Keyboard Shortcuts → Input Sources.
 
+It also lets Control+Command+drag move a window from anywhere inside it, not
+only its title bar. Apps pick that up when they next start.
+
 Bitwarden and Rambox are optional, for personal Macs:
 
 ```bash
