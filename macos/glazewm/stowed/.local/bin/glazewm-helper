@@ -10,6 +10,8 @@
 # - On system or display wakeup, through sleepwatcher, runs `glazewm-helper
 #   wake`: waking from system sleep clears the variable, and Zebar's bars
 #   vanish after any display sleep.
+# - Rewrites the variable about once a minute, because Karabiner keeps it only
+#   in memory: restarting Karabiner's core service (an update, say) unsets it.
 set -uo pipefail
 
 karabiner_cli="/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli"
@@ -18,17 +20,36 @@ app=/Applications/GlazeWM.app/Contents/MacOS/glazewm
 
 # The value last written successfully, so a failed write is retried.
 written=""
+# Set while writes fail, so only the first failure and the recovery are logged.
+failing=""
+
+log() {
+  echo "$(date '+%Y-%m-%d %H:%M:%S') glazewm-helper[$$]: $*" >&2
+}
 
 app_running() {
   pgrep -f "^$app" >/dev/null
 }
 
 sync_once() {
-  local value=0
+  local value=0 out status
   app_running && value=1
   [[ "$value" == "$written" ]] && return 0
-  "$karabiner_cli" --set-variables "{\"glazewm_running\":$value}" &&
+  # karabiner_cli fails while its socket is missing (asleep, or Karabiner
+  # restarting) or still owned by root (just after login or a wake).
+  if out=$("$karabiner_cli" --set-variables "{\"glazewm_running\":$value}" 2>&1); then
     written=$value
+    if [[ -n "$failing" ]]; then
+      log "Karabiner writes work again"
+      failing=""
+    fi
+  else
+    status=$?
+    [[ -n "$failing" ]] ||
+      log "can't set glazewm_running to $value (exit $status): $out"
+    failing=1
+    return 1
+  fi
 }
 
 wake() {
@@ -79,8 +100,19 @@ sleepwatcher=/opt/homebrew/sbin/sleepwatcher
 sleepwatcher_pid=$!
 trap 'kill "$sleepwatcher_pid" 2>/dev/null' EXIT
 
+refreshed=$SECONDS
+# After a failed write, waits 10 seconds before the next try, so a Karabiner
+# that's down for a while (during a dark wake, say) costs few calls.
+retry_at=0
 while true; do
-  sync_once
+  # Forgets the last write about once a minute, so this rewrites it.
+  if ((SECONDS - refreshed >= 60)); then
+    written=""
+    refreshed=$SECONDS
+  fi
+  if ((SECONDS >= retry_at)); then
+    sync_once || retry_at=$((SECONDS + 10))
+  fi
   # Restarts sleepwatcher if it died, by exiting: launchd starts this again.
   kill -0 "$sleepwatcher_pid" 2>/dev/null || exit 1
   sleep 1
