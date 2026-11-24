@@ -176,6 +176,8 @@ binding_modes:
       - commands: ["wm-disable-binding-mode --name resize"]
         bindings: ["escape", "enter"]
 
+# Pressed as Left Option+<key> (plus Shift or Control): Karabiner's "GlazeWM"
+# rule sends it as ctrl+alt+cmd+<key> while GlazeWM runs. See the header.
 keybindings:
   # Shift focus in a given direction.
   - commands: ["focus --direction left"]
