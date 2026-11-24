@@ -32,7 +32,10 @@ depends = [
 [tasks.test]
 description = "Run the Python unit tests"
 # python3 from the system or mise; the tests need 3.11+ for tomllib
-run = "python3 -m unittest discover --start-directory universal/mise --top-level-directory universal/mise"
+run = [
+  "python3 -m unittest discover --start-directory universal/mise --top-level-directory universal/mise",
+  "python3 -m unittest discover --start-directory universal/agents --top-level-directory universal/agents",
+]
 
 [tasks."hooks:install"]
 description = "Run the lint checks before every git push from this clone"

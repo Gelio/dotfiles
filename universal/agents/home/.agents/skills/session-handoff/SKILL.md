@@ -11,7 +11,7 @@ Read [`REFERENCE.md`](REFERENCE.md) first: it defines workstreams, trackers and 
 
 ## Steps
 
-1. **Workstream.** Use the argument if given. Otherwise list the workstreams and match this session's work to one. When several active ones could fit, ask the user which. New work gets a new kebab-case name.
+1. **Workstream.** Use the argument if given. Otherwise run `workstreams --all` and match this session's work to one. When several active ones could fit, ask the user which. New work gets a new kebab-case name.
 2. **Previous.** The newest handoff of the workstream is `previous`; no match means `none`.
 3. **State.** Run the State commands now. Every State field comes from their output.
 4. **ADR.** Mark each decision that governs the whole repo `ADR candidate` in Decided, and invoke `domain-modeling` to decide whether to offer the ADR.
