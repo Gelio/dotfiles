@@ -14,3 +14,4 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 ./brew-install.sh
 ./stow.sh
 ./disable-input-source-shortcuts.sh
+./enable-window-drag-gesture.sh
