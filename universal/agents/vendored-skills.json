@@ -2,86 +2,86 @@
   "codebase-design": {
     "repo": "mattpocock/skills",
     "path": "skills/engineering/codebase-design",
-    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+    "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18"
   },
   "diagnosing-bugs": {
     "repo": "mattpocock/skills",
     "path": "skills/engineering/diagnosing-bugs",
-    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+    "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18"
   },
   "domain-modeling": {
     "repo": "mattpocock/skills",
     "path": "skills/engineering/domain-modeling",
-    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+    "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18"
   },
   "frontend-design": {
     "repo": "anthropics/skills",
     "path": "skills/frontend-design",
-    "commit": "1780c5e5a552fd4d1c9d6a7b0cab26b0c2bef064"
+    "commit": "e4bb5d960d87126ff3b3a8af1a104b7db67560ba"
   },
   "grill-me": {
     "repo": "mattpocock/skills",
     "path": "skills/productivity/grill-me",
-    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+    "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18"
   },
   "grill-with-docs": {
     "repo": "mattpocock/skills",
     "path": "skills/engineering/grill-with-docs",
-    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+    "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18"
   },
   "grilling": {
     "repo": "mattpocock/skills",
     "path": "skills/productivity/grilling",
-    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+    "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18"
   },
   "improve-codebase-architecture": {
     "repo": "mattpocock/skills",
     "path": "skills/engineering/improve-codebase-architecture",
-    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+    "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18"
   },
   "pr": {
     "repo": "mattpocock/skills",
     "path": "skills/engineering/pr",
-    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+    "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18"
   },
   "prototype": {
     "repo": "mattpocock/skills",
     "path": "skills/engineering/prototype",
-    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+    "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18"
   },
   "research": {
     "repo": "mattpocock/skills",
     "path": "skills/engineering/research",
-    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+    "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18"
   },
   "retro": {
     "repo": "mattpocock/skills",
     "path": "skills/engineering/retro",
-    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+    "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18"
   },
   "teach": {
     "repo": "mattpocock/skills",
     "path": "skills/productivity/teach",
-    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+    "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18"
   },
   "vercel-composition-patterns": {
     "repo": "vercel-labs/agent-skills",
     "path": "skills/composition-patterns",
-    "commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62"
+    "commit": "5a37a6329fbad3666c3207392a6a7c0110e92efb"
   },
   "vercel-react-best-practices": {
     "repo": "vercel-labs/agent-skills",
     "path": "skills/react-best-practices",
-    "commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62"
+    "commit": "5a37a6329fbad3666c3207392a6a7c0110e92efb"
   },
   "web-design-guidelines": {
     "repo": "vercel-labs/agent-skills",
     "path": "skills/web-design-guidelines",
-    "commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62"
+    "commit": "5a37a6329fbad3666c3207392a6a7c0110e92efb"
   },
   "writing-for-agents": {
     "repo": "mattpocock/skills",
     "path": "skills/productivity/writing-for-agents",
-    "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa"
+    "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18"
   }
 }
