@@ -4,7 +4,7 @@
     {
       // Markdown only, because proseWrap splits long YAML strings
       "files": ["*.md"],
-      "options": { "proseWrap": "always" },
+      "options": { "proseWrap": "preserve" },
     },
   ],
   // Here rather than in ci/lint-format.sh, so that saving in the editor skips
